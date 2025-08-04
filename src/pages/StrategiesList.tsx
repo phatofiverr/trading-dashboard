@@ -92,7 +92,7 @@ const StrategyCard = ({
 
 const StrategiesList: React.FC = () => {
   const { fetchAllStrategyPerformance, createStrategy, getUniqueStrategies, fetchTrades, initialLoadComplete, setInitialLoadComplete } = useTradeStore();
-  const { currentUser, initializeMockData } = useAccountStore();
+  const { currentUser } = useAccountStore();
   const [strategies, setStrategies] = useState<StrategyPerformance[]>([]);
   const [newStrategy, setNewStrategy] = useState<string>("");
   const [showAddStrategyDialog, setShowAddStrategyDialog] = useState<boolean>(false);
@@ -104,12 +104,7 @@ const StrategiesList: React.FC = () => {
   
   const navigate = useNavigate();
   
-  // Initialize user data if not already done
-  useEffect(() => {
-    if (!currentUser) {
-      initializeMockData();
-    }
-  }, [currentUser, initializeMockData]);
+  // User data will be loaded automatically via AppSidebar
   
   // Load trades data on initial mount
   useEffect(() => {

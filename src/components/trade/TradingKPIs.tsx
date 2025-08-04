@@ -1,11 +1,13 @@
 
 import React from 'react';
+import { useParams } from 'react-router-dom';
 import { useTradeStore } from '@/hooks/useTradeStore';
 import TimeBasedKPIs from './kpi/TimeBasedKPIs';
 import DrawdownAnalysis from './kpi/DrawdownAnalysis';
-import RiskAdjustedMetrics from './kpi/RiskAdjustedMetrics';
+import DailyStats from '@/components/accounts/DailyStats';
 
 const TradingKPIs: React.FC = () => {
+  const { strategyId } = useParams<{ strategyId: string }>();
   const { stats, filteredTrades } = useTradeStore();
   
   return (
@@ -14,15 +16,15 @@ const TradingKPIs: React.FC = () => {
       <TimeBasedKPIs />
       
       {/* Combined Drawdown Analysis and Risk-Adjusted Returns in a 2-column layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Drawdown Analysis - 50% width on large screens */}
-        <div className="flex flex-col h-full">
-          <DrawdownAnalysis trades={filteredTrades} />
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        {/* Drawdown Analysis - 75% width on large screens */}
+        <div className="flex flex-col h-full lg:col-span-3">
+          <DrawdownAnalysis trades={filteredTrades} strategyId={strategyId} />
         </div>
         
-        {/* Risk-Adjusted Return Metrics - 50% width on large screens */}
-        <div className="flex flex-col h-full">
-          <RiskAdjustedMetrics trades={filteredTrades} />
+        {/* Daily Stats - 25% width on large screens */}
+        <div className="flex flex-col h-full lg:col-span-1">
+          <DailyStats trades={filteredTrades} />
         </div>
       </div>
     </div>

@@ -211,7 +211,7 @@ const TradingCalendar: React.FC<TradingCalendarProps> = ({ account, currency = '
             
             // Render 7 days + 1 summary cell
             return (
-              <React.Fragment key={`week-${weekIndex}`}>
+              <div key={`week-${weekIndex}`} className="contents">
                 {/* Render the 7 days of the week */}
                 {weekDays.map((day, dayIndex) => (
                   <div 
@@ -263,7 +263,7 @@ const TradingCalendar: React.FC<TradingCalendarProps> = ({ account, currency = '
                     )}
                   </div>
                 </div>
-              </React.Fragment>
+              </div>
             );
           })}
         </div>

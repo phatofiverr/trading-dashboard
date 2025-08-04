@@ -98,15 +98,18 @@ export const useThemeStore = create<ThemeState>()(
       setTheme: (theme) => set({ currentTheme: theme }),
       
       setStrategyTheme: (strategyId, themeName, customColors) => {
-        set((state) => ({
-          strategyThemes: {
+        set((state) => {
+          const newStrategyThemes = {
             ...state.strategyThemes,
             [strategyId]: { 
               themeName,
               customColors: customColors || undefined
             }
-          }
-        }));
+          };
+          return {
+            strategyThemes: newStrategyThemes
+          };
+        });
       },
       
       getThemeColorsForStrategy: (strategyId) => {

@@ -81,7 +81,6 @@ const TradeActivityHeatmap: React.FC<TradeActivityProps> = ({ className }) => {
     mostWinningExitsTiming,
     mostLosingExitsTiming 
   } = useMemo(() => {
-    console.log("Calculating time data with trades:", filteredTrades.length);
     
     // Get unique instruments/pairs from trades, limited to top 10
     const uniquePairs = Array.from(
@@ -90,7 +89,6 @@ const TradeActivityHeatmap: React.FC<TradeActivityProps> = ({ className }) => {
       )
     ).slice(0, 10); // Show top 10 pairs for better visualization
     
-    console.log("Unique pairs found:", uniquePairs);
     
     // Initialize data structure (288 5-minute intervals per day)
     const pairsTimeData: Record<string, TradeInterval[]> = {};
@@ -121,7 +119,6 @@ const TradeActivityHeatmap: React.FC<TradeActivityProps> = ({ className }) => {
         if (timeParts.length >= 2) {
           entryHour = parseInt(timeParts[0], 10);
           entryMinute = parseInt(timeParts[1], 10);
-          console.log(`Trade ${trade.id} has explicit entry time ${trade.entryTime}, hour: ${entryHour}, minute: ${entryMinute}`);
         }
       }
       // If no explicit time or parsing failed, fall back to entry date
@@ -135,7 +132,6 @@ const TradeActivityHeatmap: React.FC<TradeActivityProps> = ({ className }) => {
           // Get hour and minute
           entryHour = tradeDate.getHours();
           entryMinute = tradeDate.getMinutes();
-          console.log(`Trade ${trade.id} using entry date ${trade.entryDate}, hour: ${entryHour}, minute: ${entryMinute}`);
         } catch (e) {
           console.error("Error processing trade entry date:", e);
         }
@@ -147,7 +143,6 @@ const TradeActivityHeatmap: React.FC<TradeActivityProps> = ({ className }) => {
         if (timeParts.length >= 2) {
           exitHour = parseInt(timeParts[0], 10);
           exitMinute = parseInt(timeParts[1], 10);
-          console.log(`Trade ${trade.id} has explicit exit time ${trade.exitTime}, hour: ${exitHour}, minute: ${exitMinute}`);
         }
       }
       // If no explicit exit time or parsing failed, fall back to exit date
@@ -161,7 +156,6 @@ const TradeActivityHeatmap: React.FC<TradeActivityProps> = ({ className }) => {
           // Get hour and minute
           exitHour = exitDate.getHours();
           exitMinute = exitDate.getMinutes();
-          console.log(`Trade ${trade.id} using exit date ${trade.exitDate}, hour: ${exitHour}, minute: ${exitMinute}`);
         } catch (e) {
           console.error("Error processing trade exit date:", e);
         }
@@ -169,7 +163,6 @@ const TradeActivityHeatmap: React.FC<TradeActivityProps> = ({ className }) => {
       
       // If we couldn't determine either time, skip this trade
       if (entryHour < 0 || exitHour < 0) {
-        console.log(`Skipping trade ${trade.id} - couldn't determine entry/exit times`);
         return;
       }
       
@@ -233,7 +226,6 @@ const TradeActivityHeatmap: React.FC<TradeActivityProps> = ({ className }) => {
           }
         }
         
-        console.log(`Marked trade for ${pair} from interval ${startIntervalIndex} to ${endIntervalIndex}`);
       }
     });
     
@@ -310,8 +302,6 @@ const TradeActivityHeatmap: React.FC<TradeActivityProps> = ({ className }) => {
       }
     });
     
-    console.log("Active pairs with trade data:", activePairsList);
-    console.log("Max trades in any interval:", maxCount);
     
     return {
       timeData: pairsTimeData,
@@ -356,8 +346,6 @@ const TradeActivityHeatmap: React.FC<TradeActivityProps> = ({ className }) => {
   // Force showing empty state if there are no detectable trades
   const showEmptyState = activePairs.length === 0 || filteredTrades.length === 0;
   
-  console.log("Rendering heatmap with active pairs:", activePairs.length);
-  console.log("Showing empty state:", showEmptyState);
 
   return (
     <Card className={`glass-effect ${className || ''}`}>

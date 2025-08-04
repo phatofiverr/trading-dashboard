@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTradeStore } from '@/hooks/useTradeStore';
 import { useParams, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Download, Filter, PlusCircle, Pencil, Palette } from 'lucide-react';
+import { Download, Filter, PlusCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { SidebarProvider } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
@@ -42,7 +42,8 @@ const BacktestStrategyPage: React.FC = () => {
     getUniqueStrategies, 
     filteredTrades, 
     lastEntryDate,
-    setCurrentAccountId // Clear any account context
+    setCurrentAccountId, // Clear any account context
+    selectTrade
   } = useTradeStore();
   const [showFilterPanel, setShowFilterPanel] = React.useState<boolean>(false);
   
@@ -133,25 +134,6 @@ const BacktestStrategyPage: React.FC = () => {
                     </DialogContent>
                   </Dialog>
                   
-                  {/* Edit Trade Button */}
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button 
-                        variant="minimal" 
-                        className={`flex items-center gap-2 ${selectedTrade ? 'bg-white/10 hover:bg-white/15' : 'bg-black/20 hover:bg-black/30'} text-foreground border-white/5`}
-                        disabled={!selectedTrade}
-                      >
-                        <Pencil className="h-4 w-4" />
-                        Edit Trade
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl bg-black/80 backdrop-blur-xl border-white/10">
-                      <DialogHeader>
-                        <DialogTitle className="text-foreground font-medium">Edit Backtest Trade</DialogTitle>
-                      </DialogHeader>
-                      {selectedTrade && <TradeEntryForm initialTrade={selectedTrade} isEditing />}
-                    </DialogContent>
-                  </Dialog>
                   
                   {/* Export Trades Button */}
                   <Button 
@@ -224,19 +206,22 @@ const BacktestStrategyPage: React.FC = () => {
                 <StochasticVolatilityModel trades={backtestTrades} />
               </div>
               
-              {/* Trade Table with Trade Details integrated */}
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
-                {selectedTrade && (
-                  <div className="col-span-1">
-                    <div className="bg-black/30 backdrop-blur-md border-white/5 shadow-lg rounded-xl p-4">
-                      <TradeDetailView trade={selectedTrade} />
-                    </div>
-                  </div>
-                )}
-                <div className={`${selectedTrade ? 'col-span-1 lg:col-span-3' : 'col-span-1 lg:col-span-4'}`}>
-                  <TradeTable hideExportButton={true} trades={backtestTrades} />
-                </div>
+              {/* Trade Table - Full Width */}
+              <div className="mb-6">
+                <TradeTable hideExportButton={true} trades={backtestTrades} />
               </div>
+              
+              {/* Trade Details Modal */}
+              {selectedTrade && (
+                <Dialog open={!!selectedTrade} onOpenChange={(open) => !open && selectTrade(null)}>
+                  <DialogContent className="max-w-2xl bg-black/90 backdrop-blur-xl border-white/10">
+                    <DialogHeader>
+                      <DialogTitle className="text-foreground font-medium">Trade Details</DialogTitle>
+                    </DialogHeader>
+                    <TradeDetailView trade={selectedTrade} />
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
           </main>
         </div>

@@ -30,8 +30,6 @@ interface UserProfile {
   email: string;
   bio: string;
   location: string;
-  avatarUrl: string | null;
-  coverUrl: string | null;
   memberSince: string;
   isCurrentUser: boolean;
   friends: string[]; // Array of friend user IDs
@@ -82,8 +80,6 @@ const ProfilePage: React.FC = () => {
             username: data.username || 'user',
             bio: data.bio || '',
             location: data.location || '',
-            avatarUrl: data.avatarUrl || null,
-            coverUrl: data.coverUrl || null,
             memberSince: data.createdAt || new Date().toISOString(),
             isCurrentUser: true,
             friends: data.friends || [],
@@ -101,8 +97,6 @@ const ProfilePage: React.FC = () => {
             username: currentUser.email?.split('@')[0] || 'user',
             bio: '',
             location: '',
-            avatarUrl: null,
-            coverUrl: null,
             memberSince: new Date().toISOString(),
             isCurrentUser: true,
             friends: [],
@@ -117,7 +111,6 @@ const ProfilePage: React.FC = () => {
               createdAt: userData.memberSince,
               updatedAt: new Date().toISOString()
             });
-            console.log("Created new user profile for:", currentUser.uid);
           } catch (error) {
             console.error("Error creating user document:", error);
             // Continue anyway, don't let this error disrupt the user experience
@@ -169,64 +162,104 @@ const ProfilePage: React.FC = () => {
     toast.success("Image deleted successfully");
   };
   
-  const handleUpdateProfileImage = async (imageUrl: string) => {
-    if (!currentUser?.uid) return;
-    
-    try {
-      const userDocRef = doc(db, "users", currentUser.uid);
-      await updateDoc(userDocRef, {
-        avatarUrl: imageUrl,
-        updatedAt: new Date().toISOString()
-      });
-      
-      if (profileUser) {
-        setProfileUser({
-          ...profileUser,
-          avatarUrl: imageUrl
-        });
-      }
-      
-      toast.success("Profile picture updated successfully");
-    } catch (error) {
-      console.error("Error updating profile image:", error);
-      toast.error("Failed to update profile picture");
-    }
-  };
-  
-  const handleUpdateCoverImage = async (imageUrl: string) => {
-    if (!currentUser?.uid) return;
-    
-    try {
-      const userDocRef = doc(db, "users", currentUser.uid);
-      await updateDoc(userDocRef, {
-        coverUrl: imageUrl,
-        updatedAt: new Date().toISOString()
-      });
-      
-      if (profileUser) {
-        setProfileUser({
-          ...profileUser,
-          coverUrl: imageUrl
-        });
-      }
-      
-      toast.success("Cover photo updated successfully");
-    } catch (error) {
-      console.error("Error updating cover image:", error);
-      toast.error("Failed to update cover photo");
-    }
-  };
   
   // If profile not loaded yet
   if (loading) {
     return (
-      <div className="min-h-screen bg-trading-bg flex items-center justify-center">
-        <Card className="w-96 glass-effect border-white/5">
-          <CardContent className="p-6">
-            <div className="text-center">Loading profile data...</div>
-          </CardContent>
-        </Card>
-      </div>
+      <SidebarProvider>
+        <div className="min-h-screen bg-trading-bg flex w-full">
+          <AppSidebar />
+          
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <main className="flex-1 overflow-auto">
+              <div className="main-content">
+                <div className="bg-black/5">
+                  {/* Profile Header Skeleton */}
+                  <div className="relative h-48 bg-gradient-to-r from-white/5 to-white/10 animate-pulse">
+                    <div className="absolute bottom-4 left-4 flex items-end space-x-4">
+                      <div className="w-24 h-24 bg-white/20 rounded-full animate-pulse"></div>
+                      <div className="space-y-2 pb-2">
+                        <div className="h-6 w-40 bg-white/20 rounded animate-pulse"></div>
+                        <div className="h-4 w-32 bg-white/15 rounded animate-pulse"></div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Edit Button Skeleton */}
+                  <div className="px-4 py-2 flex justify-end">
+                    <div className="h-8 w-28 bg-white/10 rounded animate-pulse"></div>
+                  </div>
+                  
+                  {/* Main Content Grid Skeleton */}
+                  <div className="p-4 md:p-5 grid gap-5 md:grid-cols-3">
+                    {/* Left Column - Bio & Friends */}
+                    <div className="md:col-span-1 space-y-5">
+                      {/* Bio Card Skeleton */}
+                      <div className="bg-white/5 rounded-lg p-4 space-y-4">
+                        <div className="h-5 w-20 bg-white/20 rounded animate-pulse"></div>
+                        <div className="space-y-2">
+                          <div className="h-4 w-full bg-white/10 rounded animate-pulse"></div>
+                          <div className="h-4 w-3/4 bg-white/10 rounded animate-pulse"></div>
+                          <div className="h-4 w-1/2 bg-white/10 rounded animate-pulse"></div>
+                        </div>
+                        <div className="pt-2 space-y-2">
+                          <div className="h-4 w-32 bg-white/15 rounded animate-pulse"></div>
+                          <div className="flex gap-2">
+                            <div className="h-6 w-16 bg-white/10 rounded-full animate-pulse"></div>
+                            <div className="h-6 w-20 bg-white/10 rounded-full animate-pulse"></div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Friends Card Skeleton */}
+                      <div className="bg-white/5 rounded-lg p-4 space-y-4">
+                        <div className="h-5 w-16 bg-white/20 rounded animate-pulse"></div>
+                        <div className="grid grid-cols-3 gap-3">
+                          {[...Array(6)].map((_, i) => (
+                            <div key={i} className="text-center space-y-2">
+                              <div className="w-12 h-12 bg-white/10 rounded-full mx-auto animate-pulse"></div>
+                              <div className="h-3 w-full bg-white/10 rounded animate-pulse"></div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Right Column - Gallery & Strategies */}
+                    <div className="md:col-span-2 space-y-5">
+                      {/* Gallery Card Skeleton */}
+                      <div className="bg-white/5 rounded-lg p-4 space-y-4">
+                        <div className="h-5 w-16 bg-white/20 rounded animate-pulse"></div>
+                        <div className="grid grid-cols-3 gap-3">
+                          {[...Array(6)].map((_, i) => (
+                            <div key={i} className="aspect-square bg-white/10 rounded animate-pulse"></div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Strategies Card Skeleton */}
+                      <div className="bg-white/5 rounded-lg p-4 space-y-4">
+                        <div className="h-5 w-24 bg-white/20 rounded animate-pulse"></div>
+                        <div className="space-y-3">
+                          {[...Array(3)].map((_, i) => (
+                            <div key={i} className="flex items-center space-x-3 p-3 bg-white/5 rounded">
+                              <div className="w-10 h-10 bg-white/10 rounded animate-pulse"></div>
+                              <div className="flex-1 space-y-2">
+                                <div className="h-4 w-32 bg-white/15 rounded animate-pulse"></div>
+                                <div className="h-3 w-48 bg-white/10 rounded animate-pulse"></div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </main>
+          </div>
+        </div>
+      </SidebarProvider>
     );
   }
   
@@ -260,8 +293,6 @@ const ProfilePage: React.FC = () => {
                   user={profileUser} 
                   onAddFriend={handleAddFriend} 
                   onMessage={handleMessage}
-                  onDeleteCoverImage={() => handleUpdateCoverImage('')}
-                  onDeleteProfileImage={() => handleUpdateProfileImage('')}
                 />
                 
                 <div className="px-4 py-2 flex justify-end">

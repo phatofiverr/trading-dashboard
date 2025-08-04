@@ -71,10 +71,10 @@ export const transformFormToTradeData = (values: TradeFormValues): TradeFormData
     strategyId: values.strategyId || 'default',
     // Add risk amount
     riskAmount: values.riskAmount || '',
+    // Add behavioral tags
+    behavioralTags: values.behavioralTags || [],
   };
 
-  // Add console log to verify all data is present
-  console.log("Trade data from form:", tradeData);
 
   return tradeData;
 };
@@ -165,10 +165,11 @@ export const prepareTradeSave = (tradeData: TradeFormData): Partial<Trade> => {
     riskRewardRatio: calculateRiskReward(),
     // Calculate and include profit
     profit: calculateProfit(),
+    // Include behavioral tags
+    behavioralTags: tradeData.behavioralTags || [],
   };
 
   // Add console log to verify data is being saved
-  console.log("Data being saved to API:", saveData);
   
   return saveData;
 };

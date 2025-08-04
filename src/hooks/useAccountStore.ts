@@ -1,6 +1,8 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/config/firebase';
 
 export interface FriendRequest {
   id: string;
@@ -17,8 +19,6 @@ export interface UserProfile {
   email: string;
   bio: string;
   location: string;
-  avatarUrl: string | null;
-  coverUrl: string | null;
   memberSince: string;
   isCurrentUser: boolean;
   friends: string[]; // Array of friend user IDs
@@ -39,8 +39,8 @@ interface AccountState {
   
   // Profile actions
   updateProfile: (updates: Partial<UserProfile>) => void;
-  updateProfileImage: (imageUrl: string) => void;
-  updateCoverImage: (imageUrl: string) => void;
+  updateProfileImage: () => void;
+  updateCoverImage: () => void;
   updateSocialLinks: (links: UserProfile['socialLinks']) => void;
   
   // Friend management
@@ -52,8 +52,10 @@ interface AccountState {
   // User search
   searchUsers: (query: string) => void;
   
-  // Mock data initialization (would be replaced by API calls in a real app)
-  initializeMockData: () => void;
+  // Firebase data synchronization
+  setCurrentUserFromFirebase: (userId: string, userData: any) => void;
+  loadUserFromFirebase: (userId: string) => Promise<void>;
+  clearPersistedData: () => void;
 }
 
 export const useAccountStore = create<AccountState>()(
@@ -70,18 +72,14 @@ export const useAccountStore = create<AccountState>()(
         }));
       },
 
-      updateProfileImage: (imageUrl) => {
-        set((state) => ({
-          currentUser: state.currentUser ? { ...state.currentUser, avatarUrl: imageUrl } : null
-        }));
-        toast.success("Profile picture updated successfully");
+      updateProfileImage: () => {
+        // Profile image functionality removed
+        toast.info("Profile images have been disabled");
       },
 
-      updateCoverImage: (imageUrl) => {
-        set((state) => ({
-          currentUser: state.currentUser ? { ...state.currentUser, coverUrl: imageUrl } : null
-        }));
-        toast.success("Cover photo updated successfully");
+      updateCoverImage: () => {
+        // Cover image functionality removed  
+        toast.info("Cover photos have been disabled");
       },
 
       updateSocialLinks: (links) => {
@@ -169,8 +167,6 @@ export const useAccountStore = create<AccountState>()(
             email: 'joe@example.com',
             bio: 'Professional trader specializing in forex',
             location: 'New York, USA',
-            avatarUrl: null,
-            coverUrl: null,
             memberSince: '2023-01-15',
             isCurrentUser: false,
             friends: [],
@@ -188,8 +184,6 @@ export const useAccountStore = create<AccountState>()(
             email: 'sarah@example.com',
             bio: 'Cryptocurrency enthusiast and day trader',
             location: 'London, UK',
-            avatarUrl: null,
-            coverUrl: null,
             memberSince: '2023-03-22',
             isCurrentUser: false,
             friends: [],
@@ -207,8 +201,6 @@ export const useAccountStore = create<AccountState>()(
             email: 'mike@example.com',
             bio: 'Stock market analyst with 10+ years experience',
             location: 'Toronto, Canada',
-            avatarUrl: null,
-            coverUrl: null,
             memberSince: '2022-11-05',
             isCurrentUser: false,
             friends: [],
@@ -228,36 +220,48 @@ export const useAccountStore = create<AccountState>()(
         set({ searchResults: results });
       },
       
-      initializeMockData: () => {
-        const mockCurrentUser: UserProfile = {
-          id: 'current-user',
-          username: 'john_doe',
-          displayName: 'John Doe',
-          email: 'john.doe@example.com',
-          bio: 'Passionate trader specializing in price action strategies with 3 years of market experience.',
-          location: 'New York, USA',
-          avatarUrl: null,
-          coverUrl: null,
-          memberSince: '2023-01-01',
+      setCurrentUserFromFirebase: (userId: string, userData: any) => {
+        const userProfile: UserProfile = {
+          id: userId,
+          username: userData.username || userData.email?.split('@')[0] || 'user',
+          displayName: userData.displayName || userData.email?.split('@')[0] || 'User',
+          email: userData.email || '',
+          bio: userData.bio || '',
+          location: userData.location || '',
+          memberSince: userData.memberSince || new Date().toISOString(),
           isCurrentUser: true,
-          friends: [],
-          tradingExperience: '3 years',
-          specializations: ['EUR/USD', 'BTC/USD', 'Gold', 'S&P 500'],
-          socialLinks: {
+          friends: userData.friends || [],
+          tradingExperience: userData.tradingExperience || '',
+          specializations: userData.specializations || [],
+          socialLinks: userData.socialLinks || {
             twitter: '',
             linkedin: '',
             github: '',
           }
         };
         
-        // Only set if not already initialized
-        if (!get().currentUser) {
-          set({ 
-            currentUser: mockCurrentUser,
-            friends: [],
-            friendRequests: []
-          });
+        set({ currentUser: userProfile });
+      },
+
+      loadUserFromFirebase: async (userId: string) => {
+        try {
+          const userDocRef = doc(db, "users", userId);
+          const userDoc = await getDoc(userDocRef);
+          
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            get().setCurrentUserFromFirebase(userId, userData);
+          } else {
+            console.warn("User document not found in Firestore:", userId);
+          }
+        } catch (error) {
+          console.error("Error loading user from Firebase:", error);
         }
+      },
+
+      // Clear persisted mock data
+      clearPersistedData: () => {
+        set({ currentUser: null, friends: [], friendRequests: [], searchResults: [] });
       }
     }),
     { name: 'account-storage' }

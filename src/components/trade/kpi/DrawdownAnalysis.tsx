@@ -16,11 +16,12 @@ import { useThemeStore } from '@/hooks/useThemeStore';
 
 interface DrawdownAnalysisProps {
   trades: Trade[];
+  strategyId?: string;
 }
 
-const DrawdownAnalysis: React.FC<DrawdownAnalysisProps> = ({ trades }) => {
-  const { getThemeColors } = useThemeStore();
-  const colors = getThemeColors();
+const DrawdownAnalysis: React.FC<DrawdownAnalysisProps> = ({ trades, strategyId }) => {
+  const { getThemeColorsForStrategy } = useThemeStore();
+  const colors = getThemeColorsForStrategy(strategyId);
   
   // Calculate maximum consecutive losing trades
   const calculateMaxConsecutiveLosses = (trades: Trade[]): number => {

@@ -75,7 +75,7 @@ const LiveTradingStrategies: React.FC = () => {
     initialLoadComplete, 
     setInitialLoadComplete 
   } = useTradeStore();
-  const { currentUser, initializeMockData } = useAccountStore();
+  const { currentUser } = useAccountStore();
   const [strategies, setStrategies] = useState<StrategyPerformance[]>([]);
   const [newStrategy, setNewStrategy] = useState<string>("");
   const [showAddStrategyDialog, setShowAddStrategyDialog] = useState<boolean>(false);
@@ -87,12 +87,7 @@ const LiveTradingStrategies: React.FC = () => {
   
   const navigate = useNavigate();
   
-  // Initialize user data if not already done
-  useEffect(() => {
-    if (!currentUser) {
-      initializeMockData();
-    }
-  }, [currentUser, initializeMockData]);
+  // User data will be loaded automatically via AppSidebar
   
   // Load trades data on initial mount
   useEffect(() => {
@@ -207,9 +202,11 @@ const LiveTradingStrategies: React.FC = () => {
         <div className="flex-1 flex flex-col overflow-hidden">
           <main className="flex-1 overflow-auto p-6">
             <div className="max-w-7xl mx-auto">
+              
+              
               <div className="mb-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h1 className="text-2xl font-bold">Live Trading Strategies</h1>
+                  <h1 className="text-2xl font-bold">Strategies</h1>
                   <Dialog open={showAddStrategyDialog} onOpenChange={setShowAddStrategyDialog}>
                     <DialogTrigger asChild>
                       <Button variant="glass" className="flex items-center gap-2">
@@ -219,7 +216,7 @@ const LiveTradingStrategies: React.FC = () => {
                     </DialogTrigger>
                     <DialogContent className="bg-black/80 backdrop-blur-md border-white/5">
                       <DialogHeader>
-                        <DialogTitle>Add New Live Trading Strategy</DialogTitle>
+                        <DialogTitle>Add New Strategy</DialogTitle>
                       </DialogHeader>
                       <div className="py-4">
                         <Input
@@ -261,18 +258,6 @@ const LiveTradingStrategies: React.FC = () => {
               </div>
             </div>
             
-            {/* Navigation to Backtest Strategies */}
-            <div className="max-w-7xl mx-auto mt-10 border-t border-white/10 pt-6">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="text-lg font-medium">Looking for Backtest Strategies?</h3>
-                  <p className="text-sm text-muted-foreground">View your separate backtest strategies for trade simulation.</p>
-                </div>
-                <Button variant="outline" asChild>
-                  <Link to="/backtest-strategies">Go to Backtest Strategies</Link>
-                </Button>
-              </div>
-            </div>
           </main>
         </div>
       </div>
@@ -281,7 +266,7 @@ const LiveTradingStrategies: React.FC = () => {
       <Dialog open={showDuplicateDialog} onOpenChange={setShowDuplicateDialog}>
         <DialogContent className="bg-black/80 backdrop-blur-md border-white/5">
           <DialogHeader>
-            <DialogTitle>Duplicate Live Trading Strategy</DialogTitle>
+            <DialogTitle>Duplicate Strategy</DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <p className="text-sm text-muted-foreground mb-4">

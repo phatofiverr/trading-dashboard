@@ -154,9 +154,9 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
 
   if (balanceData.length <= 1) {
     return (
-      <Card className="bg-black/20 backdrop-blur-md border-none shadow-lg">
-        <CardContent className="p-4">
-          <div className="h-[270px] w-full flex items-center justify-center">
+      <Card className="bg-black/20 backdrop-blur-md border-none shadow-lg h-full flex flex-col">
+        <CardContent className="p-4 flex flex-col h-full">
+          <div className="flex-1 w-full flex items-center justify-center">
             <p className="text-muted-foreground text-xs">Not enough trade data to display balance history</p>
           </div>
         </CardContent>
@@ -165,8 +165,8 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
   }
 
   return (
-    <Card className="bg-black/20 backdrop-blur-md border-none shadow-lg">
-      <CardContent className="pt-4 pb-2 px-4">
+    <Card className="bg-black/20 backdrop-blur-md border-none shadow-lg h-full flex flex-col">
+      <CardContent className="pt-4 pb-2 px-4 flex flex-col h-full">
         <div className="flex items-center justify-between gap-2 mb-2 px-2">
           {/* Updated dropdown menu using SelectTrigger for visual consistency */}
           <div className="flex-shrink-0">
@@ -204,7 +204,7 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
             </div>
           </div>
         </div>
-        <div className="h-[270px] w-full">
+        <div className="flex-1 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={balanceData} margin={{ top: 20, right: 15, left: 0, bottom: 10 }}>
               <XAxis 

@@ -30,6 +30,7 @@ dist-ssr
 .env.test.local
 .env.production.local
 
+CLAUDE.md
 # Firebase config with sensitive data
 # Uncomment if you want to exclude your Firebase config from git
 # src/config/firebase.ts

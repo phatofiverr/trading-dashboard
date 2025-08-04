@@ -14,12 +14,16 @@ export const createImportExportSlice: StateCreator<
     return JSON.stringify(get().trades, null, 2);
   },
   
-  exportAsCSV: async () => {
-    const trades = get().trades;
-    if (trades.length === 0) return "";
+  exportAsCSV: async (tradesOverride?: any[]) => {
+    const trades = tradesOverride || get().trades;
     
-    // Get headers from the first trade
-    const headers = Object.keys(trades[0]).filter(key => 
+    // Filter out placeholder trades
+    const activeTrades = trades.filter(trade => !trade.isPlaceholder);
+    
+    if (activeTrades.length === 0) return "";
+    
+    // Get headers from the first active trade
+    const headers = Object.keys(activeTrades[0]).filter(key => 
       key !== "id" && key !== "createdAt" && key !== "updatedAt"
     );
     
@@ -27,7 +31,7 @@ export const createImportExportSlice: StateCreator<
     let csv = headers.join(",") + "\n";
     
     // Add data rows
-    trades.forEach(trade => {
+    activeTrades.forEach(trade => {
       const row = headers.map(header => {
         const key = header as keyof typeof trade;
         const value = trade[key];

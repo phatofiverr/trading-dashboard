@@ -50,14 +50,17 @@ export interface TradesState {
 export interface StrategyState {
   createStrategy: (name: string, type: 'live' | 'backtest') => Promise<Strategy>;
   getUniqueStrategies: (type?: 'live' | 'backtest') => string[];
+  renameStrategy: (oldName: string, newName: string) => boolean;
   deleteStrategy: (name: string) => boolean;
   duplicateStrategy: (originalName: string, newName: string) => Promise<boolean>;
   fetchAllStrategyPerformance: (type?: 'live' | 'backtest') => StrategyPerformance[];
+  loadStrategiesFromFirebase: () => Promise<void>;
+  setStrategies: (strategies: Strategy[]) => void;
 }
 
 export interface ImportExportState {
   exportAsJSON: () => Promise<string>;
-  exportAsCSV: () => Promise<string>;
+  exportAsCSV: (tradesOverride?: any[]) => Promise<string>;
 }
 
 export interface GlobalState extends TradesState, StrategyState, ImportExportState {

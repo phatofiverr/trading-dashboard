@@ -29,29 +29,60 @@ const TradeEntryForm: React.FC<TradeEntryFormProps> = ({ initialTrade, isEditing
   const form = useForm<TradeFormValues>({
     resolver: zodResolver(tradeFormSchema),
     defaultValues: {
-      direction: "Long",
-      entryTimeframe: "15m",
-      htfTimeframe: "1h",
+      // Required fields - ensure they all have proper defaults
+      instrument: "",
+      entryPrice: "0",
+      exitPrice: "",
+      slPrice: "-1",
+      entryDate: undefined,
       entryTime: "00:00",
       exitTime: "00:00",
+      entryTimeframe: "15m",
+      htfTimeframe: "1h",
+      
+      // Other fields
+      direction: "Long",
       entryTimezone: "America/New_York",
       exitTimezone: "America/New_York",
       tags: [],
+      behavioralTags: [],
       didHitBE: false,
       tpHitAfterBE: false,
       reversedAfterBE: false,
       tpHit: "none",
       confidenceRating: 5,
-      // Set default values for price inputs
-      entryPrice: "0",
-      slPrice: "-1",
       tp1Price: "",
       tp2Price: "",
       tp3Price: "",
       riskAmount: "",
+      tradeId: "",
+      notes: "",
+      slPips: "0",
+      session: "",
+      entryType: "",
+      obType: "",
+      marketStructure: "",
+      liquidityContext: "",
+      exitReason: "",
+      slLogic: "",
+      tpLogic: "",
       // Only set strategy ID if we're in strategy context or it's provided
-      strategyId: initialStrategyId || (initialAccountId ? "none" : (strategyId || filters.strategy))
+      strategyId: initialStrategyId || (initialAccountId ? "none" : (strategyId || filters.strategy)) || "",
+      accountId: initialAccountId || ""
     },
+  });
+  
+  // Watch form values to determine if all required fields are filled
+  const watchedValues = form.watch();
+  const isFormValid = form.formState.isValid;
+  
+  // Check if all required fields have values (not just validation)
+  // entryPrice and slPrice have valid defaults, so they're always considered filled
+  const requiredFields = ['instrument', 'exitPrice', 'entryDate', 'entryTime', 'exitTime', 'entryTimeframe', 'htfTimeframe'];
+  const allRequiredFieldsFilled = requiredFields.every(field => {
+    const value = watchedValues[field as keyof typeof watchedValues];
+    if (field === 'entryDate') return value !== undefined;
+    return value && value.toString().trim() !== '';
   });
   
   // If initialTrade is provided, populate the form with its values
@@ -139,7 +170,20 @@ const TradeEntryForm: React.FC<TradeEntryFormProps> = ({ initialTrade, isEditing
   const onSubmit = async (values: TradeFormValues) => {
     try {
       setIsSubmitting(true);
-      console.log("Form submitted with values:", values);
+      
+      // Check if all required fields are filled before proceeding
+      if (!allRequiredFieldsFilled) {
+        const missingFields = requiredFields.filter(field => {
+          const value = values[field as keyof typeof values];
+          if (field === 'entryDate') return value === undefined;
+          return !value || value.toString().trim() === '';
+        });
+        
+        toast.error(`Please fill in all required fields: ${missingFields.join(', ')}`);
+        setIsSubmitting(false);
+        return;
+      }
+      
       
       // Auto-generate tradeId if needed and not editing
       if (!values.tradeId && !isEditing) {
@@ -172,17 +216,11 @@ const TradeEntryForm: React.FC<TradeEntryFormProps> = ({ initialTrade, isEditing
         }
       }
       
-      console.log("Using strategy ID:", values.strategyId || "none (account-only trade)");
-      console.log("Using account ID:", values.accountId || "none (strategy-only trade)");
-      console.log("Tags:", values.tags);
-      
       // Transform form values to trade data
       const tradeData = transformFormToTradeData(values);
-      console.log("Transformed trade data:", tradeData);
       
       // Prepare data for saving (convert types as needed)
       const saveData = prepareTradeSave(tradeData);
-      console.log("Save data prepared:", saveData);
       
       // Save the current trade data to localStorage for next trade
       localStorage.setItem('lastTradeData', JSON.stringify({
@@ -272,7 +310,7 @@ const TradeEntryForm: React.FC<TradeEntryFormProps> = ({ initialTrade, isEditing
                 value="strategy" 
                 className="data-[state=active]:bg-trading-accent1 data-[state=active]:text-white text-sm font-medium py-2"
               >
-                Strategy
+                {initialAccountId ? "Strategy" : "Demon"}
               </TabsTrigger>
             </TabsList>
             
@@ -286,7 +324,11 @@ const TradeEntryForm: React.FC<TradeEntryFormProps> = ({ initialTrade, isEditing
               </TabsContent>
               
               <TabsContent value="strategy" className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
-                <TradeStrategyTab />
+                <TradeStrategyTab 
+                  strategyType={initialAccountId ? 'live' : 'backtest'} 
+                  isAccountContext={!!initialAccountId}
+                  currentStrategyId={strategyId}
+                />
               </TabsContent>
             </div>
           </Tabs>
@@ -294,7 +336,11 @@ const TradeEntryForm: React.FC<TradeEntryFormProps> = ({ initialTrade, isEditing
           <div className="flex justify-end pt-4 border-t border-white/10">
             <Button 
               type="submit" 
-              className="bg-trading-accent1 hover:bg-trading-accent1/80"
+              className={`transition-all duration-300 ${
+                allRequiredFieldsFilled && isFormValid
+                  ? "bg-gray-200 hover:bg-gray-300 shadow-lg shadow-gray-400/25 text-black font-semibold" 
+                  : "bg-trading-accent1/50 hover:bg-trading-accent1/60 text-white/70"
+              }`}
               disabled={isSubmitting}
             >
               {isSubmitting ? (isEditing ? "Updating..." : "Saving...") : (isEditing ? "Update Trade" : "Save Trade")}

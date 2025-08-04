@@ -38,8 +38,10 @@ export const createFilterActions = (set: any, get: any) => ({
     if (filters.strategyType) {
       filtered = filtered.filter(trade => {
         if (filters.strategyType === 'live') {
-          return trade.tags?.includes("account") || !trade.tags?.includes("backtest");
+          // Live data mode: only show trades with "account" tag (created from account page)
+          return trade.tags?.includes("account");
         } else {
+          // Backtest mode: only show trades with "backtest" tag (created from strategy page)
           return trade.tags?.includes("backtest");
         }
       });

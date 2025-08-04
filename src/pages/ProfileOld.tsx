@@ -17,7 +17,7 @@ import { Link } from "react-router-dom";
 import FindFriends from "@/components/profile/FindFriends";
 
 const Profile: React.FC = () => {
-  const { currentUser, updateProfile, initializeMockData } = useAccountStore();
+  const { currentUser, updateProfile } = useAccountStore();
   const { fetchAllStrategyPerformance } = useTradeStore();
   const [strategies, setStrategies] = useState<any[]>([]);
   const [formData, setFormData] = useState({
@@ -27,10 +27,7 @@ const Profile: React.FC = () => {
     bio: ""
   });
 
-  // Initialize mock data if needed
-  useEffect(() => {
-    initializeMockData();
-  }, [initializeMockData]);
+  // User data will be loaded automatically via AppSidebar
 
   // Sync form with user data
   useEffect(() => {
