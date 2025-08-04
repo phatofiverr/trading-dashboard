@@ -22,66 +22,42 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          // React and core libraries
-          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router')) {
-            return 'react-vendor';
-          }
+        manualChunks: {
+          // React core
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           
-          // UI component libraries (Radix UI)
-          if (id.includes('@radix-ui')) {
-            return 'ui-vendor';
-          }
+          // UI libraries
+          'ui-vendor': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-popover',
+            '@radix-ui/react-select',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-accordion',
+            '@radix-ui/react-alert-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-scroll-area',
+            '@radix-ui/react-separator',
+            '@radix-ui/react-slider',
+            '@radix-ui/react-switch',
+            '@radix-ui/react-toast',
+            '@radix-ui/react-tooltip'
+          ],
           
-          // Chart libraries
-          if (id.includes('recharts') || id.includes('d3-')) {
-            return 'charts';
-          }
+          // Chart libraries (these are heavy)
+          'charts': ['recharts'],
           
           // Firebase
-          if (id.includes('firebase')) {
-            return 'firebase';
-          }
+          'firebase': [
+            'firebase/app',
+            'firebase/auth', 
+            'firebase/firestore'
+          ],
           
           // Form libraries
-          if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('zod')) {
-            return 'forms';
-          }
+          'forms': ['react-hook-form', '@hookform/resolvers', 'zod'],
           
-          // Date utilities
-          if (id.includes('date-fns')) {
-            return 'date-utils';
-          }
-          
-          // Large trading chart components
-          if (id.includes('components/trade/EquityCurveChart') || 
-              id.includes('components/trade/TradeActivityHeatmap') || 
-              id.includes('components/trade/analysis/StochasticVolatilityModel')) {
-            return 'trading-charts';
-          }
-          
-          // Trading KPIs and stats
-          if (id.includes('components/trade/SimpleStatsDisplay') || 
-              id.includes('components/trade/TradingKPIs') || 
-              id.includes('components/trade/kpi/')) {
-            return 'trading-stats';
-          }
-          
-          // Trading analysis components
-          if (id.includes('components/trade/analysis/') || 
-              id.includes('components/trade/MostTradedPairsCard')) {
-            return 'trading-analysis';
-          }
-          
-          // Lucide icons
-          if (id.includes('lucide-react')) {
-            return 'icons';
-          }
-          
-          // Other node_modules as vendor
-          if (id.includes('node_modules')) {
-            return 'vendor';
-          }
+          // Utilities
+          'utils': ['date-fns', 'clsx', 'tailwind-merge', 'lucide-react']
         }
       }
     },
