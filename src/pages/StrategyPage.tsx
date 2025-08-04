@@ -1,23 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { useTradeStore } from '@/hooks/useTradeStore';
 import { useParams, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Download, Filter, PlusCircle, Pencil, Palette, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Download, Filter, PlusCircle, ToggleLeft, ToggleRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { SidebarProvider } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import TradeEntryForm from '@/components/trade/TradeEntryForm';
-import EquityCurveChart from '@/components/trade/EquityCurveChart';
 import TradeTable from '@/components/trade/TradeTable';
 import FilterPanel from '@/components/trade/FilterPanel';
 import TradeDetailView from '@/components/trade/TradeDetailView';
-import TradingKPIs from '@/components/trade/TradingKPIs';
-import RAnalysisCard from '@/components/trade/analysis/RAnalysisCard';
-import MostTradedPairsCard from '@/components/trade/MostTradedPairsCard';
-import TradeActivityHeatmap from '@/components/trade/TradeActivityHeatmap';
-import ThemeEditor from '@/components/trade/ThemeEditor';
-import StochasticVolatilityModel from '@/components/trade/analysis/StochasticVolatilityModel';
-import SimpleStatsDisplay from '@/components/trade/SimpleStatsDisplay';
+
+// Lazy load heavy components
+const EquityCurveChart = lazy(() => import('@/components/trade/EquityCurveChart'));
+const TradingKPIs = lazy(() => import('@/components/trade/TradingKPIs'));
+const RAnalysisCard = lazy(() => import('@/components/trade/analysis/RAnalysisCard'));
+const MostTradedPairsCard = lazy(() => import('@/components/trade/MostTradedPairsCard'));
+const TradeActivityHeatmap = lazy(() => import('@/components/trade/TradeActivityHeatmap'));
+const ThemeEditor = lazy(() => import('@/components/trade/ThemeEditor'));
+const StochasticVolatilityModel = lazy(() => import('@/components/trade/analysis/StochasticVolatilityModel'));
+const SimpleStatsDisplay = lazy(() => import('@/components/trade/SimpleStatsDisplay'));
 import { Trade } from '@/types/Trade';
 import { 
   TradeTableProps, 
@@ -42,7 +44,8 @@ const StrategyPage: React.FC = () => {
     getUniqueStrategies, 
     filteredTrades, 
     lastEntryDate,
-    setCurrentAccountId // Clear any account context
+    setCurrentAccountId, // Clear any account context
+    selectTrade
   } = useTradeStore();
   const [showFilterPanel, setShowFilterPanel] = React.useState<boolean>(false);
   const [showLiveData, setShowLiveData] = useState<boolean>(false);
@@ -54,7 +57,8 @@ const StrategyPage: React.FC = () => {
     
     if (strategyId) {
       setFilter('strategy', strategyId);
-      setFilter('strategyType', 'live'); // Set strategy type to 'live'
+      // Set initial strategy type based on showLiveData state
+      setFilter('strategyType', showLiveData ? 'live' : 'backtest');
       applyFilters();
       fetchTrades();
     }
@@ -64,7 +68,9 @@ const StrategyPage: React.FC = () => {
       setFilter('strategy', null);
       setFilter('strategyType', null);
     };
-  }, [strategyId, setFilter, applyFilters, fetchTrades, setCurrentAccountId]);
+  }, [strategyId, setFilter, applyFilters, fetchTrades, setCurrentAccountId, showLiveData]);
+
+  // The toggle handling is already done in the first useEffect above
   
   // Then, handle conditional returns after hooks
   const strategies = getUniqueStrategies();
@@ -77,7 +83,7 @@ const StrategyPage: React.FC = () => {
   
   const handleExportCSV = async () => {
     try {
-      const csvContent = await exportAsCSV();
+      const csvContent = await exportAsCSV(filteredByTagTrades);
       
       // Create a blob and trigger download
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -95,15 +101,8 @@ const StrategyPage: React.FC = () => {
   };
 
   // Filter trades based on the current mode (backtest or live data)
-  const filteredByTagTrades = filteredTrades.filter(trade => {
-    if (showLiveData) {
-      // In live data mode, show trades with the "account" tag
-      return trade.tags?.includes("account");
-    } else {
-      // In backtest mode, show trades with the "backtest" tag
-      return trade.tags?.includes("backtest");
-    }
-  });
+  // The store's applyFilters() already handles strategyType filtering correctly
+  const filteredByTagTrades = filteredTrades;
 
   // Filter out placeholder trades for display
   const activeTrades = filteredByTagTrades.filter(trade => !trade.isPlaceholder);
@@ -125,41 +124,24 @@ const StrategyPage: React.FC = () => {
                   </h1>
                   
                   <div className="flex items-center gap-2">
-                    {/* Trade Entry Dialog */}
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="glass" className="flex items-center gap-2 bg-black/30 hover:bg-black/40 text-foreground border-white/5 shadow-md">
-                          <PlusCircle className="h-4 w-4" />
-                          New Trade
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-4xl bg-black/80 backdrop-blur-xl border-white/10">
-                        <DialogHeader>
-                          <DialogTitle className="text-foreground font-medium">New Trade Entry</DialogTitle>
-                        </DialogHeader>
-                        <TradeEntryForm initialStrategyId={strategyId} />
-                      </DialogContent>
-                    </Dialog>
+                    {/* Trade Entry Dialog - Only show in backtest mode */}
+                    {!showLiveData && (
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="glass" className="flex items-center gap-2 bg-black/30 hover:bg-black/40 text-foreground border-white/5 shadow-md">
+                            <PlusCircle className="h-4 w-4" />
+                            New Trade
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl bg-black/80 backdrop-blur-xl border-white/10">
+                          <DialogHeader>
+                            <DialogTitle className="text-foreground font-medium">New Trade Entry</DialogTitle>
+                          </DialogHeader>
+                          <TradeEntryForm initialStrategyId={strategyId} />
+                        </DialogContent>
+                      </Dialog>
+                    )}
                     
-                    {/* Edit Trade Button */}
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button 
-                          variant="minimal" 
-                          className={`flex items-center gap-2 ${selectedTrade ? 'bg-white/10 hover:bg-white/15' : 'bg-black/20 hover:bg-black/30'} text-foreground border-white/5`}
-                          disabled={!selectedTrade}
-                        >
-                          <Pencil className="h-4 w-4" />
-                          Edit Trade
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-4xl bg-black/80 backdrop-blur-xl border-white/10">
-                        <DialogHeader>
-                          <DialogTitle className="text-foreground font-medium">Edit Trade</DialogTitle>
-                        </DialogHeader>
-                        {selectedTrade && <TradeEntryForm initialTrade={selectedTrade} isEditing />}
-                      </DialogContent>
-                    </Dialog>
                     
                     {/* Export Trades Button */}
                     <Button 
@@ -173,18 +155,19 @@ const StrategyPage: React.FC = () => {
                     </Button>
                     
                     {/* Theme Editor Button */}
-                    <ThemeEditor />
+                    <Suspense fallback={<div className="h-32 bg-black/10 rounded-lg animate-pulse" />}>
+                      <ThemeEditor />
+                    </Suspense>
                     
                     {/* Toggle Button for Live Data / Backtest Mode */}
                     <Button 
                       variant="minimal" 
-                      className={`flex items-center gap-2 ${showLiveData ? 'bg-white/10 text-white' : 'bg-black/20 hover:bg-black/30 text-foreground'} border-white/5`}
+                      className={`flex items-center gap-2 ${showLiveData ? 'bg-red-500/20 text-red-400' : 'bg-red-900/20 hover:bg-red-900/30 text-red-300'} border-red-500/30`}
                       onClick={() => setShowLiveData(!showLiveData)}
                     >
-                      {showLiveData ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+                      {showLiveData ? <ToggleRight className="h-4 w-4 text-red-400" /> : <ToggleLeft className="h-4 w-4 text-red-300" />}
                       {showLiveData ? 'Live Data' : 'Backtest'}
                     </Button>
-                    
                     {/* Filter Button */}
                     <Button 
                       variant="minimal" 
@@ -208,53 +191,70 @@ const StrategyPage: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                   {/* Equity Curve Chart (takes 2 columns) */}
                   <div className="lg:col-span-2">
-                    <EquityCurveChart trades={filteredByTagTrades} />
+                    <Suspense fallback={<div className="h-96 bg-black/10 rounded-lg animate-pulse" />}>
+                      <EquityCurveChart trades={filteredByTagTrades} />
+                    </Suspense>
                   </div>
                   
                   {/* Most Traded Pairs */}
                   <div className="lg:col-span-1">
-                    <MostTradedPairsCard trades={filteredByTagTrades} />
+                    <Suspense fallback={<div className="h-48 bg-black/10 rounded-lg animate-pulse" />}>
+                      <MostTradedPairsCard trades={filteredByTagTrades} />
+                    </Suspense>
                   </div>
                 </div>
                 
                 {/* Simple Stats Display - reorganized into two rows of 4 KPIs */}
                 <div className="mb-6">
-                  <SimpleStatsDisplay trades={filteredByTagTrades} />
+                  <Suspense fallback={<div className="h-20 bg-black/10 rounded-lg animate-pulse" />}>
+                    <SimpleStatsDisplay trades={filteredByTagTrades} />
+                  </Suspense>
                 </div>
                 
                 {/* Analysis Cards */}
                 <div className="mb-6">
-                  <RAnalysisCard trades={filteredByTagTrades} />
+                  <Suspense fallback={<div className="h-48 bg-black/10 rounded-lg animate-pulse" />}>
+                    <RAnalysisCard trades={filteredByTagTrades} />
+                  </Suspense>
                 </div>
                 
                 {/* Trading KPIs */}
                 <div className="mb-6">
-                  <TradingKPIs trades={filteredByTagTrades} />
+                  <Suspense fallback={<div className="h-96 bg-black/10 rounded-lg animate-pulse" />}>
+                    <TradingKPIs trades={filteredByTagTrades} />
+                  </Suspense>
                 </div>
                 
                 {/* Trade Activity Heatmap */}
                 <div className="mb-6">
-                  <TradeActivityHeatmap trades={filteredByTagTrades} />
+                  <Suspense fallback={<div className="h-64 bg-black/10 rounded-lg animate-pulse" />}>
+                    <TradeActivityHeatmap trades={filteredByTagTrades} />
+                  </Suspense>
                 </div>
                 
                 {/* Stochastic Volatility Model */}
                 <div className="mb-6">
-                  <StochasticVolatilityModel trades={filteredByTagTrades} />
+                  <Suspense fallback={<div className="h-64 bg-black/10 rounded-lg animate-pulse" />}>
+                    <StochasticVolatilityModel trades={filteredByTagTrades} />
+                  </Suspense>
                 </div>
                 
-                {/* Trade Table with Trade Details integrated */}
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
-                  {selectedTrade && (
-                    <div className="col-span-1">
-                      <div className="bg-black/30 backdrop-blur-md border-white/5 shadow-lg rounded-xl p-4">
-                        <TradeDetailView trade={selectedTrade} />
-                      </div>
-                    </div>
-                  )}
-                  <div className={`${selectedTrade ? 'col-span-1 lg:col-span-3' : 'col-span-1 lg:col-span-4'}`}>
-                    <TradeTable hideExportButton={true} trades={filteredByTagTrades} />
-                  </div>
+                {/* Trade Table - Full Width */}
+                <div className="mb-6">
+                  <TradeTable hideExportButton={true} trades={filteredByTagTrades} />
                 </div>
+                
+                {/* Trade Details Modal */}
+                {selectedTrade && (
+                  <Dialog open={!!selectedTrade} onOpenChange={(open) => !open && selectTrade(null)}>
+                    <DialogContent className="max-w-2xl bg-black/90 backdrop-blur-xl border-white/10">
+                      <DialogHeader>
+                        <DialogTitle className="text-foreground font-medium">Trade Details</DialogTitle>
+                      </DialogHeader>
+                      <TradeDetailView trade={selectedTrade} />
+                    </DialogContent>
+                  </Dialog>
+                )}
               </div>
             </div>
           </main>

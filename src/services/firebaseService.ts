@@ -38,6 +38,74 @@ const ensureAuthenticated = (): string => {
   return currentUser.uid;
 };
 
+/**
+ * Removes undefined values from an object to prevent Firestore errors
+ * @param obj The object to clean
+ * @returns A new object with undefined values removed
+ */
+const removeUndefinedValues = (obj: any): any => {
+  if (obj === null || typeof obj !== 'object') {
+    return obj;
+  }
+  
+  if (Array.isArray(obj)) {
+    return obj.map(item => removeUndefinedValues(item));
+  }
+  
+  const cleaned: any = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) {
+      if (typeof value === 'object' && value !== null) {
+        cleaned[key] = removeUndefinedValues(value);
+      } else {
+        cleaned[key] = value;
+      }
+    }
+  }
+  return cleaned;
+};
+
+/**
+ * Safely converts Firestore timestamp to ISO string
+ * @param timestamp The Firestore timestamp (could be various formats)
+ * @returns ISO string or null if conversion fails
+ */
+const safeTimestampToISO = (timestamp: any): string | null => {
+  if (!timestamp) return null;
+  
+  try {
+    // If it's already a string, return it
+    if (typeof timestamp === 'string') {
+      return timestamp;
+    }
+    
+    // If it has toDate method (Firestore Timestamp)
+    if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+      return timestamp.toDate().toISOString();
+    }
+    
+    // If it has seconds and nanoseconds (Firestore Timestamp object)
+    if (timestamp.seconds !== undefined) {
+      return new Date(timestamp.seconds * 1000).toISOString();
+    }
+    
+    // If it's a Date object
+    if (timestamp instanceof Date) {
+      return timestamp.toISOString();
+    }
+    
+    // Try to parse as Date
+    const date = new Date(timestamp);
+    if (!isNaN(date.getTime())) {
+      return date.toISOString();
+    }
+    
+    return null;
+  } catch (error) {
+    return null;
+  }
+};
+
 // ===================== ACCOUNT FUNCTIONS =====================
 
 /**
@@ -51,25 +119,29 @@ export const saveAccount = async (account: TradingAccount): Promise<TradingAccou
   // Create a reference to the user's accounts collection
   const userAccountsRef = collection(db, USERS_COLLECTION, userId, ACCOUNTS_COLLECTION);
   
+  // Clean the account data to remove undefined values
+  const cleanedAccount = removeUndefinedValues(account);
+  
   // If account has an ID, update existing document, otherwise create new
-  if (account.id) {
-    const accountRef = doc(userAccountsRef, account.id);
-    await setDoc(accountRef, {
-      ...account,
+  if (cleanedAccount.id) {
+    const accountRef = doc(userAccountsRef, cleanedAccount.id);
+    const updateData = removeUndefinedValues({
+      ...cleanedAccount,
       updatedAt: serverTimestamp(),
       userId
-    }, { merge: true });
+    });
+    await setDoc(accountRef, updateData, { merge: true });
     return account;
   } else {
     // Create new account with generated ID
     const newAccountRef = doc(userAccountsRef);
-    const newAccount = {
-      ...account,
+    const newAccount = removeUndefinedValues({
+      ...cleanedAccount,
       id: newAccountRef.id,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
       userId
-    };
+    });
     await setDoc(newAccountRef, newAccount);
     return {
       ...account,
@@ -94,8 +166,8 @@ export const fetchAccounts = async (): Promise<TradingAccount[]> => {
     accounts.push({
       ...data,
       id: doc.id,
-      createdAt: data.createdAt?.toDate().toISOString() || new Date().toISOString(),
-      updatedAt: data.updatedAt?.toDate().toISOString() || new Date().toISOString()
+      createdAt: safeTimestampToISO(data.createdAt) || new Date().toISOString(),
+      updatedAt: safeTimestampToISO(data.updatedAt) || new Date().toISOString()
     } as TradingAccount);
   });
   
@@ -126,25 +198,29 @@ export const saveStrategy = async (strategy: Strategy): Promise<Strategy> => {
   // Create a reference to the user's strategies collection
   const userStrategiesRef = collection(db, USERS_COLLECTION, userId, STRATEGIES_COLLECTION);
   
+  // Clean the strategy data to remove undefined values
+  const cleanedStrategy = removeUndefinedValues(strategy);
+  
   // If strategy has an ID, update existing document, otherwise create new
-  if (strategy.id) {
-    const strategyRef = doc(userStrategiesRef, strategy.id);
-    await setDoc(strategyRef, {
-      ...strategy,
+  if (cleanedStrategy.id) {
+    const strategyRef = doc(userStrategiesRef, cleanedStrategy.id);
+    const updateData = removeUndefinedValues({
+      ...cleanedStrategy,
       updatedAt: serverTimestamp(),
       userId
-    }, { merge: true });
+    });
+    await setDoc(strategyRef, updateData, { merge: true });
     return strategy;
   } else {
     // Create new strategy with generated ID
     const newStrategyRef = doc(userStrategiesRef);
-    const newStrategy = {
-      ...strategy,
+    const newStrategy = removeUndefinedValues({
+      ...cleanedStrategy,
       id: newStrategyRef.id,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
       userId
-    };
+    });
     await setDoc(newStrategyRef, newStrategy);
     return {
       ...strategy,
@@ -177,7 +253,7 @@ export const fetchStrategies = async (type?: 'live' | 'backtest'): Promise<Strat
     strategies.push({
       ...data,
       id: doc.id,
-      createdAt: data.createdAt?.toDate().toISOString() || new Date().toISOString()
+      createdAt: safeTimestampToISO(data.createdAt) || new Date().toISOString()
     } as Strategy);
   });
   
@@ -205,33 +281,37 @@ export const deleteStrategy = async (strategyId: string): Promise<void> => {
 export const saveTrade = async (trade: Trade): Promise<Trade> => {
   const userId = ensureAuthenticated();
   
-  // Create a reference to the user's trades collection
   const userTradesRef = collection(db, USERS_COLLECTION, userId, TRADES_COLLECTION);
   
-  // If trade has an ID, update existing document, otherwise create new
-  if (trade.id) {
-    const tradeRef = doc(userTradesRef, trade.id);
-    await setDoc(tradeRef, {
-      ...trade,
-      updatedAt: serverTimestamp(),
-      userId
-    }, { merge: true });
-    return trade;
-  } else {
-    // Create new trade with generated ID
-    const newTradeRef = doc(userTradesRef);
-    const newTrade = {
-      ...trade,
-      id: newTradeRef.id,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      userId
-    };
-    await setDoc(newTradeRef, newTrade);
-    return {
-      ...trade,
-      id: newTradeRef.id
-    };
+  try {
+    const cleanedTrade = removeUndefinedValues(trade);
+    
+    if (cleanedTrade.id) {
+      const tradeRef = doc(userTradesRef, cleanedTrade.id);
+      const updateData = removeUndefinedValues({
+        ...cleanedTrade,
+        updatedAt: serverTimestamp(),
+        userId
+      });
+      await setDoc(tradeRef, updateData, { merge: true });
+      return trade;
+    } else {
+      const newTradeRef = doc(userTradesRef);
+      const newTrade = removeUndefinedValues({
+        ...cleanedTrade,
+        id: newTradeRef.id,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        userId
+      });
+      await setDoc(newTradeRef, newTrade);
+      return {
+        ...trade,
+        id: newTradeRef.id
+      };
+    }
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -291,10 +371,10 @@ export const fetchTrades = async (
     const trade = {
       ...data,
       id: doc.id,
-      entryTime: data.entryTime?.toDate().toISOString() || null,
-      exitTime: data.exitTime?.toDate().toISOString() || null,
-      createdAt: data.createdAt?.toDate().toISOString() || new Date().toISOString(),
-      updatedAt: data.updatedAt?.toDate().toISOString() || new Date().toISOString()
+      entryTime: safeTimestampToISO(data.entryTime),
+      exitTime: safeTimestampToISO(data.exitTime),
+      createdAt: safeTimestampToISO(data.createdAt) || new Date().toISOString(),
+      updatedAt: safeTimestampToISO(data.updatedAt) || new Date().toISOString()
     } as Trade;
     
     // Client-side filtering for live trades if needed
@@ -306,6 +386,17 @@ export const fetchTrades = async (
   });
   
   return trades;
+};
+
+/**
+ * Deletes a trade from Firestore
+ * @param tradeId The ID of the trade to delete
+ */
+export const deleteTrade = async (tradeId: string): Promise<void> => {
+  const userId = ensureAuthenticated();
+  
+  const tradeRef = doc(db, USERS_COLLECTION, userId, TRADES_COLLECTION, tradeId);
+  await deleteDoc(tradeRef);
 };
 
 /**
@@ -343,9 +434,7 @@ export const syncDataToFirestore = async (
     // Wait for all operations to complete
     await Promise.all(promises);
     
-    console.log('Data synced to Firestore successfully');
   } catch (error) {
-    console.error('Error syncing data to Firestore:', error);
     throw error;
   }
 };
@@ -359,5 +448,6 @@ export default {
   deleteStrategy,
   saveTrade,
   fetchTrades,
+  deleteTrade,
   syncDataToFirestore
 }; 

@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { useAccountsStore } from '@/hooks/useAccountsStore';
 import { useTradeStore } from '@/hooks/useTradeStore';
 import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Download, Filter, PlusCircle, Pencil, Palette, Eye, EyeOff, Settings } from 'lucide-react';
+import { ArrowLeft, Download, Filter, PlusCircle, Settings } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,21 +12,24 @@ import { Label } from "@/components/ui/label";
 import { SidebarProvider } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import TradeEntryForm from '@/components/trade/TradeEntryForm';
-import EquityCurveChart from '@/components/trade/EquityCurveChart';
 import TradeTable from '@/components/trade/TradeTable';
 import FilterPanel from '@/components/trade/FilterPanel';
 import TradeDetailView from '@/components/trade/TradeDetailView';
-import TradingKPIs from '@/components/trade/TradingKPIs';
-import RAnalysisCard from '@/components/trade/analysis/RAnalysisCard';
-import MostTradedPairsCard from '@/components/trade/MostTradedPairsCard';
-import TradeActivityHeatmap from '@/components/trade/TradeActivityHeatmap';
-import ThemeEditor from '@/components/trade/ThemeEditor';
-import StochasticVolatilityModel from '@/components/trade/analysis/StochasticVolatilityModel';
-import { BreakEvenOutcomeCard } from '@/components/trade/analysis/BreakEvenOutcomeCard';
 import { toast } from 'sonner';
-import EquityBalanceHistory from '@/components/trade/EquityBalanceHistory';
-import TradingCalendar from '@/components/trade/TradingCalendar';
-import SimpleStatsDisplay from '@/components/trade/SimpleStatsDisplay';
+
+// Lazy load heavy components
+const EquityCurveChart = lazy(() => import('@/components/trade/EquityCurveChart'));
+const TradingKPIs = lazy(() => import('@/components/trade/TradingKPIs'));
+const RAnalysisCard = lazy(() => import('@/components/trade/analysis/RAnalysisCard'));
+const MostTradedPairsCard = lazy(() => import('@/components/trade/MostTradedPairsCard'));
+const TradeActivityHeatmap = lazy(() => import('@/components/trade/TradeActivityHeatmap'));
+const ThemeEditor = lazy(() => import('@/components/trade/ThemeEditor'));
+const StochasticVolatilityModel = lazy(() => import('@/components/trade/analysis/StochasticVolatilityModel'));
+const BreakEvenOutcomeCard = lazy(() => import('@/components/trade/analysis/BreakEvenOutcomeCard').then(module => ({ default: module.BreakEvenOutcomeCard })));
+const EquityBalanceHistory = lazy(() => import('@/components/trade/EquityBalanceHistory'));
+const TradingCalendar = lazy(() => import('@/components/trade/TradingCalendar'));
+const SimpleStatsDisplay = lazy(() => import('@/components/trade/SimpleStatsDisplay'));
+const RiskAdjustedMetrics = lazy(() => import('@/components/trade/kpi/RiskAdjustedMetrics'));
 import DailyStats from '@/components/accounts/DailyStats';
 
 const COMPONENT_OPTIONS = [
@@ -42,7 +45,7 @@ const AccountDetail: React.FC = () => {
   const { accountId } = useParams<{ accountId: string }>();
   const navigate = useNavigate();
   const { getAccountById } = useAccountsStore();
-  const { setCurrentAccountId, setFilter, applyFilters, fetchTrades, selectedTrade, filteredTrades } = useTradeStore();
+  const { setCurrentAccountId, setFilter, applyFilters, fetchTrades, selectedTrade, filteredTrades, exportAsCSV, selectTrade } = useTradeStore();
   const [showFilterPanel, setShowFilterPanel] = useState<boolean>(false);
   
   // Visibility state for each component
@@ -111,7 +114,7 @@ const AccountDetail: React.FC = () => {
   
   const handleExportCSV = async () => {
     try {
-      const csvContent = "dummy csv content"; // Placeholder for actual export function
+      const csvContent = await exportAsCSV(filteredTrades);
       
       // Create a blob and trigger download
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -159,44 +162,7 @@ const AccountDetail: React.FC = () => {
                     </DialogContent>
                   </Dialog>
                   
-                  {/* Edit Trade Button */}
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button 
-                        variant="minimal" 
-                        className={`flex items-center gap-2 ${selectedTrade ? 'bg-white/10 hover:bg-white/15' : 'bg-black/20 hover:bg-black/30'} text-foreground border-white/5`}
-                        disabled={!selectedTrade}
-                      >
-                        <Pencil className="h-4 w-4" />
-                        Edit Trade
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl bg-black/80 backdrop-blur-xl border-white/10">
-                      <DialogHeader>
-                        <DialogTitle className="text-foreground font-medium">Edit Trade</DialogTitle>
-                      </DialogHeader>
-                      {selectedTrade && <TradeEntryForm initialTrade={selectedTrade} isEditing />}
-                    </DialogContent>
-                  </Dialog>
                   
-                  {/* Account Settings Button */}
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button 
-                        variant="minimal" 
-                        className="flex items-center gap-2 bg-white/10 hover:bg-white/15 text-foreground border-white/5"
-                      >
-                        <Pencil className="h-4 w-4" />
-                        Edit Account
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl bg-black/80 backdrop-blur-xl border-white/10">
-                      <DialogHeader>
-                        <DialogTitle className="text-foreground font-medium">Edit Account</DialogTitle>
-                      </DialogHeader>
-                      {/* Account edit form would go here */}
-                    </DialogContent>
-                  </Dialog>
                   
                   {/* Export Trades Button */}
                   <Button 
@@ -259,7 +225,9 @@ const AccountDetail: React.FC = () => {
                   </Popover>
                   
                   {/* Theme Editor Button */}
-                  <ThemeEditor />
+                  <Suspense fallback={<div className="h-32 bg-black/10 rounded-lg animate-pulse" />}>
+                    <ThemeEditor />
+                  </Suspense>
                   
                   {/* Filter Button */}
                   <Button 
@@ -280,26 +248,34 @@ const AccountDetail: React.FC = () => {
                 </div>
               )}
               
-              {/* First row: Equity Balance History and Daily Stats side by side */}
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
-                <div className="lg:col-span-3">
-                  <EquityBalanceHistory accountOnly={true} />
+              {/* First row: Equity Balance History and Risk Adjusted Metrics side by side */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 items-stretch min-h-[500px]">
+                <div className="lg:col-span-2">
+                  <Suspense fallback={<div className="h-48 bg-black/10 rounded-lg animate-pulse" />}>
+                    <EquityBalanceHistory accountOnly={true} />
+                  </Suspense>
                 </div>
                 <div className="lg:col-span-1">
-                  <DailyStats trades={filteredTrades} currency={account.currency} className="h-full" />
+                  <Suspense fallback={<div className="h-48 bg-black/10 rounded-lg animate-pulse" />}>
+                    <RiskAdjustedMetrics trades={filteredTrades} />
+                  </Suspense>
                 </div>
               </div>
               
               {/* Second row: Trading Statistics and Calendar side by side */}
               <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
                 <div className="lg:col-span-2 flex flex-col h-full space-y-6">
-                  <SimpleStatsDisplay currency={account.currency} className="w-full py-4" style={{ height: 'fit-content' }} />
+                  <Suspense fallback={<div className="w-full py-4 h-20 bg-black/10 rounded-lg animate-pulse" />}>
+                    <SimpleStatsDisplay currency={account.currency} className="w-full py-4" style={{ height: 'fit-content' }} />
+                  </Suspense>
                   
                   {/* Analysis Cards Container - Make it fill the available space */}
                   <div className="flex flex-col space-y-6">
                     {/* Take Profit Analysis - Always on top */}
                     {visibleComponents.rAnalysis && (
-                      <RAnalysisCard />
+                      <Suspense fallback={<div className="h-48 bg-black/10 rounded-lg animate-pulse" />}>
+                        <RAnalysisCard />
+                      </Suspense>
                     )}
                     
                     {/* Break Even Analysis - Always below Take Profit Analysis */}
@@ -309,57 +285,72 @@ const AccountDetail: React.FC = () => {
                           <CardTitle className="text-xl font-normal">Break Even Analysis</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <BreakEvenOutcomeCard />
+                          <Suspense fallback={<div className="h-32 bg-black/10 rounded-lg animate-pulse" />}>
+                            <BreakEvenOutcomeCard />
+                          </Suspense>
                         </CardContent>
                       </Card>
                     )}
                     
                     {/* Most Traded Pairs - Moved from bottom to this container */}
                     {visibleComponents.tradedPairs && (
-                      <MostTradedPairsCard trades={filteredTrades} />
+                      <Suspense fallback={<div className="h-48 bg-black/10 rounded-lg animate-pulse" />}>
+                        <MostTradedPairsCard trades={filteredTrades} />
+                      </Suspense>
                     )}
                   </div>
                 </div>
                 
                 <div className="lg:col-span-3 h-full">
-                  <TradingCalendar account={account} />
+                  <Suspense fallback={<div className="h-96 bg-black/10 rounded-lg animate-pulse" />}>
+                    <TradingCalendar account={account} />
+                  </Suspense>
                 </div>
               </div>
               
               {/* Trading KPIs */}
               {visibleComponents.tradingKPIs && (
                 <div className="mb-6">
-                  <TradingKPIs />
+                  <Suspense fallback={<div className="h-96 bg-black/10 rounded-lg animate-pulse" />}>
+                    <TradingKPIs />
+                  </Suspense>
                 </div>
               )}
               
               {/* Trade Activity Heatmap */}
               {visibleComponents.activityHeatmap && (
                 <div className="mb-6">
-                  <TradeActivityHeatmap />
+                  <Suspense fallback={<div className="h-64 bg-black/10 rounded-lg animate-pulse" />}>
+                    <TradeActivityHeatmap />
+                  </Suspense>
                 </div>
               )}
               
               {/* Stochastic Volatility Model */}
               {visibleComponents.volatilityModel && (
                 <div className="mb-6">
-                  <StochasticVolatilityModel />
+                  <Suspense fallback={<div className="h-64 bg-black/10 rounded-lg animate-pulse" />}>
+                    <StochasticVolatilityModel />
+                  </Suspense>
                 </div>
               )}
               
-              {/* Trade Table with Trade Details integrated */}
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
-                {selectedTrade && (
-                  <div className="col-span-1">
-                    <div className="bg-black/30 backdrop-blur-md border-white/5 shadow-lg rounded-xl p-4">
-                      <TradeDetailView trade={selectedTrade} />
-                    </div>
-                  </div>
-                )}
-                <div className={`${selectedTrade ? 'col-span-1 lg:col-span-3' : 'col-span-1 lg:col-span-4'}`}>
-                  <TradeTable hideExportButton={true} trades={filteredTrades} />
-                </div>
+              {/* Trade Table - Full Width */}
+              <div className="mb-6">
+                <TradeTable hideExportButton={true} trades={filteredTrades} />
               </div>
+              
+              {/* Trade Details Modal */}
+              {selectedTrade && (
+                <Dialog open={!!selectedTrade} onOpenChange={(open) => !open && selectTrade(null)}>
+                  <DialogContent className="max-w-2xl bg-black/90 backdrop-blur-xl border-white/10">
+                    <DialogHeader>
+                      <DialogTitle className="text-foreground font-medium">Trade Details</DialogTitle>
+                    </DialogHeader>
+                    <TradeDetailView trade={selectedTrade} />
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
           </main>
         </div>

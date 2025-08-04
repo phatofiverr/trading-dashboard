@@ -60,6 +60,8 @@ export interface Trade {
   // New field for risk amount
   riskAmount?: string;    // Amount risked on this trade
   riskRewardRatio?: string; // Risk to reward ratio
+  // Behavioral tags for tracking trading mistakes
+  behavioralTags?: string[]; // Array of BehavioralTag IDs
 }
 
 export interface TradeFormData {
@@ -98,6 +100,7 @@ export interface TradeFormData {
   tpHit: "none" | "tp1" | "tp2" | "tp3";
   session?: string;
   riskAmount?: string;  // New field for risk amount
+  behavioralTags?: string[]; // Behavioral tags for trading mistakes
 }
 
 export interface StrategyPerformance {

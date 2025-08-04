@@ -4,6 +4,7 @@ import { Strategy } from "./types";
 import { toast } from "sonner";
 import { Trade, StrategyPerformance } from "@/types/Trade";
 import { isTradeWin } from "./useTradesSlice";
+import firebaseService from "@/services/firebaseService";
 
 export const createStrategySlice: StateCreator<
   GlobalState,
@@ -38,6 +39,11 @@ export const createStrategySlice: StateCreator<
         lastEntryDate: name, // Set last entry date to the strategy name for navigation
       }));
 
+      // Auto-sync to Firestore
+      firebaseService.saveStrategy(newStrategy).catch(error => {
+        console.error('Failed to auto-sync strategy to Firestore:', error);
+      });
+
       toast.success(`Strategy "${name}" created successfully`);
       return newStrategy;
     } catch (error) {
@@ -59,6 +65,52 @@ export const createStrategySlice: StateCreator<
     return filteredStrategies.map(strategy => strategy.name);
   },
 
+  // Rename strategy
+  renameStrategy: (oldName: string, newName: string) => {
+    try {
+      if (!newName || newName.trim() === "") {
+        toast.error("Strategy name cannot be empty");
+        return false;
+      }
+
+      const strategies = get().strategies;
+      const strategyIndex = strategies.findIndex(s => s.name === oldName);
+      
+      if (strategyIndex === -1) {
+        toast.error(`Strategy "${oldName}" not found`);
+        return false;
+      }
+
+      // Check if new name already exists
+      if (strategies.some(s => s.name === newName && s.name !== oldName)) {
+        toast.error(`Strategy "${newName}" already exists`);
+        return false;
+      }
+
+      // Update strategy name
+      const updatedStrategies = [...strategies];
+      updatedStrategies[strategyIndex] = {
+        ...updatedStrategies[strategyIndex],
+        name: newName
+      };
+      
+      // Update the store
+      set({ strategies: updatedStrategies });
+      
+      // Auto-sync to Firestore
+      firebaseService.saveStrategy(updatedStrategies[strategyIndex]).catch(error => {
+        console.error('Failed to auto-sync renamed strategy to Firestore:', error);
+      });
+      
+      toast.success(`Strategy renamed from "${oldName}" to "${newName}"`);
+      return true;
+    } catch (error) {
+      console.error("Error renaming strategy:", error);
+      toast.error("Failed to rename strategy");
+      return false;
+    }
+  },
+
   // Delete strategy by name
   deleteStrategy: (name: string) => {
     try {
@@ -70,11 +122,19 @@ export const createStrategySlice: StateCreator<
         return false;
       }
       
+      // Get the strategy to delete for Firestore cleanup
+      const strategyToDelete = strategies[strategyIndex];
+      
       // Filter out the strategy
       const updatedStrategies = strategies.filter(s => s.name !== name);
       
       // Update the store
       set({ strategies: updatedStrategies });
+      
+      // Delete from Firestore
+      firebaseService.deleteStrategy(strategyToDelete.id).catch(error => {
+        console.error('Failed to delete strategy from Firestore:', error);
+      });
       
       toast.success(`Strategy "${name}" deleted`);
       return true;
@@ -112,6 +172,21 @@ export const createStrategySlice: StateCreator<
       toast.error("Failed to duplicate strategy");
       return false;
     }
+  },
+
+  // Load strategies from Firebase
+  loadStrategiesFromFirebase: async () => {
+    try {
+      const strategies = await firebaseService.fetchStrategies();
+      set({ strategies });
+    } catch (error) {
+      console.error('Failed to load strategies from Firebase:', error);
+    }
+  },
+
+  // Set strategies directly
+  setStrategies: (strategies: Strategy[]) => {
+    set({ strategies });
   },
 
   // Fetch performance metrics for all strategies

@@ -55,7 +55,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (!userDoc.exists()) {
         // Create new user document if it doesn't exist
-        console.log("Creating new user document for:", user.uid);
         await setDoc(userDocRef, {
           uid: user.uid,
           displayName: user.displayName || user.email?.split('@')[0] || 'User',
@@ -79,7 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
       }
     } catch (error) {
-      console.error("Error creating/updating user document:", error);
+      // Silent error handling
     }
   };
 
@@ -134,7 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const userDocRef = doc(db, "users", auth.currentUser.uid);
         await updateDoc(userDocRef, { displayName, updatedAt: new Date().toISOString() });
       } catch (error) {
-        console.error("Error updating profile in Firestore:", error);
+        // Silent error handling
       }
       
       return;
@@ -174,7 +173,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await firebaseService.syncDataToFirestore(accounts, strategies, trades);
       toast.success("Data synced to Firestore successfully");
     } catch (error) {
-      console.error("Error syncing data:", error);
       toast.error("Failed to sync data to Firestore");
       throw error;
     }
@@ -183,11 +181,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Subscribe to auth state changes
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      console.log("Auth state changed:", user ? user.uid : "No user");
       
       if (user) {
         // Create user document when auth state changes
         await createUserDocument(user);
+        
+        // Load user data from Firebase after authentication
+        try {
+          
+          // Load accounts
+          await useAccountsStore.getState().loadAccountsFromFirebase();
+          
+          // Load strategies
+          await useTradeStore.getState().loadStrategiesFromFirebase();
+          
+          // Load trades
+          const trades = await firebaseService.fetchTrades();
+          useTradeStore.getState().setTrades(trades);
+          
+        } catch (error) {
+          // Don't show error toast - let the app fall back to IndexedDB
+        }
       }
       
       setCurrentUser(user);

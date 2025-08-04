@@ -1,5 +1,6 @@
 
 import React, { useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useThemeStore } from '@/hooks/useThemeStore';
 import { useTradeStore } from '@/hooks/useTradeStore';
@@ -30,9 +31,10 @@ interface VolatilityMetric {
 }
 
 const StochasticVolatilityModel: React.FC = () => {
+  const { strategyId } = useParams<{ strategyId: string }>();
   const { filteredTrades } = useTradeStore();
-  const { getThemeColors } = useThemeStore();
-  const colors = getThemeColors();
+  const { getThemeColorsForStrategy } = useThemeStore();
+  const colors = getThemeColorsForStrategy(strategyId);
 
   // Generate Stochastic Volatility Model data from trades
   const { svmData, volatilityMetrics } = useMemo(() => {

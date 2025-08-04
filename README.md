@@ -1,6 +1,70 @@
-# Trading Dashboard
+e# Trading Dashboard
 
-## Firebase Setup
+A comprehensive React-based trading journal and analytics platform with Firebase integration, built for traders to track performance, analyze strategies, and visualize trading data.
+
+## 🚀 Features
+
+### Core Trading Features
+- **Trade Management**: Add, edit, and track individual trades with detailed metrics
+- **Strategy Analysis**: Separate live and backtest strategy performance tracking
+- **Account Management**: Multi-account support with individual performance metrics
+- **R-Multiple Tracking**: Risk-based position sizing and performance analysis
+
+### Analytics & Visualizations
+- **Equity Curve Charts**: Visual representation of trading performance over time
+- **Drawdown Analysis**: Maximum consecutive losses and recovery time metrics
+- **Risk-Adjusted Metrics**: Sharpe, Sortino, MAR, and Calmar ratios
+- **Trading Calendar**: Visual trade activity and performance by date
+- **Activity Heatmaps**: Trade frequency and performance patterns
+- **Volatility Modeling**: Stochastic volatility analysis for risk assessment
+
+### Advanced Features
+- **Theme Customization**: Strategy-specific and global theme management
+- **Data Export**: CSV export functionality for external analysis
+- **Filtering System**: Advanced filtering by strategy, account, date range, and more
+- **Real-time Calculations**: Live updates of trading statistics and metrics
+- **Responsive Design**: Mobile-friendly interface with dark theme
+
+## 🛠️ Technology Stack
+
+- **Frontend**: React 18 + TypeScript + Vite
+- **UI Components**: Radix UI + shadcn/ui + Tailwind CSS
+- **State Management**: Zustand with persistence middleware
+- **Authentication**: Firebase Auth
+- **Database**: Firestore with real-time sync
+- **Charts**: Recharts for data visualization
+- **Forms**: React Hook Form + Zod validation
+- **Routing**: React Router v6 with lazy loading
+
+## 📦 Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone [repository-url]
+   cd trading-dashboard
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up Firebase** (see Firebase Setup section below)
+
+4. **Start development server**
+   ```bash
+   npm run dev
+   ```
+
+## 🔧 Available Scripts
+
+- `npm run dev` - Start development server (port 8080)
+- `npm run build` - Build for production  
+- `npm run build:dev` - Build for development
+- `npm run lint` - Run ESLint
+- `npm run preview` - Preview production build
+
+## 🔥 Firebase Setup
 
 ### Setting up Firestore Database
 
@@ -128,3 +192,100 @@ The application stores the following data in Firestore:
 - If you encounter errors with Firestore permissions, check your security rules
 - For query errors, you may need to create composite indexes
 - Check the browser console for detailed error messages
+
+## 📊 Application Architecture
+
+### State Management
+The application uses **Zustand** with a sliced architecture for scalable state management:
+
+- **useTradeStore**: Combined trades, import/export, and strategy management  
+- **useAccountsStore**: Trading accounts management with Firebase sync
+- **useThemeStore**: Strategy-specific and global theme management
+- **AuthContext**: Firebase authentication and data synchronization
+
+### Data Flow & Firebase Integration
+- **Authentication**: Firebase Auth for user management
+- **Database**: Hierarchical Firestore structure for user data isolation
+- **Real-time Sync**: Automatic synchronization between local Zustand stores and Firestore
+- **Data Persistence**: Local persistence with automatic cloud backup
+
+### Component Organization
+```
+src/
+├── components/
+│   ├── trade/           # Trading-related components
+│   ├── accounts/        # Account management components
+│   ├── auth/           # Authentication components
+│   └── ui/             # Reusable UI components
+├── hooks/              # Custom hooks and state management
+├── pages/              # Route components
+├── lib/                # Utility functions
+└── types/              # TypeScript type definitions
+```
+
+## 🎨 Theme System
+
+The application features a comprehensive theme system:
+
+- **Global Themes**: Applied across the entire application
+- **Strategy-Specific Themes**: Custom themes for individual strategies
+- **Preset Themes**: Built-in color schemes (Fintech, Turquoise/Red, Minimalist, etc.)
+- **Custom Themes**: User-created themes with full color customization
+
+## 📈 Key Metrics & Calculations
+
+### Risk Management
+- **R-Multiple**: Position sizing based on risk
+- **Maximum Drawdown**: Peak-to-trough decline analysis
+- **Consecutive Losses**: Streak analysis for risk assessment
+
+### Performance Metrics
+- **Sharpe Ratio**: Risk-adjusted returns calculation
+- **Sortino Ratio**: Downside risk-focused performance
+- **Calmar Ratio**: Return vs. maximum drawdown
+- **Win Rate**: Percentage of profitable trades
+
+### Advanced Analytics
+- **Stochastic Volatility**: Market volatility modeling
+- **Time-based Performance**: Session, daily, weekly analysis
+- **Currency Conversion**: Multi-currency account support
+
+## 🚀 Usage
+
+### Getting Started
+1. **Register/Login**: Create an account using Firebase Authentication
+2. **Create Accounts**: Set up trading accounts with different brokers/currencies
+3. **Add Strategies**: Create live or backtest strategies
+4. **Record Trades**: Add trades with detailed entry/exit information
+5. **Analyze Performance**: Use the comprehensive analytics dashboard
+
+### Key Workflows
+- **Strategy Analysis**: Navigate to strategy pages for detailed performance metrics
+- **Account Management**: Track performance across multiple trading accounts
+- **Data Export**: Export filtered trade data for external analysis
+- **Theme Customization**: Personalize dashboard appearance per strategy
+
+## 🔐 Security & Privacy
+
+- **User Isolation**: Firestore security rules ensure users can only access their own data
+- **Authentication**: Secure Firebase Auth integration
+- **Data Validation**: Client and server-side validation for data integrity
+- **Local Storage**: Sensitive data encrypted in browser local storage
+
+## 🤝 Contributing
+
+This is a personal trading dashboard project. For suggestions or issues:
+1. Check existing issues
+2. Create detailed bug reports or feature requests
+3. Follow the existing code style and architecture
+
+## 📝 License
+
+[]
+
+## 🙏 Acknowledgments
+
+- Built with modern React ecosystem
+- UI components from Radix UI and shadcn/ui
+- Charts powered by Recharts
+- Firebase for backend services

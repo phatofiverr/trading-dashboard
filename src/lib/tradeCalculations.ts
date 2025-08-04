@@ -77,8 +77,20 @@ export const applyTradeFilters = (trades: Trade[], filters: {
   dateRange: [Date | null, Date | null];
   strategy: string | null;
   pair?: string | null;
+  strategyType?: string | null;
 }): Trade[] => {
   return trades.filter(trade => {
+    // Filter by strategy type first (live or backtest) - same logic as filterActions.ts
+    if (filters.strategyType) {
+      if (filters.strategyType === 'live') {
+        // Live data mode: only show trades with "account" tag (created from account page)
+        if (!trade.tags?.includes("account")) return false;
+      } else if (filters.strategyType === 'backtest') {
+        // Backtest mode: only show trades with "backtest" tag (created from strategy page)
+        if (!trade.tags?.includes("backtest")) return false;
+      }
+    }
+    
     if (filters.session && trade.session !== filters.session) return false;
     if (filters.entryType && trade.entryType !== filters.entryType) return false;
     if (filters.obType && trade.obType !== filters.obType) return false;

@@ -10,11 +10,12 @@ import {
 
 interface RiskAdjustedMetricsProps {
   trades: Trade[];
+  strategyId?: string;
 }
 
-const RiskAdjustedMetrics: React.FC<RiskAdjustedMetricsProps> = ({ trades }) => {
-  const { getThemeColors } = useThemeStore();
-  const colors = getThemeColors();
+const RiskAdjustedMetrics: React.FC<RiskAdjustedMetricsProps> = ({ trades, strategyId }) => {
+  const { getThemeColorsForStrategy } = useThemeStore();
+  const colors = getThemeColorsForStrategy(strategyId);
   
   // Calculate Sharpe Ratio (assuming risk-free rate = 0)
   const calculateSharpeRatio = (trades: Trade[]): number => {

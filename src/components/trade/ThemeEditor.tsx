@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { useThemeStore } from '@/hooks/useThemeStore';
 import { 
   Sheet, 
@@ -49,28 +49,41 @@ interface ThemeEditorProps {
 }
 
 const ThemeEditor: React.FC<ThemeEditorProps> = ({ children }) => {
-  const { strategyId } = useParams<{ strategyId: string }>();
+  const { strategyId, accountId } = useParams<{ strategyId: string; accountId: string }>();
+  const location = useLocation();
   const { 
     customThemes, 
     addCustomTheme, 
     updateCustomTheme, 
     deleteCustomTheme,
     setStrategyTheme,
-    getThemeColorsForStrategy
+    setTheme,
+    getThemeColorsForStrategy,
+    getThemeColors
   } = useThemeStore();
+  
+  // Determine the context - strategy page or global/account page
+  const isStrategyPage = !!strategyId;
+  const contextId = strategyId || 'global';
+  
   
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('preset');
   const [currentColors, setCurrentColors] = useState(defaultColors);
   const [themeName, setThemeName] = useState('');
   
-  // Load current colors when the component mounts or strategy changes
+  // Load current colors when the component mounts or context changes
   useEffect(() => {
-    if (strategyId) {
+    if (isStrategyPage && strategyId) {
       const colors = getThemeColorsForStrategy(strategyId);
       setCurrentColors(colors);
+
+    } else {
+      const colors = getThemeColors();
+      setCurrentColors(colors);
+
     }
-  }, [strategyId, getThemeColorsForStrategy]);
+  }, [strategyId, isStrategyPage, getThemeColorsForStrategy, getThemeColors]);
   
   const handleColorChange = (colorKey: keyof typeof defaultColors, value: string) => {
     setCurrentColors(prev => ({
@@ -107,20 +120,27 @@ const ThemeEditor: React.FC<ThemeEditorProps> = ({ children }) => {
   };
   
   const handleApplyToStrategy = () => {
-    if (!strategyId) return;
+
     
-    if (activeTab === 'preset') {
-      // If using preset theme, don't need to save custom colors
+    if (isStrategyPage && strategyId) {
+      // Apply to specific strategy
       setStrategyTheme(strategyId, 'custom', currentColors);
+
+      
+      toast({
+        title: "Theme applied",
+        description: `Theme has been applied to ${strategyId} strategy.`
+      });
     } else {
-      // For custom theme tab, save with current colors
-      setStrategyTheme(strategyId, 'custom', currentColors);
+      // Apply as global theme
+      setTheme('custom');
+
+      
+      toast({
+        title: "Theme applied",
+        description: "Theme has been applied globally."
+      });
     }
-    
-    toast({
-      title: "Theme applied",
-      description: `Theme has been applied to ${strategyId} strategy.`
-    });
     
     setIsOpen(false);
   };
@@ -280,7 +300,7 @@ const ThemeEditor: React.FC<ThemeEditorProps> = ({ children }) => {
             Cancel
           </Button>
           <Button onClick={handleApplyToStrategy} className="w-full sm:w-auto">
-            Apply to {strategyId || "Strategy"}
+            {isStrategyPage ? `Apply to ${strategyId}` : "Apply Theme"}
           </Button>
         </SheetFooter>
       </SheetContent>

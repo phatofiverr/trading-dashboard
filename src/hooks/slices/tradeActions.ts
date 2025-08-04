@@ -5,6 +5,7 @@ import { calculateTradeStats, applyTradeFilters } from "@/lib/tradeCalculations"
 import { formatDateToISOString } from "@/lib/dateUtils";
 import { GlobalState } from "./types";
 import { detectSession } from "@/components/trade/utils/sessionDetector";
+import firebaseService from "@/services/firebaseService";
 
 /**
  * Trade-related actions for the trade store
@@ -15,7 +16,15 @@ export const createTradeActions = (set: Function, get: () => GlobalState) => ({
     try {
       // Get current filters to determine context (account or strategy)
       const { filters, currentAccountId } = get();
-      let trades = await TradeDB.getAllTrades();
+      
+      // Try to fetch from Firebase first, fall back to IndexedDB
+      let trades: Trade[] = [];
+      try {
+        trades = await firebaseService.fetchTrades();
+      } catch (firebaseError) {
+        console.warn('Firebase fetch failed, using IndexedDB:', firebaseError);
+        trades = await TradeDB.getAllTrades();
+      }
       
       // Filter trades based on context (account or strategy)
       if (currentAccountId) {
@@ -122,9 +131,12 @@ export const createTradeActions = (set: Function, get: () => GlobalState) => ({
         await get().createStrategy(newTradeData.strategyId, 'live');
       }
       
-      console.log("Adding trade with data:", newTradeData);
       const newTrade = await TradeDB.addTrade(newTradeData);
-      console.log("Trade added successfully:", newTrade);
+      
+      // Auto-sync to Firestore
+      firebaseService.saveTrade(newTrade).catch(error => {
+        console.error('Failed to auto-sync trade to Firestore:', error);
+      });
       
       // Only add this trade to the current state if it matches the current context
       let shouldAddToState = true;
@@ -175,6 +187,11 @@ export const createTradeActions = (set: Function, get: () => GlobalState) => ({
       
       const updatedTrade = await TradeDB.updateTrade(trade);
       
+      // Auto-sync to Firestore
+      firebaseService.saveTrade(updatedTrade).catch(error => {
+        console.error('Failed to auto-sync updated trade to Firestore:', error);
+      });
+      
       // Check if the updated trade matches the current context
       let shouldUpdateState = true;
       if (currentAccountId && updatedTrade.accountId !== currentAccountId) {
@@ -210,6 +227,12 @@ export const createTradeActions = (set: Function, get: () => GlobalState) => ({
     set({ isLoading: true });
     try {
       await TradeDB.deleteTrade(id);
+      
+      // Delete from Firestore
+      firebaseService.deleteTrade(id).catch(error => {
+        console.error('Failed to delete trade from Firestore:', error);
+      });
+      
       const trades = get().trades.filter(t => t.id !== id);
       const filteredTrades = applyTradeFilters(trades, get().filters);
       const stats = calculateTradeStats(filteredTrades);

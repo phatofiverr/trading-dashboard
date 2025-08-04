@@ -62,32 +62,31 @@ const DailyStats: React.FC<DailyStatsProps> = ({ trades = [], currency = 'USD', 
         <div className="bg-black/10 p-4 rounded-lg h-full flex flex-col">
           <div className="flex items-center mb-4">
             <Calendar className="h-4 w-4 mr-2 text-positive opacity-80" />
-            <p className="text-sm font-medium">Today's Trading ({formattedDate})</p>
-            <InfoTooltip content="Performance metrics for today's trading activity" />
+            <p className="text-sm font-semibold">Today's Trading ({formattedDate})</p>
           </div>
           
-          <div className="grid grid-cols-2 gap-3 flex-grow">
-            <div className="bg-black/5 p-3 rounded-lg flex flex-col justify-center">
-              <p className="text-xs text-muted-foreground mb-1">Trades</p>
-              <p className="text-base font-medium">{totalTrades}</p>
+          <div className="grid grid-cols-2 gap-4 flex-grow">
+            <div className="bg-black/5 p-5 rounded-lg flex flex-col justify-center">
+              <p className="text-sm text-muted-foreground mb-2">Trades</p>
+              <p className="text-xl font-medium">{totalTrades}</p>
             </div>
             
-            <div className="bg-black/5 p-3 rounded-lg flex flex-col justify-center">
-              <p className="text-xs text-muted-foreground mb-1">Win Rate</p>
-              <p className={`text-base font-medium ${winRate >= 50 ? 'text-positive/90' : winRate > 0 ? 'text-amber-400' : 'text-muted-foreground'}`}>
+            <div className="bg-black/5 p-5 rounded-lg flex flex-col justify-center">
+              <p className="text-sm text-muted-foreground mb-2">Win Rate</p>
+              <p className={`text-xl font-medium ${winRate >= 50 ? 'text-positive/90' : winRate > 0 ? 'text-amber-400' : 'text-muted-foreground'}`}>
                 {winRate.toFixed(1)}%
               </p>
             </div>
             
-            <div className="bg-black/5 p-3 rounded-lg flex flex-col justify-center">
-              <p className="text-xs text-muted-foreground mb-1">Profit/Loss</p>
+            <div className="bg-black/5 p-5 rounded-lg flex flex-col justify-center">
+              <p className="text-sm text-muted-foreground mb-2">Profit/Loss</p>
               <div className="flex items-center">
                 {totalProfit > 0 ? (
-                  <ArrowUp className="mr-1 h-3 w-3 text-positive/90" />
+                  <ArrowUp className="mr-1 h-4 w-4 text-positive/90" />
                 ) : totalProfit < 0 ? (
-                  <ArrowDown className="mr-1 h-3 w-3 text-negative/90" />
+                  <ArrowDown className="mr-1 h-4 w-4 text-negative/90" />
                 ) : null}
-                <p className={`text-base font-medium ${
+                <p className={`text-xl font-medium ${
                   totalProfit > 0 
                     ? 'text-positive/90' 
                     : totalProfit < 0 
@@ -99,17 +98,17 @@ const DailyStats: React.FC<DailyStatsProps> = ({ trades = [], currency = 'USD', 
               </div>
             </div>
             
-            <div className="bg-black/5 p-3 rounded-lg flex flex-col justify-center">
-              <p className="text-xs text-muted-foreground mb-1">Best Trade</p>
+            <div className="bg-black/5 p-5 rounded-lg flex flex-col justify-center">
+              <p className="text-sm text-muted-foreground mb-2">Best Trade</p>
               {todayTrades.length > 0 ? (
                 <div className="flex items-center">
-                  <Award className="mr-1 h-3 w-3 text-amber-400" />
-                  <p className="text-base font-medium">
+                  <Award className="mr-1 h-4 w-4 text-amber-400" />
+                  <p className="text-xl font-medium">
                     {Math.max(...todayTrades.map(t => t.profit || t.rMultiple || 0)).toFixed(2)}{currency === 'USD' ? 'R' : currency}
                   </p>
                 </div>
               ) : (
-                <p className="text-base font-medium text-muted-foreground">—</p>
+                <p className="text-xl font-medium text-muted-foreground">—</p>
               )}
             </div>
           </div>

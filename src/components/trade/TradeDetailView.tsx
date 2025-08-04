@@ -2,10 +2,11 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Trade } from "@/types/Trade";
 import { format } from "date-fns";
 import { useTradeStore } from "@/hooks/useTradeStore";
-import { Trash, X } from "lucide-react";
+import { Trash, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
@@ -18,6 +19,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
+import TradeEntryForm from '@/components/trade/TradeEntryForm';
 
 interface TradeDetailViewProps {
   trade: Trade;
@@ -27,9 +29,6 @@ const TradeDetailView: React.FC<TradeDetailViewProps> = ({ trade }) => {
   const { deleteTrade, selectTrade } = useTradeStore();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
-  const handleClose = () => {
-    selectTrade(null);
-  };
   
   const handleDelete = async () => {
     await deleteTrade(trade.id);
@@ -38,12 +37,9 @@ const TradeDetailView: React.FC<TradeDetailViewProps> = ({ trade }) => {
 
   return (
     <>
-      <Card className="mt-6 border-trading-border bg-trading-panel">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
+      <Card className="border-trading-border bg-trading-panel">
+        <CardHeader className="pb-2">
           <CardTitle className="text-lg font-medium">Trade Details</CardTitle>
-          <Button variant="ghost" size="sm" onClick={handleClose}>
-            <X className="h-4 w-4" />
-          </Button>
         </CardHeader>
         
         <CardContent className="text-sm">
@@ -129,7 +125,28 @@ const TradeDetailView: React.FC<TradeDetailViewProps> = ({ trade }) => {
           </div>
         </CardContent>
         
-        <CardFooter>
+        <CardFooter className="flex flex-col gap-2">
+          {/* Edit Trade Button */}
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+              >
+                <Pencil className="h-4 w-4 mr-2" />
+                Edit Trade
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl bg-black/80 backdrop-blur-xl border-white/10">
+              <DialogHeader>
+                <DialogTitle className="text-foreground font-medium">Edit Trade</DialogTitle>
+              </DialogHeader>
+              <TradeEntryForm initialTrade={trade} isEditing />
+            </DialogContent>
+          </Dialog>
+          
+          {/* Delete Trade Button */}
           <Button 
             variant="destructive" 
             size="sm" 

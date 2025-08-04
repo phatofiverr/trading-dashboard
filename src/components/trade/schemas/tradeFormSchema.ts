@@ -47,6 +47,8 @@ export const tradeFormSchema = z.object({
   drawdownDuration: z.number().optional(),
   // New field for risk amount
   riskAmount: z.string().optional(),
+  // Behavioral tags for tracking trading mistakes
+  behavioralTags: z.array(z.string()).default([]),
 });
 
 export type TradeFormValues = z.infer<typeof tradeFormSchema>;

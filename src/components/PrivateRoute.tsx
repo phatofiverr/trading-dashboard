@@ -14,15 +14,6 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
 }) => {
   const { currentUser, loading } = useAuth();
 
-  // Add debugging output
-  useEffect(() => {
-    console.log('PrivateRoute - Auth state:', { 
-      isAuthenticated: !!currentUser, 
-      loading, 
-      uid: currentUser?.uid 
-    });
-  }, [currentUser, loading]);
-
   if (loading) {
     // You could render a loading spinner here
     return (
@@ -33,7 +24,6 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
   }
 
   if (!currentUser) {
-    console.log('PrivateRoute - Redirecting to:', redirectTo);
     return <Navigate to={redirectTo} />;
   }
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, User, Wallet, Users, Settings } from 'lucide-react';
+import { LogOut, User, Wallet, Edit, MoreVertical, Ghost, ChevronDown } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Sidebar,
@@ -8,7 +8,6 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarGroupAction,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuAction,
@@ -16,6 +15,7 @@ import {
   SidebarMenuItem,
   useSidebar
 } from '@/components/ui/sidebar';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from "sonner";
@@ -41,17 +41,14 @@ import { useAccountsStore, TradingAccount } from '@/hooks/useAccountsStore';
 import { useAccountStore } from '@/hooks/useAccountStore';
 import MiniProfile from './sidebar/MiniProfile';
 import { useAuth } from '@/contexts/AuthContext';
-import FirestoreSyncButton from '@/components/FirestoreSyncButton';
 
 const AppSidebar: React.FC = () => {
-  const { getUniqueStrategies, deleteStrategy, createStrategy } = useTradeStore();
-  const { accounts, addAccount, deleteAccount } = useAccountsStore();
-  const { currentUser } = useAccountStore();
-  const { logout } = useAuth();
-  const [liveStrategies, setLiveStrategies] = useState<string[]>([]);
-  const [backtestStrategies, setBacktestStrategies] = useState<string[]>([]);
+  const { getUniqueStrategies, deleteStrategy, createStrategy, renameStrategy } = useTradeStore();
+  const { accounts, addAccount, deleteAccount, renameAccount } = useAccountsStore();
+  const { currentUser, loadUserFromFirebase, clearPersistedData } = useAccountStore();
+  const { currentUser: authUser, logout } = useAuth();
+  const [strategies, setStrategies] = useState<string[]>([]);
   const [newStrategy, setNewStrategy] = useState<string>("");
-  const [newStrategyType, setNewStrategyType] = useState<'live' | 'backtest'>('live');
   const [showAddStrategyDialog, setShowAddStrategyDialog] = useState<boolean>(false);
   const [showAddAccountDialog, setShowAddAccountDialog] = useState<boolean>(false);
   const [newAccount, setNewAccount] = useState({
@@ -61,6 +58,13 @@ const AppSidebar: React.FC = () => {
     initialBalance: 0,
   });
   const [isHovering, setIsHovering] = useState<boolean>(false);
+  
+  // Rename dialog state
+  const [showRenameDialog, setShowRenameDialog] = useState<boolean>(false);
+  const [renameType, setRenameType] = useState<'account' | 'strategy'>('account');
+  const [itemToRename, setItemToRename] = useState<{id: string, currentName: string} | null>(null);
+  const [newName, setNewName] = useState<string>("");
+  
   const location = useLocation();
   const navigate = useNavigate();
   const { state, setOpen } = useSidebar();
@@ -88,10 +92,12 @@ const AppSidebar: React.FC = () => {
   // Update strategies when component mounts and when location changes
   useEffect(() => {
     const fetchStrategies = () => {
-      const liveStrats = getUniqueStrategies('live');
-      const backtestStrats = getUniqueStrategies('backtest');
-      setLiveStrategies(liveStrats);
-      setBacktestStrategies(backtestStrats);
+      // Get all unique strategies from both live and backtest
+      const allStrategies = [...new Set([
+        ...getUniqueStrategies('live'),
+        ...getUniqueStrategies('backtest')
+      ])];
+      setStrategies(allStrategies);
     };
     
     fetchStrategies();
@@ -101,6 +107,18 @@ const AppSidebar: React.FC = () => {
     
     return () => clearInterval(intervalId);
   }, [getUniqueStrategies, location.pathname]);
+
+  // Load Firebase user data when auth user changes
+  useEffect(() => {
+    if (authUser?.uid) {
+      // Clear any existing mock data first
+      if (currentUser && currentUser.id === 'current-user') {
+        clearPersistedData();
+      }
+      // Always load fresh Firebase data
+      loadUserFromFirebase(authUser.uid);
+    }
+  }, [authUser, loadUserFromFirebase, clearPersistedData]);
   
   // Handle mouse hover for sidebar at smaller screens
   const handleMouseEnter = () => {
@@ -123,33 +141,30 @@ const AppSidebar: React.FC = () => {
       return;
     }
     
-    const existingStrategies = getUniqueStrategies(newStrategyType);
-    if (existingStrategies.includes(newStrategy)) {
-      toast.error(`Strategy already exists in ${newStrategyType} section`);
+    // Check if strategy exists in either live or backtest
+    const allExistingStrategies = [...new Set([
+      ...getUniqueStrategies('live'),
+      ...getUniqueStrategies('backtest')
+    ])];
+    
+    if (allExistingStrategies.includes(newStrategy)) {
+      toast.error("Strategy already exists");
       return;
     }
     
     try {
-      // Create the strategy in the store and persist it
-      await createStrategy(newStrategy, newStrategyType);
+      // Create the strategy as live by default (users can toggle to backtest mode within the strategy)
+      await createStrategy(newStrategy, 'live');
       
       // Update local state immediately for better UX
-      if (newStrategyType === 'live') {
-        setLiveStrategies(prev => [...prev, newStrategy]);
-      } else {
-        setBacktestStrategies(prev => [...prev, newStrategy]);
-      }
+      setStrategies(prev => [...prev, newStrategy]);
       
-      toast.success(`${newStrategy} ${newStrategyType} strategy added`);
+      toast.success(`${newStrategy} strategy added`);
       setNewStrategy("");
       setShowAddStrategyDialog(false);
       
       // Navigate to the new strategy
-      if (newStrategyType === 'live') {
-        navigate(`/strategies/${encodeURIComponent(newStrategy)}`);
-      } else {
-        navigate(`/backtest-strategies/${encodeURIComponent(newStrategy)}`);
-      }
+      navigate(`/strategies/${encodeURIComponent(newStrategy)}`);
     } catch (error) {
       console.error("Error creating strategy:", error);
       toast.error("Failed to create strategy");
@@ -185,24 +200,15 @@ const AppSidebar: React.FC = () => {
     }
   };
   
-  const handleDeleteStrategy = (strategy: string, type: 'live' | 'backtest') => {
+  const handleDeleteStrategy = (strategy: string) => {
     const success = deleteStrategy(strategy);
     
     if (success) {
-      if (type === 'live') {
-        setLiveStrategies(liveStrategies.filter(s => s !== strategy));
-        
-        // If we're on the deleted strategy's page, redirect to strategies list
-        if (location.pathname.includes(`/strategies/${encodeURIComponent(strategy)}`)) {
-          navigate('/strategies');
-        }
-      } else {
-        setBacktestStrategies(backtestStrategies.filter(s => s !== strategy));
-        
-        // If we're on the deleted strategy's page, redirect to backtest strategies list
-        if (location.pathname.includes(`/backtest-strategies/${encodeURIComponent(strategy)}`)) {
-          navigate('/backtest-strategies');
-        }
+      setStrategies(strategies.filter(s => s !== strategy));
+      
+      // If we're on the deleted strategy's page, redirect to strategies list
+      if (location.pathname.includes(`/strategies/${encodeURIComponent(strategy)}`)) {
+        navigate('/strategies');
       }
       
       toast.success(`${strategy} strategy deleted`);
@@ -222,12 +228,51 @@ const AppSidebar: React.FC = () => {
     }
   };
 
+  const handleRenameClick = (type: 'account' | 'strategy', id: string, currentName: string) => {
+    setRenameType(type);
+    setItemToRename({ id, currentName });
+    setNewName(currentName);
+    setShowRenameDialog(true);
+  };
+
+  const handleRename = () => {
+    if (!itemToRename || !newName.trim()) {
+      toast.error("Name cannot be empty");
+      return;
+    }
+
+    let success = false;
+    
+    switch (renameType) {
+      case 'account':
+        success = renameAccount(itemToRename.id, newName.trim());
+        break;
+      case 'strategy':
+        success = renameStrategy(itemToRename.currentName, newName.trim());
+        if (success) {
+          // Update local state for strategies
+          setStrategies(prev => prev.map(s => s === itemToRename.currentName ? newName.trim() : s));
+          // Navigate to new URL if we're on the renamed strategy page
+          if (location.pathname === `/strategies/${encodeURIComponent(itemToRename.currentName)}`) {
+            navigate(`/strategies/${encodeURIComponent(newName.trim())}`);
+          }
+        }
+        break;
+    }
+
+    if (success) {
+      setShowRenameDialog(false);
+      setItemToRename(null);
+      setNewName("");
+    }
+  };
+
   const currencies = ["USD", "EUR", "GBP", "JPY", "AUD", "CAD", "CHF", "CNY", "INR", "BTC", "ETH"];
 
   const handleLogout = async () => {
     try {
       await logout();
-      navigate('/login');
+      navigate('/');
       toast.success('Logged out successfully');
     } catch (error) {
       console.error('Logout error:', error);
@@ -264,7 +309,6 @@ const AppSidebar: React.FC = () => {
                     tooltip="Profile" 
                     isActive={location.pathname === '/profile' || location.pathname.startsWith('/profile/')}
                     asChild
-                    className="px-2 py-1.5"
                   >
                     <Link to="/profile">
                       <User className="h-4 w-4" />
@@ -275,12 +319,10 @@ const AppSidebar: React.FC = () => {
 
                 <SidebarMenuItem>
                   <SidebarMenuButton 
-                    tooltip="Live Strategies" 
+                    tooltip="Strategies" 
                     isActive={location.pathname === '/strategies' || 
-                              (location.pathname.startsWith('/strategies/') && 
-                               !location.pathname.startsWith('/backtest-strategies/'))}
+                              location.pathname.startsWith('/strategies/')}
                     asChild
-                    className="px-2 py-1.5"
                   >
                     <Link to="/strategies">
                       <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -288,26 +330,7 @@ const AppSidebar: React.FC = () => {
                         <path d="M3 9h18"></path>
                         <path d="M9 21V9"></path>
                       </svg>
-                      <span>Live Strategies</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-
-                <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    tooltip="Backtest Strategies" 
-                    isActive={location.pathname === '/backtest-strategies' || 
-                              location.pathname.startsWith('/backtest-strategies/')}
-                    asChild
-                    className="px-2 py-1.5"
-                  >
-                    <Link to="/backtest-strategies">
-                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <path d="M3 9h18"></path>
-                        <path d="M9 21V9"></path>
-                      </svg>
-                      <span>Backtest Strategies</span>
+                      <span>Strategies</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -317,11 +340,23 @@ const AppSidebar: React.FC = () => {
                     tooltip="Accounts" 
                     isActive={location.pathname === '/accounts' || location.pathname.startsWith('/accounts/')}
                     asChild
-                    className="px-2 py-1.5"
                   >
                     <Link to="/accounts">
                       <Wallet className="h-4 w-4" />
                       <span>Accounts</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    tooltip="Demon Finder" 
+                    isActive={location.pathname === '/demon-finder'}
+                    asChild
+                  >
+                    <Link to="/demon-finder" className="flex items-center gap-2">
+                      <Ghost className="h-4 w-4 text-black-500" strokeWidth={2} />
+                    <span>Demon Finder</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -330,35 +365,63 @@ const AppSidebar: React.FC = () => {
           </SidebarGroup>
           
           {/* Accounts Section */}
-          <SidebarGroup className="mt-2">
-            <SidebarGroupLabel className="text-white/70 px-1 pt-2 pb-1 text-xs">Accounts</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu className="space-y-0.5">
+          <Collapsible defaultOpen className="mt-2">
+            <CollapsibleTrigger asChild>
+              <SidebarMenuButton className="w-full justify-between data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+                <div className="flex items-center gap-2">
+                  <Wallet className="h-4 w-4" />
+                  <span>Accounts</span>
+                </div>
+                <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+              </SidebarMenuButton>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarMenu className="space-y-0.5 ml-4 border-l border-white/10 pl-4">
                 {accounts.map((account) => (
                   <SidebarMenuItem key={account.id}>
                     <SidebarMenuButton 
                       isActive={location.pathname === `/accounts/${account.id}`}
                       asChild
-                      className="px-2 py-1.5"
                     >
                       <Link to={`/accounts/${account.id}`}>
                         <Wallet className="h-4 w-4" />
                         <span>{account.name}</span>
                       </Link>
                     </SidebarMenuButton>
-                    <SidebarMenuAction 
-                      showOnHover
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteAccount(account);
-                      }}
-                    >
-                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                        <line x1="10" y1="11" x2="10" y2="17"/>
-                        <line x1="14" y1="11" x2="14" y2="17"/>
-                      </svg>
-                    </SidebarMenuAction>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <SidebarMenuAction showOnHover>
+                          <MoreVertical className="h-3 w-3" />
+                        </SidebarMenuAction>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent side="right" align="start" className="bg-black/80 backdrop-blur-md border-white/10">
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRenameClick('account', account.id, account.name);
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <Edit className="h-3 w-3 mr-2" />
+                          Rename
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="bg-white/10" />
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteAccount(account);
+                          }}
+                          className="cursor-pointer text-red-400 focus:text-red-300"
+                        >
+                          <svg className="h-3 w-3 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            <line x1="10" y1="11" x2="10" y2="17"/>
+                            <line x1="14" y1="11" x2="14" y2="17"/>
+                          </svg>
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </SidebarMenuItem>
                 ))}
                 
@@ -366,7 +429,7 @@ const AppSidebar: React.FC = () => {
                 <SidebarMenuItem>
                   <Dialog open={showAddAccountDialog} onOpenChange={setShowAddAccountDialog}>
                     <DialogTrigger asChild>
-                      <SidebarMenuButton className="px-2 py-1.5">
+                      <SidebarMenuButton>
                         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <line x1="12" y1="5" x2="12" y2="19"></line>
                           <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -436,20 +499,31 @@ const AppSidebar: React.FC = () => {
                   </Dialog>
                 </SidebarMenuItem>
               </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+            </CollapsibleContent>
+          </Collapsible>
           
-          {/* Live Trading Strategies Section */}
-          <SidebarGroup className="mt-2">
-            <SidebarGroupLabel className="text-white/70 px-1 pt-2 pb-1 text-xs">Live Trading Strategies</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu className="space-y-0.5">
-                {liveStrategies.map((strategy) => (
+          {/* Strategies Section */}
+          <Collapsible defaultOpen className="mt-2">
+            <CollapsibleTrigger asChild>
+              <SidebarMenuButton className="w-full justify-between data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+                <div className="flex items-center gap-2">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <path d="M3 9h18"></path>
+                    <path d="M9 21V9"></path>
+                  </svg>
+                  <span>Strategies</span>
+                </div>
+                <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+              </SidebarMenuButton>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarMenu className="space-y-0.5 ml-4 border-l border-white/10 pl-4">
+                {strategies.map((strategy) => (
                   <SidebarMenuItem key={strategy}>
                     <SidebarMenuButton 
                       isActive={location.pathname === `/strategies/${encodeURIComponent(strategy)}`}
                       asChild
-                      className="px-2 py-1.5"
                     >
                       <Link to={`/strategies/${encodeURIComponent(strategy)}`}>
                         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -460,109 +534,67 @@ const AppSidebar: React.FC = () => {
                         <span>{strategy}</span>
                       </Link>
                     </SidebarMenuButton>
-                    <SidebarMenuAction 
-                      showOnHover
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteStrategy(strategy, 'live');
-                      }}
-                    >
-                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                        <line x1="10" y1="11" x2="10" y2="17"/>
-                        <line x1="14" y1="11" x2="14" y2="17"/>
-                      </svg>
-                    </SidebarMenuAction>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <SidebarMenuAction showOnHover>
+                          <MoreVertical className="h-3 w-3" />
+                        </SidebarMenuAction>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent side="right" align="start" className="bg-black/80 backdrop-blur-md border-white/10">
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRenameClick('strategy', strategy, strategy);
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <Edit className="h-3 w-3 mr-2" />
+                          Rename
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="bg-white/10" />
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteStrategy(strategy);
+                          }}
+                          className="cursor-pointer text-red-400 focus:text-red-300"
+                        >
+                          <svg className="h-3 w-3 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            <line x1="10" y1="11" x2="10" y2="17"/>
+                            <line x1="14" y1="11" x2="14" y2="17"/>
+                          </svg>
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </SidebarMenuItem>
                 ))}
                 
-                {/* Add Live Strategy Button */}
+                {/* Add Strategy Button */}
                 <SidebarMenuItem>
-                  <SidebarMenuButton className="px-2 py-1.5" onClick={() => {
-                    setNewStrategyType('live');
-                    setShowAddStrategyDialog(true);
-                  }}>
+                  <SidebarMenuButton onClick={() => setShowAddStrategyDialog(true)}>
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="12" y1="5" x2="12" y2="19"></line>
                       <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
-                    <span>Add Live Strategy</span>
+                    <span>Add Strategy</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-          
-          {/* Backtest Strategies Section */}
-          <SidebarGroup className="mt-2">
-            <SidebarGroupLabel className="text-white/70 px-1 pt-2 pb-1 text-xs">Backtest Strategies</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu className="space-y-0.5">
-                {backtestStrategies.map((strategy) => (
-                  <SidebarMenuItem key={strategy}>
-                    <SidebarMenuButton 
-                      isActive={location.pathname === `/backtest-strategies/${encodeURIComponent(strategy)}`}
-                      asChild
-                      className="px-2 py-1.5"
-                    >
-                      <Link to={`/backtest-strategies/${encodeURIComponent(strategy)}`}>
-                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                          <path d="M3 9h18"></path>
-                          <path d="M9 21V9"></path>
-                        </svg>
-                        <span>{strategy}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                    <SidebarMenuAction 
-                      showOnHover
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteStrategy(strategy, 'backtest');
-                      }}
-                    >
-                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                        <line x1="10" y1="11" x2="10" y2="17"/>
-                        <line x1="14" y1="11" x2="14" y2="17"/>
-                      </svg>
-                    </SidebarMenuAction>
-                  </SidebarMenuItem>
-                ))}
-                
-                {/* Add Backtest Strategy Button */}
-                <SidebarMenuItem>
-                  <SidebarMenuButton className="px-2 py-1.5" onClick={() => {
-                    setNewStrategyType('backtest');
-                    setShowAddStrategyDialog(true);
-                  }}>
-                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="12" y1="5" x2="12" y2="19"></line>
-                      <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                    <span>Add Backtest Strategy</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+            </CollapsibleContent>
+          </Collapsible>
         </SidebarContent>
         
         <SidebarFooter className="border-t border-white/5 bg-black/10 backdrop-blur-md p-2">
-          <div className="gap-2 flex flex-col">
-            <FirestoreSyncButton 
-              variant="outline" 
-              className="w-full bg-black/20 border-white/10"
-            />
-            <Button 
-              variant="outline" 
-              className="w-full flex items-center justify-start gap-2 text-red-500 border-red-500/20 hover:bg-red-500/10"
-              onClick={handleLogout}
-            >
-              <LogOut size={16} />
-              <span>Logout</span>
-            </Button>
-          </div>
+          <Button 
+            variant="outline" 
+            className="w-full flex items-center justify-start gap-2 text-red-500 border-red-500/20 hover:bg-red-500/10"
+            onClick={handleLogout}
+          >
+            <LogOut size={16} />
+            <span>Logout</span>
+          </Button>
         </SidebarFooter>
       </Sidebar>
       
@@ -571,7 +603,7 @@ const AppSidebar: React.FC = () => {
         <DialogContent className="bg-black/80 backdrop-blur-md border-white/5">
           <DialogHeader>
             <DialogTitle>
-              Add New {newStrategyType === 'live' ? 'Live Trading' : 'Backtest'} Strategy
+              Add New Strategy
             </DialogTitle>
           </DialogHeader>
           <div className="py-4">
@@ -585,6 +617,37 @@ const AppSidebar: React.FC = () => {
           <DialogFooter>
             <Button onClick={handleAddStrategy} variant="glass">
               Add Strategy
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Rename Dialog */}
+      <Dialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
+        <DialogContent className="bg-black/80 backdrop-blur-md border-white/5">
+          <DialogHeader>
+            <DialogTitle>
+              Rename {renameType === 'account' ? 'Account' : 'Strategy'}
+            </DialogTitle>
+            <DialogDescription>
+              Enter a new name for "{itemToRename?.currentName}"
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              placeholder={renameType === 'account' ? 'Account Name' : 'Strategy Name'}
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              className="bg-black/20 border-white/10"
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowRenameDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleRename} variant="glass">
+              Rename
             </Button>
           </DialogFooter>
         </DialogContent>

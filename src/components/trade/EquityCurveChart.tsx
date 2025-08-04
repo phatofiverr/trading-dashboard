@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import {
   ResponsiveContainer,
   LineChart,
@@ -21,9 +22,10 @@ import { Switch } from '@/components/ui/switch';
 import { calculateSharpeRatio } from '@/lib/tradeCalculations';
 
 const EquityCurveChart: React.FC = () => {
+  const { strategyId } = useParams<{ strategyId: string }>();
   const { filteredTrades: trades } = useTradeStore();
-  const { getThemeColors } = useThemeStore();
-  const colors = getThemeColors();
+  const { getThemeColorsForStrategy } = useThemeStore();
+  const colors = getThemeColorsForStrategy(strategyId);
   const [fixedRValue, setFixedRValue] = useState<number>(1); // Default fixed R value
   const [curveType, setCurveType] = useState<'stepAfter' | 'monotone' | 'linear'>('stepAfter');
   const [showByPair, setShowByPair] = useState<boolean>(true); // New state to toggle pair lines

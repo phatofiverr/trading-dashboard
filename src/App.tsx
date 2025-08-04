@@ -8,14 +8,13 @@ import { useAuth } from './contexts/AuthContext';
 
 // Lazy load page components
 const LiveTradingStrategies = lazy(() => import('./pages/LiveTradingStrategies'));
-const BacktestStrategies = lazy(() => import('./pages/BacktestStrategies'));
-const BacktestStrategyPage = lazy(() => import('./pages/BacktestStrategyPage'));
 const StrategyPage = lazy(() => import('./pages/StrategyPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const ProfileEditPage = lazy(() => import('./pages/ProfileEditPage'));
 const Accounts = lazy(() => import('./pages/Accounts')); // Use the correct component names
 const AccountDetail = lazy(() => import('./pages/AccountDetail')); // Use the correct component names
 const Settings = lazy(() => import('./pages/Settings')); // Use the correct component names
+const DemonFinder = lazy(() => import('./pages/DemonFinder'));
 const Login = lazy(() => import('./pages/Auth/Login'));
 const Register = lazy(() => import('./pages/Auth/Register'));
 const Landing = lazy(() => import('./pages/Landing'));
@@ -54,16 +53,6 @@ function App() {
                 <StrategyPage />
               </PrivateRoute>
             } />
-            <Route path="/backtest-strategies" element={
-              <PrivateRoute>
-                <BacktestStrategies />
-              </PrivateRoute>
-            } />
-            <Route path="/backtest-strategies/:strategyId" element={
-              <PrivateRoute>
-                <BacktestStrategyPage />
-              </PrivateRoute>
-            } />
             <Route path="/profile" element={
               <PrivateRoute>
                 <ProfilePage />
@@ -87,6 +76,11 @@ function App() {
             <Route path="/settings" element={
               <PrivateRoute>
                 <Settings />
+              </PrivateRoute>
+            } />
+            <Route path="/demon-finder" element={
+              <PrivateRoute>
+                <DemonFinder />
               </PrivateRoute>
             } />
           </Routes>
