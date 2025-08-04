@@ -182,11 +182,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Subscribe to auth state changes
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       
+      // Set user state immediately
+      setCurrentUser(user);
+      setLoading(false);
+      
       if (user) {
         // Create user document when auth state changes
         await createUserDocument(user);
         
-        // Load user data from Firebase after authentication
+        // Load user data from Firebase after authentication (asynchronously)
         try {
           
           // Load accounts
@@ -203,9 +207,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Don't show error toast - let the app fall back to IndexedDB
         }
       }
-      
-      setCurrentUser(user);
-      setLoading(false);
     });
 
     // Cleanup subscription
