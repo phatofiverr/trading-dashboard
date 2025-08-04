@@ -43,6 +43,8 @@ import MiniProfile from './sidebar/MiniProfile';
 import { useAuth } from '@/contexts/AuthContext';
 
 const AppSidebar: React.FC = () => {
+  const [accountsOpen, setAccountsOpen] = useState(false); // Initially closed
+  const [strategiesOpen, setStrategiesOpen] = useState(false); // Initially closed
   const { getUniqueStrategies, deleteStrategy, createStrategy, renameStrategy } = useTradeStore();
   const { accounts, addAccount, deleteAccount, renameAccount } = useAccountsStore();
   const { currentUser, loadUserFromFirebase, clearPersistedData } = useAccountStore();
@@ -119,6 +121,19 @@ const AppSidebar: React.FC = () => {
       loadUserFromFirebase(authUser.uid);
     }
   }, [authUser, loadUserFromFirebase, clearPersistedData]);
+
+  // Auto-open collapsible sections based on current route
+  useEffect(() => {
+    const path = location.pathname;
+    
+    // Only auto-open if we're navigating to a specific account or strategy page
+    // Don't auto-open for general navigation like /accounts or /strategies
+    if (path.startsWith('/accounts/') && path !== '/accounts') {
+      setAccountsOpen(true);
+    } else if (path.startsWith('/strategies/') && path !== '/strategies') {
+      setStrategiesOpen(true);
+    }
+  }, [location.pathname]);
   
   // Handle mouse hover for sidebar at smaller screens
   const handleMouseEnter = () => {
@@ -301,13 +316,14 @@ const AppSidebar: React.FC = () => {
         
         <SidebarContent className="bg-black/5 backdrop-blur-md py-2 px-1">
           <SidebarGroup>
-            <SidebarGroupLabel className="text-white/70 px-1 pt-2 pb-1 text-xs">Navigation</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-white/50 px-1 pt-2 pb-1 text-xs">Navigation</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="space-y-0.5">
                 <SidebarMenuItem>
                   <SidebarMenuButton 
                     tooltip="Profile" 
                     isActive={location.pathname === '/profile' || location.pathname.startsWith('/profile/')}
+                    className={location.pathname === '/profile' || location.pathname.startsWith('/profile/') ? "" : "text-white/40 hover:text-white/60"}
                     asChild
                   >
                     <Link to="/profile">
@@ -320,8 +336,8 @@ const AppSidebar: React.FC = () => {
                 <SidebarMenuItem>
                   <SidebarMenuButton 
                     tooltip="Strategies" 
-                    isActive={location.pathname === '/strategies' || 
-                              location.pathname.startsWith('/strategies/')}
+                    //isActive={location.pathname === '/strategies' || location.pathname.startsWith('/strategies/')}
+                    className={location.pathname === '/strategies' ? "" : "text-white/40 hover:text-white/60"}
                     asChild
                   >
                     <Link to="/strategies">
@@ -338,7 +354,8 @@ const AppSidebar: React.FC = () => {
                 <SidebarMenuItem>
                   <SidebarMenuButton 
                     tooltip="Accounts" 
-                    isActive={location.pathname === '/accounts' || location.pathname.startsWith('/accounts/')}
+                    //isActive={location.pathname === '/accounts' || location.pathname.startsWith('/accounts/')}
+                    className={location.pathname === '/accounts' ? "" : "text-white/40 hover:text-white/60"}
                     asChild
                   >
                     <Link to="/accounts">
@@ -352,6 +369,7 @@ const AppSidebar: React.FC = () => {
                   <SidebarMenuButton 
                     tooltip="Demon Finder" 
                     isActive={location.pathname === '/demon-finder'}
+                    className={location.pathname === '/demon-finder' ? "" : "text-white/40 hover:text-white/60"}
                     asChild
                   >
                     <Link to="/demon-finder" className="flex items-center gap-2">
@@ -365,22 +383,23 @@ const AppSidebar: React.FC = () => {
           </SidebarGroup>
           
           {/* Accounts Section */}
-          <Collapsible defaultOpen className="mt-2">
+          <Collapsible open={accountsOpen} onOpenChange={setAccountsOpen} className="mt-2">
             <CollapsibleTrigger asChild>
-              <SidebarMenuButton className="w-full justify-between data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+              <SidebarMenuButton className="w-full justify-between text-white/40 hover:text-white/60 group">
                 <div className="flex items-center gap-2">
                   <Wallet className="h-4 w-4" />
                   <span>Accounts</span>
                 </div>
-                <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+                <ChevronDown className="h-4 w-4 transition-transform duration-200 -rotate-90 group-data-[state=open]:rotate-0" />
               </SidebarMenuButton>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <SidebarMenu className="space-y-0.5 ml-4 border-l border-white/10 pl-4">
+              <SidebarMenu className="space-y-0.5 ml-1 border-l border-white/10 pl-1">
                 {accounts.map((account) => (
                   <SidebarMenuItem key={account.id}>
                     <SidebarMenuButton 
                       isActive={location.pathname === `/accounts/${account.id}`}
+                      className={location.pathname === `/accounts/${account.id}` ? "" : "text-white/40 hover:text-white/60"}
                       asChild
                     >
                       <Link to={`/accounts/${account.id}`}>
@@ -429,7 +448,7 @@ const AppSidebar: React.FC = () => {
                 <SidebarMenuItem>
                   <Dialog open={showAddAccountDialog} onOpenChange={setShowAddAccountDialog}>
                     <DialogTrigger asChild>
-                      <SidebarMenuButton>
+                      <SidebarMenuButton className="text-white/40 hover:text-white/60">
                         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <line x1="12" y1="5" x2="12" y2="19"></line>
                           <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -503,9 +522,9 @@ const AppSidebar: React.FC = () => {
           </Collapsible>
           
           {/* Strategies Section */}
-          <Collapsible defaultOpen className="mt-2">
+          <Collapsible open={strategiesOpen} onOpenChange={setStrategiesOpen} className="mt-2">
             <CollapsibleTrigger asChild>
-              <SidebarMenuButton className="w-full justify-between data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+              <SidebarMenuButton className="w-full justify-between text-white/40 hover:text-white/60 group">
                 <div className="flex items-center gap-2">
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -514,15 +533,16 @@ const AppSidebar: React.FC = () => {
                   </svg>
                   <span>Strategies</span>
                 </div>
-                <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+                <ChevronDown className="h-4 w-4 transition-transform duration-200 -rotate-90 group-data-[state=open]:rotate-0" />
               </SidebarMenuButton>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <SidebarMenu className="space-y-0.5 ml-4 border-l border-white/10 pl-4">
+              <SidebarMenu className="space-y-0.5 ml-2 border-l border-white/10 pl-2">
                 {strategies.map((strategy) => (
                   <SidebarMenuItem key={strategy}>
                     <SidebarMenuButton 
                       isActive={location.pathname === `/strategies/${encodeURIComponent(strategy)}`}
+                      className={location.pathname === `/strategies/${encodeURIComponent(strategy)}` ? "" : "text-white/40 hover:text-white/60"}
                       asChild
                     >
                       <Link to={`/strategies/${encodeURIComponent(strategy)}`}>
@@ -573,7 +593,10 @@ const AppSidebar: React.FC = () => {
                 
                 {/* Add Strategy Button */}
                 <SidebarMenuItem>
-                  <SidebarMenuButton onClick={() => setShowAddStrategyDialog(true)}>
+                  <SidebarMenuButton 
+                    onClick={() => setShowAddStrategyDialog(true)}
+                    className="text-white/40 hover:text-white/60"
+                  >
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="12" y1="5" x2="12" y2="19"></line>
                       <line x1="5" y1="12" x2="19" y2="12"></line>
