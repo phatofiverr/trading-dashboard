@@ -62,7 +62,7 @@ const PasswordReset: React.FC = () => {
           {isSuccess ? (
             <div className="p-4 rounded-md bg-green-500/10 border border-green-500/50 text-green-700">
               <p className="mb-4">We've sent a password reset link to <strong>{email}</strong></p>
-              <p>Please check your email and follow the instructions to reset your password.</p>
+              <p>Kindly check your inbox and spam folder for the password reset email, and follow the instructions to complete the process</p>
             </div>
           ) : (
             <form onSubmit={handleResetPassword} className="space-y-4">
