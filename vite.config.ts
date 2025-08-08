@@ -14,6 +14,9 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' &&
     componentTagger(),
   ].filter(Boolean),
+  esbuild: {
+    drop: mode === 'production' ? ['console', 'debugger'] : [],
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -65,7 +68,9 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 1000,
     // Enable minification optimizations
     minify: 'esbuild',
-    // Enable source maps for debugging (optional)
-    sourcemap: false
+    // Disable source maps in production for better performance
+    sourcemap: false,
+    // Optimize for Vercel
+    target: 'esnext'
   }
 }));
