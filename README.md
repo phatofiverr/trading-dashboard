@@ -49,7 +49,9 @@ A comprehensive React-based trading journal and analytics platform with Firebase
    npm install
    ```
 
-3. **Set up Firebase** (see Firebase Setup section below)
+3. **Set up Environment Variables**
+   - Create a `.env` file in your project root
+   - Add your Firebase configuration (see Firebase Setup section below)
 
 4. **Start development server**
    ```bash
@@ -121,29 +123,26 @@ To use the data sync features in this application, you need to set up Firebase F
    - Scroll down to "Your apps" and add a Web app if you haven't already
    - Copy the Firebase configuration object
 
-6. **Update Firebase Configuration in Your Project**
-   - In your project, locate or create `src/config/firebase.ts`
-   - Replace the configuration with your Firebase config
+6. **Set up Environment Variables**
+   - Create a `.env` file in your project root
+   - Add your Firebase configuration as environment variables:
 
-   ```typescript
-   import { initializeApp } from "firebase/app";
-   import { getAuth } from "firebase/auth";
-   import { getFirestore } from "firebase/firestore";
-
-   const firebaseConfig = {
-     apiKey: "YOUR_API_KEY",
-     authDomain: "YOUR_AUTH_DOMAIN",
-     projectId: "YOUR_PROJECT_ID",
-     storageBucket: "YOUR_STORAGE_BUCKET",
-     messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-     appId: "YOUR_APP_ID",
-     measurementId: "YOUR_MEASUREMENT_ID" // Optional
-   };
-
-   const app = initializeApp(firebaseConfig);
-   export const auth = getAuth(app);
-   export const db = getFirestore(app);
+   ```bash
+   # Firebase Configuration
+   VITE_FIREBASE_API_KEY=your_api_key_here
+   VITE_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+   VITE_FIREBASE_PROJECT_ID=your_project_id
+   VITE_FIREBASE_STORAGE_BUCKET=your_project_id.firebasestorage.app
+   VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+   VITE_FIREBASE_APP_ID=your_app_id
+   VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
    ```
+
+   **Important**: The `.env` file is already in `.gitignore` to keep your Firebase credentials secure. Never commit this file to version control.
+
+7. **Firebase Configuration**
+   - The Firebase configuration in `src/config/firebase.ts` is already set up to use environment variables
+   - No additional changes needed to the configuration file
 
 7. **Composite Indexes Setup**
    - For complex queries, you may need to set up composite indexes
