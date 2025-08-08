@@ -8,7 +8,9 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "workflow": "./scripts/dev-workflow.sh",
+    "workflow:commit": "./scripts/dev-workflow.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
