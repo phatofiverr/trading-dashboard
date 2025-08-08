@@ -366,14 +366,14 @@ const AppSidebar: React.FC = () => {
 
                 <SidebarMenuItem>
                   <SidebarMenuButton 
-                    tooltip="Demon Finder" 
+                    tooltip="Demon Hunter" 
                     isActive={location.pathname === '/demon-finder'}
                     className={location.pathname === '/demon-finder' ? "" : "text-white/40 hover:text-white/60"}
                     asChild
                   >
                     <Link to="/demon-finder" className="flex items-center gap-2">
                       <Ghost className="h-4 w-4 text-black-500" strokeWidth={2} />
-                    <span>Demon Finder</span>
+                    <span>Demon Hunter</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

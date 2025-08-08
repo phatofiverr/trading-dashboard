@@ -186,9 +186,9 @@ improvementScore: (() => {
               <div className="mb-8">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h1 className="text-2xl font-bold flex items-center space-x-3">
+                    <h1 className="text-2 xl font-bold flex items-center space-x-3">
                       <Ghost className="h-8 w-8" />
-                      <span>Demon Finder</span>
+                      <span>Demon Hunter</span>
                     </h1>
                     <p className="text-muted-foreground">
                       Track and conquer your trading behavioral demons
