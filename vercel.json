@@ -49,11 +49,6 @@
     }
   ],
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
-  "functions": {
-    "app/api/**/*.ts": {
-      "maxDuration": 10
-    }
-  },
   "regions": ["iad1"],
   "github": {
     "silent": true
