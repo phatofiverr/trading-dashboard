@@ -1,5 +1,6 @@
 
 import { Trade, StrategyPerformance } from "@/types/Trade";
+import { calculateTradeProfit } from "./accountCalculations";
 
 /**
  * Calculate performance metrics for all strategies
@@ -24,7 +25,7 @@ export const calculateStrategyPerformance = (trades: Trade[]): StrategyPerforman
       : 0;
     
     // Calculate total profit
-    const profit = strategyTrades.reduce((sum, t) => sum + t.rMultiple, 0);
+    const profit = strategyTrades.reduce((sum, t) => sum + calculateTradeProfit(t), 0);
     
     // Get last trade date
     const sortedTrades = [...strategyTrades].sort(

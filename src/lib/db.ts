@@ -86,8 +86,9 @@ export const addTrade = async (trade: Partial<Trade>): Promise<Trade> => {
     if (rMultiple > 0) outcome = "win";
     else if (rMultiple < 0) outcome = "loss";
     
-    // Calculate percentage gain/loss
-    const percentageGainLoss = ((trade.exitPrice! - trade.entryPrice!) / trade.entryPrice!) * 100 * (trade.direction === "long" ? 1 : -1);
+    // Don't calculate percentage gain/loss here - let the application layer handle it
+    // This prevents conflicts with our centralized calculation system
+    const percentageGainLoss = 0;
     
     const newTrade: Trade = {
       ...trade as any, // Cast to any to prevent excess property errors

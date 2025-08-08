@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { useTradeStore } from "@/hooks/useTradeStore";
+import { useAccountCalculations } from "@/hooks/useAccountCalculations";
 import { Trade } from "@/types/Trade";
 
 interface TradeRowProps {
@@ -12,20 +13,16 @@ interface TradeRowProps {
 
 const TradeRow: React.FC<TradeRowProps> = ({ trade }) => {
   const { selectTrade, selectedTrade } = useTradeStore();
+  const { getTradeProfit, formatCurrency } = useAccountCalculations();
 
   const handleRowClick = () => {
     selectTrade(trade);
   };
   
-  // Calculate profit based on risk amount and R multiple
+  // Calculate profit using centralized calculation
   const calculateProfit = () => {
-    if (!trade.riskAmount) return 'N/A';
-    
-    const riskAmount = parseFloat(trade.riskAmount);
-    if (isNaN(riskAmount)) return 'N/A';
-    
-    const profit = riskAmount * trade.rMultiple;
-    return `$${profit.toFixed(2)}`;
+    const profit = getTradeProfit(trade);
+    return formatCurrency(profit, 'USD');
   };
 
   return (

@@ -87,8 +87,8 @@ const AccountEquityCurve: React.FC<AccountEquityCurveProps> = ({ account }) => {
       let currentBalance = account.initialBalance;
       
       accountTrades.forEach((trade, index) => {
-        // Calculate profit or loss based on trade data
-        const profit = trade.size * trade.rMultiple;
+        // Calculate profit or loss using centralized calculation
+        const profit = trade.profit !== undefined ? trade.profit : trade.rMultiple;
         currentBalance += profit;
         
         const tradeDate = new Date(trade.entryDate).toISOString().split('T')[0];

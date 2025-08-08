@@ -167,10 +167,8 @@ const TradeActivityHeatmap: React.FC<TradeActivityProps> = ({ className }) => {
       }
       
       const pair = trade.pair || trade.instrument || 'Unknown';
-      // Calculate profit based on outcome or rMultiple if direct profit not available
-      const tradeProfit = trade.profit !== undefined ? 
-        trade.profit : 
-        (trade.outcome === 'win' ? Math.abs(trade.rMultiple) : -Math.abs(trade.rMultiple));
+      // Calculate profit using centralized calculation
+      const tradeProfit = trade.profit !== undefined ? trade.profit : trade.rMultiple;
       const isWinningTrade = tradeProfit > 0;
       
       // Only track pairs we've identified in our top list

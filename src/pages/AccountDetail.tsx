@@ -312,7 +312,7 @@ const AccountDetail: React.FC = () => {
               {visibleComponents.tradingKPIs && (
                 <div className="mb-6">
                   <Suspense fallback={<div className="h-96 bg-black/10 rounded-lg animate-pulse" />}>
-                    <TradingKPIs />
+                    <TradingKPIs accountId={accountId} />
                   </Suspense>
                 </div>
               )}

@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { TradeStats } from '@/types/Trade';
 import { ArrowUp, ArrowDown, Award, Calendar, Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useAccountCalculations } from '@/hooks/useAccountCalculations';
+import { useTradeStore } from '@/hooks/useTradeStore';
 
 // Helper component for tooltips
 const InfoTooltip = ({ content }: { content: string }) => (
@@ -19,35 +21,53 @@ const InfoTooltip = ({ content }: { content: string }) => (
 );
 
 interface DailyStatsProps {
-  trades?: any[]; // Using any[] to be flexible with the trade type
+  accountId?: string; // Optional account ID to filter trades
   currency?: string;
   className?: string;
 }
 
-const DailyStats: React.FC<DailyStatsProps> = ({ trades = [], currency = 'USD', className = '' }) => {
-  // Filter to get only today's trades
+const DailyStats: React.FC<DailyStatsProps> = ({ accountId, currency = 'USD', className = '' }) => {
+  const { getTodayProfit, getAccountTrades, getTradeProfit, formatCurrency } = useAccountCalculations();
+  const { trades, filteredTrades } = useTradeStore();
+  
+  // Get today's profit using centralized calculation
+  const totalProfit = getTodayProfit(accountId);
+  
+  // Use the same trade filtering logic as SimpleStatsDisplay
+  const relevantTrades = accountId ? getAccountTrades(accountId) : [];
+  const tradesToUse = accountId ? relevantTrades : (filteredTrades.length > 0 ? filteredTrades : trades);
+  
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
-  const todayTrades = trades.filter(trade => {
+  const todayTrades = tradesToUse.filter(trade => {
     const tradeDate = new Date(trade.exitDate || trade.entryDate);
     tradeDate.setHours(0, 0, 0, 0);
     return tradeDate.getTime() === today.getTime();
   });
   
+  // Debug logging to match other components
+  console.log('DailyStats Debug:', {
+    accountId,
+    totalProfit,
+    todayTradesCount: todayTrades.length,
+    relevantTradesCount: relevantTrades.length,
+    filteredTradesCount: filteredTrades.length,
+    allTradesCount: trades.length,
+    finalTradesToUseCount: tradesToUse.length,
+    todayTrades: todayTrades.map(t => ({
+      id: t.id,
+      accountId: t.accountId,
+      entryDate: t.entryDate,
+      exitDate: t.exitDate,
+      profit: getTradeProfit(t)
+    }))
+  });
+  
   // Calculate today's stats
   const totalTrades = todayTrades.length;
-  const winningTrades = todayTrades.filter(trade => 
-    (trade.direction === 'long' && trade.exitPrice > trade.entryPrice) || 
-    (trade.direction === 'short' && trade.exitPrice < trade.entryPrice)
-  ).length;
-  
+  const winningTrades = todayTrades.filter(trade => getTradeProfit(trade) > 0).length;
   const winRate = totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0;
-  
-  // Calculate total profit for today
-  const totalProfit = todayTrades.reduce((sum, trade) => {
-    return sum + (trade.profit || trade.rMultiple || 0);
-  }, 0);
   
   // Format the date for display
   const formattedDate = today.toLocaleDateString('en-US', { 
@@ -93,7 +113,7 @@ const DailyStats: React.FC<DailyStatsProps> = ({ trades = [], currency = 'USD', 
                       ? 'text-negative/90' 
                       : 'text-muted-foreground'
                 }`}>
-                  {totalProfit > 0 ? '+' : ''}{totalProfit.toFixed(2)}{currency === 'USD' ? 'R' : currency}
+                  {totalProfit > 0 ? '+' : ''}{formatCurrency(totalProfit, currency)}
                 </p>
               </div>
             </div>
@@ -104,7 +124,7 @@ const DailyStats: React.FC<DailyStatsProps> = ({ trades = [], currency = 'USD', 
                 <div className="flex items-center">
                   <Award className="mr-1 h-4 w-4 text-amber-400" />
                   <p className="text-xl font-medium">
-                    {Math.max(...todayTrades.map(t => t.profit || t.rMultiple || 0)).toFixed(2)}{currency === 'USD' ? 'R' : currency}
+                    {formatCurrency(Math.max(...todayTrades.map(t => getTradeProfit(t))), currency)}
                   </p>
                 </div>
               ) : (
