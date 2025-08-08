@@ -4,6 +4,7 @@ import { TradeStats } from '@/types/Trade';
 import { ArrowUp, ArrowDown, Award, Calendar, Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAccountCalculations } from '@/hooks/useAccountCalculations';
+import { useTradeStore } from '@/hooks/useTradeStore';
 
 // Helper component for tooltips
 const InfoTooltip = ({ content }: { content: string }) => (
@@ -27,28 +28,36 @@ interface DailyStatsProps {
 
 const DailyStats: React.FC<DailyStatsProps> = ({ accountId, currency = 'USD', className = '' }) => {
   const { getTodayProfit, getAccountTrades, getTradeProfit, formatCurrency } = useAccountCalculations();
+  const { trades, filteredTrades } = useTradeStore();
   
   // Get today's profit using centralized calculation
   const totalProfit = getTodayProfit(accountId);
   
-  // Get relevant trades for win rate calculation
+  // Use the same trade filtering logic as SimpleStatsDisplay
   const relevantTrades = accountId ? getAccountTrades(accountId) : [];
+  const tradesToUse = accountId ? relevantTrades : (filteredTrades.length > 0 ? filteredTrades : trades);
+  
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
-  const todayTrades = relevantTrades.filter(trade => {
+  const todayTrades = tradesToUse.filter(trade => {
     const tradeDate = new Date(trade.exitDate || trade.entryDate);
     tradeDate.setHours(0, 0, 0, 0);
     return tradeDate.getTime() === today.getTime();
   });
   
-  // Debug logging
+  // Debug logging to match other components
   console.log('DailyStats Debug:', {
     accountId,
     totalProfit,
     todayTradesCount: todayTrades.length,
+    relevantTradesCount: relevantTrades.length,
+    filteredTradesCount: filteredTrades.length,
+    allTradesCount: trades.length,
+    finalTradesToUseCount: tradesToUse.length,
     todayTrades: todayTrades.map(t => ({
       id: t.id,
+      accountId: t.accountId,
       entryDate: t.entryDate,
       exitDate: t.exitDate,
       profit: getTradeProfit(t)

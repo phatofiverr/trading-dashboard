@@ -28,8 +28,22 @@ const TradingCalendar: React.FC<TradingCalendarProps> = ({ account, currency = '
   const { trades, filteredTrades } = useTradeStore();
   const { getTradeProfit, formatCurrency } = useAccountCalculations();
   
-  // Use filtered trades if available, otherwise use all trades
+  // Use the same trade filtering logic as SimpleStatsDisplay
   const tradesToProcess = filteredTrades.length > 0 ? filteredTrades : trades;
+  
+  // Debug logging to match SimpleStatsDisplay
+  console.log('TradingCalendar Debug:', {
+    filteredTradesCount: filteredTrades.length,
+    allTradesCount: trades.length,
+    finalTradesToProcessCount: tradesToProcess.length,
+    sampleTrades: tradesToProcess.slice(0, 3).map(t => ({
+      id: t.id,
+      accountId: t.accountId,
+      entryDate: t.entryDate,
+      exitDate: t.exitDate,
+      profit: getTradeProfit(t)
+    }))
+  });
   
   // Get the first day of the month
   const firstDayOfMonth = startOfMonth(currentDate);
@@ -61,9 +75,9 @@ const TradingCalendar: React.FC<TradingCalendarProps> = ({ account, currency = '
     
     // Get days of current month with trade data
     const currentMonthDays = daysInMonth.map(date => {
-      // Find trades for this day
+      // Find trades for this day - use same logic as DailyStats (exitDate || entryDate)
       const dayTrades = tradesToProcess.filter(trade => {
-        const tradeDate = new Date(trade.entryDate);
+        const tradeDate = new Date(trade.exitDate || trade.entryDate);
         return (
           tradeDate.getDate() === date.getDate() && 
           tradeDate.getMonth() === date.getMonth() && 

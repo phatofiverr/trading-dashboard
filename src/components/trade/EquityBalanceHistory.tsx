@@ -51,8 +51,17 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
 
   // Process trades to create balance history data
   const balanceData = useMemo(() => {
-    // Filter trades based on account if needed
-    const tradesToProcess = filteredTrades.length > 0 ? filteredTrades : trades;
+    // Use the same trade filtering logic as SimpleStatsDisplay
+    let tradesToProcess: any[] = [];
+    
+    if (accountOnly && currentAccountId) {
+      // If account-specific, filter by account
+      tradesToProcess = (filteredTrades.length > 0 ? filteredTrades : trades)
+        .filter(trade => trade.accountId === currentAccountId);
+    } else {
+      // Use same logic as SimpleStatsDisplay
+      tradesToProcess = filteredTrades.length > 0 ? filteredTrades : trades;
+    }
     
     if (tradesToProcess.length === 0) return [];
     
@@ -99,8 +108,24 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
       });
     });
     
+    // Debug logging to match SimpleStatsDisplay
+    console.log('EquityBalanceHistory Debug:', {
+      accountOnly,
+      currentAccountId,
+      tradesToProcessCount: tradesToProcess.length,
+      sortedTradesCount: sortedTrades.length,
+      initialBalance,
+      finalBalance: currentBalance,
+      totalProfit: currentBalance - initialBalance,
+      sampleTrades: sortedTrades.slice(0, 3).map(t => ({
+        id: t.id,
+        accountId: t.accountId,
+        profit: getTradeProfit(t)
+      }))
+    });
+    
     return points;
-  }, [trades, filteredTrades, accounts, currentAccount, accountOnly]);
+  }, [trades, filteredTrades, accounts, currentAccount, accountOnly, currentAccountId]);
   
   // Format currency using centralized formatter
   const formatCurrencyValue = (value: number) => {
@@ -108,7 +133,7 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
     return formatCurrency(value, currency);
   };
   
-  // Calculate balance stats
+  // Calculate balance stats - ensure consistency with SimpleStatsDisplay
   const balanceStats = useMemo(() => {
     if (balanceData.length <= 1) {
       return { currentBalance: 0, totalProfit: 0, percentageChange: 0 };
@@ -118,6 +143,15 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
     const currentBalance = balanceData[balanceData.length - 1].balance;
     const totalProfit = currentBalance - initialBalance;
     const percentageChange = initialBalance !== 0 ? (totalProfit / initialBalance) * 100 : 0;
+    
+    // Debug logging to compare with SimpleStatsDisplay
+    console.log('EquityBalanceHistory Stats:', {
+      initialBalance,
+      currentBalance,
+      totalProfit,
+      percentageChange,
+      balanceDataLength: balanceData.length
+    });
     
     return { 
       currentBalance, 

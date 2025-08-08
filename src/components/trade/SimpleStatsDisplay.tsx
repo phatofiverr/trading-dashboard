@@ -26,9 +26,23 @@ const SimpleStatsDisplay: React.FC<SimpleStatsDisplayProps> = ({
     getPortfolioSummary
   } = useAccountCalculations();
   
-  // Get relevant trades for calculations
+  // Get relevant trades for calculations - ensure consistency with EquityBalanceHistory
   const relevantTrades = accountId ? getAccountTrades(accountId) : [];
   const tradesToUse = accountId ? relevantTrades : (filteredTrades.length > 0 ? filteredTrades : trades);
+  
+  // Debug logging to compare with EquityBalanceHistory
+  console.log('SimpleStatsDisplay Trade Filtering:', {
+    accountId,
+    relevantTradesCount: relevantTrades.length,
+    filteredTradesCount: filteredTrades.length,
+    allTradesCount: trades.length,
+    finalTradesToUseCount: tradesToUse.length,
+    sampleTrades: tradesToUse.slice(0, 3).map(t => ({
+      id: t.id,
+      accountId: t.accountId,
+      profit: getTradeProfit(t)
+    }))
+  });
   
   // Calculate stats using centralized logic
   const calculateStats = () => {
