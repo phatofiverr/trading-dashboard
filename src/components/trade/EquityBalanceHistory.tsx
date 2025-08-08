@@ -12,6 +12,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { useTradeStore } from '@/hooks/useTradeStore';
 import { useAccountsStore } from '@/hooks/useAccountsStore';
+import { useAccountCalculations } from '@/hooks/useAccountCalculations';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface BalancePoint {
@@ -27,6 +28,7 @@ interface EquityBalanceHistoryProps {
 const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly = false }) => {
   const { trades, filteredTrades, stats: tradeStats, currentAccountId } = useTradeStore();
   const { accounts } = useAccountsStore();
+  const { getTradeProfit, formatCurrency } = useAccountCalculations();
   
   // Initialize chart type from localStorage or default to 'stepAfter'
   const [chartType, setChartType] = useState<'stepAfter' | 'monotone' | 'linear'>(() => {
@@ -78,8 +80,8 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
     // Create data points for each trade
     const points: BalancePoint[] = [initialPoint];
     sortedTrades.forEach(trade => {
-      // Use trade.profit if available, otherwise treat rMultiple as the profit amount
-      const profit = trade.profit !== undefined ? trade.profit : trade.rMultiple;
+      // Use centralized profit calculation
+      const profit = getTradeProfit(trade);
       
       // Update balance
       currentBalance += profit;
@@ -100,14 +102,10 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
     return points;
   }, [trades, filteredTrades, accounts, currentAccount, accountOnly]);
   
-  // Format currency
-  const formatCurrency = (value: number) => {
+  // Format currency using centralized formatter
+  const formatCurrencyValue = (value: number) => {
     const currency = accountOnly && currentAccount ? currentAccount.currency : 'USD';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 2
-    }).format(value);
+    return formatCurrency(value, currency);
   };
   
   // Calculate balance stats
@@ -151,9 +149,9 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
       return (
         <div className="bg-black/80 backdrop-blur-md border border-white/10 p-2 rounded-lg shadow-lg">
           <p className="text-white text-xs">{`Date: ${payload[0].payload.date}`}</p>
-          <p className="text-white text-xs">{`Balance: ${formatCurrency(payload[0].value)}`}</p>
+          <p className="text-white text-xs">{`Balance: ${formatCurrencyValue(payload[0].value)}`}</p>
           <p className={`text-xs ${payload[0].payload.profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {`Profit: ${payload[0].payload.profit >= 0 ? '+' : ''}${formatCurrency(payload[0].payload.profit)}`}
+            {`Profit: ${payload[0].payload.profit >= 0 ? '+' : ''}${formatCurrencyValue(payload[0].payload.profit)}`}
           </p>
         </div>
       );
@@ -197,12 +195,12 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
           <div className="flex items-center ml-auto gap-4 mr-2">
             <div className="text-right">
               <p className="text-xs text-muted-foreground">Current Balance</p>
-              <p className="text-sm font-medium">{formatCurrency(balanceStats.currentBalance)}</p>
+              <p className="text-sm font-medium">{formatCurrencyValue(balanceStats.currentBalance)}</p>
             </div>
             <div className="text-right">
               <p className="text-xs text-muted-foreground">Total P/L</p>
               <p className={`text-sm font-medium ${balanceStats.totalProfit >= 0 ? 'text-positive' : 'text-negative'}`}>
-                {balanceStats.totalProfit >= 0 ? '+' : ''}{formatCurrency(balanceStats.totalProfit)}
+                {balanceStats.totalProfit >= 0 ? '+' : ''}{formatCurrencyValue(balanceStats.totalProfit)}
               </p>
             </div>
             <div className="text-right">
@@ -231,7 +229,7 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
                 tick={{ fill: '#999', fontSize: 10, fontFamily: 'Inter, sans-serif' }}
                 axisLine={false}
                 tickLine={false}
-                tickFormatter={value => formatCurrency(value)}
+                tickFormatter={value => formatCurrencyValue(value)}
                 width={70}
                 padding={{ top: 10, bottom: 10 }}
               />

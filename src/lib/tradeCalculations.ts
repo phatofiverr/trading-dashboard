@@ -1,5 +1,6 @@
 
 import { Trade, TradeStats } from "@/types/Trade";
+import { calculateTradeProfit } from "./accountCalculations";
 
 /**
  * Calculate comprehensive statistics for a set of trades
@@ -25,8 +26,8 @@ export const calculateTradeStats = (trades: Trade[]): TradeStats => {
   const losingTrades = trades.filter(t => t.rMultiple < 0);
   const breakEvenTrades = trades.filter(t => t.rMultiple === 0);
 
-  const totalWinAmount = winningTrades.reduce((sum, t) => sum + t.rMultiple, 0);
-  const totalLossAmount = Math.abs(losingTrades.reduce((sum, t) => sum + t.rMultiple, 0));
+  const totalWinAmount = winningTrades.reduce((sum, t) => sum + calculateTradeProfit(t), 0);
+  const totalLossAmount = Math.abs(losingTrades.reduce((sum, t) => sum + calculateTradeProfit(t), 0));
 
   // Calculate max drawdown
   let maxDrawdown = 0;
@@ -36,7 +37,7 @@ export const calculateTradeStats = (trades: Trade[]): TradeStats => {
   trades
     .sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime())
     .forEach(trade => {
-      currentEquity += trade.rMultiple;
+      currentEquity += calculateTradeProfit(trade);
       
       if (currentEquity > peak) {
         peak = currentEquity;
@@ -56,7 +57,7 @@ export const calculateTradeStats = (trades: Trade[]): TradeStats => {
     breakEvenRate: (breakEvenTrades.length / trades.length) * 100,
     winRate: (winningTrades.length / trades.length) * 100,
     averageRMultiple: trades.reduce((sum, t) => sum + t.rMultiple, 0) / trades.length,
-    totalProfit: trades.reduce((sum, t) => sum + t.rMultiple, 0),
+    totalProfit: trades.reduce((sum, t) => sum + calculateTradeProfit(t), 0),
     maxDrawdown,
     profitFactor: totalLossAmount === 0 ? totalWinAmount : totalWinAmount / totalLossAmount,
     expectancy: 

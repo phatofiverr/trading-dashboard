@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAccountsStore } from '@/hooks/useAccountsStore';
 import { useTradeStore } from '@/hooks/useTradeStore';
+import { useAccountCalculations } from '@/hooks/useAccountCalculations';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
@@ -12,28 +13,27 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
 const AccountCard = ({ account }: { account: any }) => {
-  const { trades } = useTradeStore();
+  const { getAccountSummary, formatCurrency } = useAccountCalculations();
   
-  const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-US', { 
-      style: 'currency', 
-      currency: currency,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(amount);
-  };
+  // Get account summary using centralized calculations
+  const accountSummary = getAccountSummary(account.id);
   
-  // Calculate total profit from all trades for this account
-  const accountTrades = trades.filter(trade => trade.accountId === account.id);
-  const totalTradeProfit = accountTrades.reduce((sum, trade) => {
-    const tradeProfit = trade.profit !== undefined ? trade.profit : trade.rMultiple;
-    return sum + tradeProfit;
-  }, 0);
+  if (!accountSummary) {
+    return (
+      <Card className="glass-effect bg-black/5 border-0 overflow-hidden transition-all hover:bg-black/10">
+        <CardContent className="p-4">
+          <div className="flex flex-col h-full">
+            <div className="flex justify-between items-start mb-2">
+              <h3 className="font-medium">{account.name}</h3>
+              <span className="text-muted-foreground">No data</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
   
-  // Calculate current balance and profit
-  const currentBalance = account.initialBalance + totalTradeProfit;
-  const profit = totalTradeProfit;
-  const profitPercentage = account.initialBalance > 0 ? (profit / account.initialBalance) * 100 : 0;
+  const { totalProfit, currentBalance, profitPercentage } = accountSummary;
   
   return (
     <Card className="glass-effect bg-black/5 border-0 overflow-hidden transition-all hover:bg-black/10">
@@ -41,8 +41,8 @@ const AccountCard = ({ account }: { account: any }) => {
         <div className="flex flex-col h-full">
           <div className="flex justify-between items-start mb-2">
             <h3 className="font-medium">{account.name}</h3>
-            <span className={profit >= 0 ? "text-green-500" : "text-red-500"}>
-              {profit >= 0 ? "+" : ""}{formatCurrency(profit, account.currency)}
+            <span className={totalProfit >= 0 ? "text-green-500" : "text-red-500"}>
+              {totalProfit >= 0 ? "+" : ""}{formatCurrency(totalProfit, account.currency)}
             </span>
           </div>
           
@@ -53,7 +53,7 @@ const AccountCard = ({ account }: { account: any }) => {
             
             <div className="text-xs text-muted-foreground mt-2 flex items-center">
               <span className="mr-1">Change:</span>
-              <span className={profit >= 0 ? "text-green-500" : "text-red-500"}>
+              <span className={totalProfit >= 0 ? "text-green-500" : "text-red-500"}>
                 {profitPercentage >= 0 ? "+" : ""}{profitPercentage.toFixed(2)}%
               </span>
             </div>

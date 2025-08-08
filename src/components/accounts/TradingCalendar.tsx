@@ -107,8 +107,12 @@ const TradingCalendar: React.FC<TradingCalendarProps> = ({ account }) => {
         );
       });
       
-      // Calculate profit for this day
-      const profit = dayTrades.reduce((sum, trade) => sum + (trade.size * trade.rMultiple), 0);
+      // Calculate profit for this day using centralized calculation
+      const profit = dayTrades.reduce((sum, trade) => {
+        // Use centralized profit calculation
+        const tradeProfit = trade.profit !== undefined ? trade.profit : trade.rMultiple;
+        return sum + tradeProfit;
+      }, 0);
       
       return {
         date,

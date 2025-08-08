@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTradeStore } from '@/hooks/useTradeStore';
+import { useAccountCalculations } from '@/hooks/useAccountCalculations';
 import { 
   format, 
   isToday, 
@@ -25,6 +26,7 @@ interface WeekSummary {
 const TradingCalendar: React.FC<TradingCalendarProps> = ({ account, currency = 'USD' }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const { trades, filteredTrades } = useTradeStore();
+  const { getTradeProfit, formatCurrency } = useAccountCalculations();
   
   // Use filtered trades if available, otherwise use all trades
   const tradesToProcess = filteredTrades.length > 0 ? filteredTrades : trades;
@@ -69,11 +71,9 @@ const TradingCalendar: React.FC<TradingCalendarProps> = ({ account, currency = '
         );
       });
       
-      // Calculate profit for this day
+      // Calculate profit for this day using centralized calculation
       const profit = dayTrades.reduce((sum, trade) => {
-        // Use trade.profit if available, otherwise treat rMultiple as the profit amount
-        const tradeProfit = trade.profit !== undefined ? trade.profit : trade.rMultiple;
-        return sum + tradeProfit;
+        return sum + getTradeProfit(trade);
       }, 0);
       
       return {
@@ -150,15 +150,9 @@ const TradingCalendar: React.FC<TradingCalendarProps> = ({ account, currency = '
     setCurrentDate(new Date());
   };
   
-  // Format currency value
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency || 'USD',
-      signDisplay: 'always',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
+  // Format currency value using centralized formatter
+  const formatCurrencyValue = (value: number) => {
+    return formatCurrency(value, currency || 'USD');
   };
   
   // Define weekday names starting with Monday
@@ -170,7 +164,7 @@ const TradingCalendar: React.FC<TradingCalendarProps> = ({ account, currency = '
       <div className="flex flex-row items-center justify-between p-6 pb-2">
         <div className="flex items-center">
           <span className={`text-xl font-medium ${monthlyProfit > 0 ? 'text-positive' : monthlyProfit < 0 ? 'text-negative' : 'text-muted-foreground'}`}>
-            {formatCurrency(monthlyProfit)}
+            {formatCurrencyValue(monthlyProfit)}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -230,7 +224,7 @@ const TradingCalendar: React.FC<TradingCalendarProps> = ({ account, currency = '
                       {day.trades > 0 && (
                         <div className={`flex-1 flex flex-col justify-center items-center text-center ${day.profit > 0 ? 'text-positive' : 'text-negative'}`}>
                           <div className="font-medium" style={{ fontSize: 'calc(0.75rem)' }}>
-                            {formatCurrency(day.profit)}
+                            {formatCurrencyValue(day.profit)}
                           </div>
                           <div className={`${day.profit > 0 ? 'text-positive/80' : 'text-negative/80'} mt-0.5`} style={{ fontSize: 'calc(0.5rem + 2px)' }}>
                             {day.trades} {day.trades === 1 ? 'trade' : 'trades'}
@@ -253,7 +247,7 @@ const TradingCalendar: React.FC<TradingCalendarProps> = ({ account, currency = '
                           className={`font-medium text-center ${weekSummary.profit > 0 ? 'text-positive' : 'text-negative'}`}
                           style={{ fontSize: 'calc(0.75rem + 2px)' }}
                         >
-                          {formatCurrency(weekSummary.profit)}
+                          {formatCurrencyValue(weekSummary.profit)}
                         </div>
                         <div className="text-muted-foreground mt-0.5 text-center" style={{ fontSize: 'calc(0.5rem + 2px)' }}>
                           {weekSummary.activeDays} day{weekSummary.activeDays !== 1 ? 's' : ''}

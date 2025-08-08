@@ -2,6 +2,7 @@
 import { TradeFormValues } from '../schemas/tradeFormSchema';
 import { Trade, TradeFormData } from '@/types/Trade';
 import { detectSession } from './sessionDetector';
+import { calculateTradeProfit } from '@/lib/accountCalculations';
 
 // Transforms form data to match the TradeFormData interface
 export const transformFormToTradeData = (values: TradeFormValues): TradeFormData => {
@@ -107,28 +108,32 @@ export const prepareTradeSave = (tradeData: TradeFormData): Partial<Trade> => {
     return "1:0";
   };
   
-  // Calculate profit based on risk amount and R multiple
+  // Calculate profit using our centralized calculation system
   const calculateProfit = () => {
-    if (!tradeData.riskAmount) return undefined;
+    // Create a temporary trade object for calculation
+    const tempTrade: Partial<Trade> = {
+      entryPrice: parseFloat(tradeData.entryPrice || "0"),
+      exitPrice: parseFloat(tradeData.exitPrice || "0"),
+      slPrice: parseFloat(tradeData.slPrice || "0"),
+      direction: tradeData.direction.toLowerCase() as "long" | "short",
+      riskAmount: tradeData.riskAmount,
+      // Calculate R-multiple for the temp trade
+      rMultiple: (() => {
+        const entryPrice = parseFloat(tradeData.entryPrice || "0");
+        const exitPrice = parseFloat(tradeData.exitPrice || "0");
+        const slPrice = parseFloat(tradeData.slPrice || "0");
+        const direction = tradeData.direction.toLowerCase() as "long" | "short";
+        
+        const slDistance = Math.abs(entryPrice - slPrice);
+        if (slDistance > 0) {
+          const priceChange = exitPrice - entryPrice;
+          return direction === "long" ? priceChange / slDistance : -priceChange / slDistance;
+        }
+        return 0;
+      })()
+    };
     
-    const riskAmount = parseFloat(tradeData.riskAmount);
-    if (isNaN(riskAmount)) return undefined;
-    
-    // Calculate profit based on entryPrice, exitPrice and direction
-    const entryPrice = parseFloat(tradeData.entryPrice || "0");
-    const exitPrice = parseFloat(tradeData.exitPrice || "0");
-    const direction = tradeData.direction;
-    
-    if (isNaN(entryPrice) || isNaN(exitPrice)) return undefined;
-    
-    let profitMultiplier = 0;
-    if (direction === "Long") {
-      profitMultiplier = (exitPrice - entryPrice) / entryPrice;
-    } else {
-      profitMultiplier = (entryPrice - exitPrice) / entryPrice;
-    }
-    
-    return riskAmount * profitMultiplier;
+    return calculateTradeProfit(tempTrade as Trade);
   };
 
   // Ensure the session is included in the save data
