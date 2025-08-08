@@ -62,7 +62,9 @@ export const createStrategySlice: StateCreator<
       ? strategies.filter(strategy => strategy.type === type)
       : strategies;
     
-    return filteredStrategies.map(strategy => strategy.name);
+    // Get unique names and filter out duplicates
+    const uniqueNames = [...new Set(filteredStrategies.map(strategy => strategy.name))];
+    return uniqueNames;
   },
 
   // Rename strategy

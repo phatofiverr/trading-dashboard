@@ -56,7 +56,6 @@ const AppSidebar: React.FC = () => {
   const [newAccount, setNewAccount] = useState({
     name: '',
     currency: 'USD',
-    balance: 0,
     initialBalance: 0,
   });
   const [isHovering, setIsHovering] = useState<boolean>(false);
@@ -201,12 +200,12 @@ const AppSidebar: React.FC = () => {
     const createdAccount = addAccount({
       name: newAccount.name,
       currency: newAccount.currency,
-      balance: parseFloat(newAccount.balance.toString()),
+      balance: parseFloat(newAccount.initialBalance.toString()), // Set balance to initial balance at creation
       initialBalance: parseFloat(newAccount.initialBalance.toString()),
     });
     
     // Reset form and close dialog
-    setNewAccount({ name: '', currency: 'USD', balance: 0, initialBalance: 0 });
+    setNewAccount({ name: '', currency: 'USD', initialBalance: 0 });
     setShowAddAccountDialog(false);
     
     // Navigate to the new account - only if createdAccount is defined
@@ -485,29 +484,17 @@ const AppSidebar: React.FC = () => {
                             ))}
                           </select>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <label htmlFor="initialBalance" className="text-sm font-medium">Initial Balance</label>
-                            <Input
-                              id="initialBalance"
-                              type="number"
-                              value={newAccount.initialBalance}
-                              onChange={(e) => setNewAccount({ ...newAccount, initialBalance: parseFloat(e.target.value) })}
-                              placeholder="10000"
-                              className="bg-black/20 border-white/10"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label htmlFor="balance" className="text-sm font-medium">Current Balance</label>
-                            <Input
-                              id="balance"
-                              type="number"
-                              value={newAccount.balance}
-                              onChange={(e) => setNewAccount({ ...newAccount, balance: parseFloat(e.target.value) })}
-                              placeholder="10000"
-                              className="bg-black/20 border-white/10"
-                            />
-                          </div>
+                        <div className="space-y-2">
+                          <label htmlFor="initialBalance" className="text-sm font-medium">Initial Balance</label>
+                          <Input
+                            id="initialBalance"
+                            type="number"
+                            value={newAccount.initialBalance}
+                            onChange={(e) => setNewAccount({ ...newAccount, initialBalance: parseFloat(e.target.value) })}
+                            placeholder="10000"
+                            className="bg-black/20 border-white/10"
+                          />
+                          <p className="text-xs text-muted-foreground">Current balance will be calculated automatically from your trades</p>
                         </div>
                       </div>
                       <DialogFooter>

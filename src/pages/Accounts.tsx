@@ -1,9 +1,10 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAccountsStore } from '@/hooks/useAccountsStore';
+import { useTradeStore } from '@/hooks/useTradeStore';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Pencil } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
@@ -11,6 +12,8 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
 const AccountCard = ({ account }: { account: any }) => {
+  const { trades } = useTradeStore();
+  
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat('en-US', { 
       style: 'currency', 
@@ -20,7 +23,16 @@ const AccountCard = ({ account }: { account: any }) => {
     }).format(amount);
   };
   
-  const profit = account.balance - account.initialBalance;
+  // Calculate total profit from all trades for this account
+  const accountTrades = trades.filter(trade => trade.accountId === account.id);
+  const totalTradeProfit = accountTrades.reduce((sum, trade) => {
+    const tradeProfit = trade.profit !== undefined ? trade.profit : trade.rMultiple;
+    return sum + tradeProfit;
+  }, 0);
+  
+  // Calculate current balance and profit
+  const currentBalance = account.initialBalance + totalTradeProfit;
+  const profit = totalTradeProfit;
   const profitPercentage = account.initialBalance > 0 ? (profit / account.initialBalance) * 100 : 0;
   
   return (
@@ -36,7 +48,7 @@ const AccountCard = ({ account }: { account: any }) => {
           
           <div className="flex-1">
             <div className="text-xs text-muted-foreground mt-1">
-              {formatCurrency(account.balance, account.currency)} balance
+              {formatCurrency(currentBalance, account.currency)} balance
             </div>
             
             <div className="text-xs text-muted-foreground mt-2 flex items-center">
@@ -47,15 +59,11 @@ const AccountCard = ({ account }: { account: any }) => {
             </div>
           </div>
           
-          <div className="flex mt-4 gap-2">
-            <Button variant="minimal" size="sm" asChild className="flex-1">
+          <div className="mt-4">
+            <Button variant="minimal" size="sm" asChild className="w-full">
               <Link to={`/accounts/${account.id}`}>
                 View
               </Link>
-            </Button>
-            <Button variant="minimal" size="sm" className="flex-1">
-              <Pencil className="h-3 w-3 mr-1" />
-              Edit
             </Button>
           </div>
         </div>
@@ -66,7 +74,13 @@ const AccountCard = ({ account }: { account: any }) => {
 
 const Accounts: React.FC = () => {
   const { accounts, addAccount } = useAccountsStore();
+  const { fetchTrades } = useTradeStore();
   const navigate = useNavigate();
+  
+  // Fetch all trades when component mounts to ensure balance calculations are accurate
+  React.useEffect(() => {
+    fetchTrades();
+  }, [fetchTrades]);
   const [showAddAccountDialog, setShowAddAccountDialog] = React.useState(false);
   const [newAccount, setNewAccount] = React.useState({
     name: '',
