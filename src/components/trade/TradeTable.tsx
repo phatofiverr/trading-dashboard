@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useTradeStore } from "@/hooks/useTradeStore";
 import {
   Table,
@@ -23,8 +23,18 @@ const TradeTable: React.FC<TradeTableProps> = ({ hideExportButton = false, trade
   const { fetchTrades, filteredTrades } = useTradeStore();
   const [currentPage, setCurrentPage] = useState(1);
   
-  // Use provided trades or fall back to filteredTrades from the store
-  const displayTrades = trades || filteredTrades || [];
+  // Use provided trades or fall back to filteredTrades from the store, then sort by newest first
+  const displayTrades = useMemo(() => {
+    const tradesToSort = trades || filteredTrades || [];
+    return [...tradesToSort].sort((a, b) => {
+      // Try createdAt first (most recently added), then fall back to entryDate
+      const dateA = new Date(a.createdAt || a.entryDate);
+      const dateB = new Date(b.createdAt || b.entryDate);
+      
+      // Sort by newest first (descending order) - larger timestamps first
+      return dateB.getTime() - dateA.getTime();
+    });
+  }, [trades, filteredTrades]);
   
   useEffect(() => {
     fetchTrades();

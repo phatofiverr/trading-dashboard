@@ -48,7 +48,7 @@ const StrategyPage: React.FC = () => {
     selectTrade
   } = useTradeStore();
   const [showFilterPanel, setShowFilterPanel] = React.useState<boolean>(false);
-  const [showLiveData, setShowLiveData] = useState<boolean>(false);
+  const [showLiveData, setShowLiveData] = useState<boolean>(true);
   
   // First, declare all hooks
   useEffect(() => {

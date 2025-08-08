@@ -71,9 +71,8 @@ const TradingCalendar: React.FC<TradingCalendarProps> = ({ account, currency = '
       
       // Calculate profit for this day
       const profit = dayTrades.reduce((sum, trade) => {
-        // Use risk amount if available
-        const riskAmount = parseFloat(trade.riskAmount?.toString() || '0');
-        const tradeProfit = trade.rMultiple * (riskAmount > 0 ? riskAmount : 100);
+        // Use trade.profit if available, otherwise treat rMultiple as the profit amount
+        const tradeProfit = trade.profit !== undefined ? trade.profit : trade.rMultiple;
         return sum + tradeProfit;
       }, 0);
       

@@ -142,7 +142,12 @@ const TradeDetailView: React.FC<TradeDetailViewProps> = ({ trade }) => {
               <DialogHeader>
                 <DialogTitle className="text-foreground font-medium">Edit Trade</DialogTitle>
               </DialogHeader>
-              <TradeEntryForm initialTrade={trade} isEditing />
+              <TradeEntryForm 
+                initialTrade={trade} 
+                isEditing 
+                initialAccountId={trade.accountId}
+                initialStrategyId={trade.strategyId}
+              />
             </DialogContent>
           </Dialog>
           

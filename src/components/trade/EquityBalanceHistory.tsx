@@ -1,5 +1,5 @@
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -27,7 +27,17 @@ interface EquityBalanceHistoryProps {
 const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly = false }) => {
   const { trades, filteredTrades, stats: tradeStats, currentAccountId } = useTradeStore();
   const { accounts } = useAccountsStore();
-  const [chartType, setChartType] = useState<'stepAfter' | 'monotone' | 'linear'>('stepAfter');
+  
+  // Initialize chart type from localStorage or default to 'stepAfter'
+  const [chartType, setChartType] = useState<'stepAfter' | 'monotone' | 'linear'>(() => {
+    const savedChartType = localStorage.getItem('equityBalanceChartType');
+    return (savedChartType as 'stepAfter' | 'monotone' | 'linear') || 'stepAfter';
+  });
+
+  // Save chart type to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('equityBalanceChartType', chartType);
+  }, [chartType]);
 
   // Get the current account if accountOnly is true
   const currentAccount = useMemo(() => {
@@ -68,9 +78,8 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
     // Create data points for each trade
     const points: BalancePoint[] = [initialPoint];
     sortedTrades.forEach(trade => {
-      // Calculate profit in actual currency using R multiple and risk amount
-      const riskAmount = parseFloat(trade.riskAmount?.toString() || '0');
-      const profit = trade.rMultiple * (riskAmount > 0 ? riskAmount : 100); // Default to 100 if risk amount not set
+      // Use trade.profit if available, otherwise treat rMultiple as the profit amount
+      const profit = trade.profit !== undefined ? trade.profit : trade.rMultiple;
       
       // Update balance
       currentBalance += profit;
@@ -110,12 +119,12 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
     const initialBalance = balanceData[0].balance;
     const currentBalance = balanceData[balanceData.length - 1].balance;
     const totalProfit = currentBalance - initialBalance;
-    const percentageChange = (totalProfit / initialBalance) * 100;
+    const percentageChange = initialBalance !== 0 ? (totalProfit / initialBalance) * 100 : 0;
     
     return { 
       currentBalance, 
       totalProfit, 
-      percentageChange: isNaN(percentageChange) ? 0 : percentageChange 
+      percentageChange: isNaN(percentageChange) || !isFinite(percentageChange) ? 0 : percentageChange 
     };
   }, [balanceData]);
 
