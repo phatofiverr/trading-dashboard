@@ -59,9 +59,12 @@ export interface Trade {
   drawdownDuration?: number; // Duration of drawdown in days
   // New field for risk amount
   riskAmount?: string;    // Amount risked on this trade
-  riskRewardRatio?: string; // Risk to reward ratio
+  riskRewardRatio?: number; // Risk to reward ratio (calculated)
+  positionSize?: number;  // Calculated position size (lot size)
   // Behavioral tags for tracking trading mistakes
   behavioralTags?: string[]; // Array of BehavioralTag IDs
+  // Chart screenshot field for TradingView links
+  chartScreenshot?: string;
 }
 
 export interface TradeFormData {
@@ -101,6 +104,20 @@ export interface TradeFormData {
   session?: string;
   riskAmount?: string;  // New field for risk amount
   behavioralTags?: string[]; // Behavioral tags for trading mistakes
+  // Chart screenshot field for TradingView links
+  chartScreenshot?: string;
+  // Add missing fields
+  notes?: string;
+  exitReason?: string;
+  slLogic?: string;
+  tpLogic?: string;
+  // Drawdown analysis fields
+  maxDrawdown?: number;
+  recoveryTime?: number;
+  drawdownDuration?: number;
+  // Calculated trading metrics
+  riskRewardRatio?: number; // Risk to reward ratio (calculated)
+  positionSize?: number;  // Calculated position size (lot size)
 }
 
 export interface StrategyPerformance {

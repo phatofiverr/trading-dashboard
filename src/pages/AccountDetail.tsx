@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { SidebarProvider } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
-import TradeEntryForm from '@/components/trade/TradeEntryForm';
+import TradeEntryButton from '@/components/trade/TradeEntryButton';
 import TradeTable from '@/components/trade/TradeTable';
 import FilterPanel from '@/components/trade/FilterPanel';
 import TradeDetailView from '@/components/trade/TradeDetailView';
@@ -146,21 +146,12 @@ const AccountDetail: React.FC = () => {
                 </h1>
                 
                 <div className="flex items-center gap-2">
-                  {/* Transaction Entry Dialog */}
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="glass" className="flex items-center gap-2 bg-black/30 hover:bg-black/40 text-foreground border-white/5 shadow-md">
-                        <PlusCircle className="h-4 w-4" />
-                        New Trade
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl bg-black/80 backdrop-blur-xl border-white/10">
-                      <DialogHeader>
-                        <DialogTitle className="text-foreground font-medium">New Trade Entry</DialogTitle>
-                      </DialogHeader>
-                      <TradeEntryForm initialAccountId={accountId} />
-                    </DialogContent>
-                  </Dialog>
+                  {/* Beautiful Trade Entry Form */}
+                  <TradeEntryButton 
+                    initialAccountId={accountId} 
+                    variant="default" 
+                    size="default"
+                  />
                   
                   
                   

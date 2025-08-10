@@ -3,10 +3,10 @@ import { useTradeStore } from '@/hooks/useTradeStore';
 import { useParams, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Download, Filter, PlusCircle, ToggleLeft, ToggleRight } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+// Dialog components no longer needed with new beautiful form
 import { SidebarProvider } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
-import TradeEntryForm from '@/components/trade/TradeEntryForm';
+import TradeEntryButton from '@/components/trade/TradeEntryButton';
 import TradeTable from '@/components/trade/TradeTable';
 import FilterPanel from '@/components/trade/FilterPanel';
 import TradeDetailView from '@/components/trade/TradeDetailView';
@@ -126,20 +126,11 @@ const StrategyPage: React.FC = () => {
                   <div className="flex items-center gap-2">
                     {/* Trade Entry Dialog - Only show in backtest mode */}
                     {!showLiveData && (
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button variant="glass" className="flex items-center gap-2 bg-black/30 hover:bg-black/40 text-foreground border-white/5 shadow-md">
-                            <PlusCircle className="h-4 w-4" />
-                            New Trade
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-4xl bg-black/80 backdrop-blur-xl border-white/10">
-                          <DialogHeader>
-                            <DialogTitle className="text-foreground font-medium">New Trade Entry</DialogTitle>
-                          </DialogHeader>
-                          <TradeEntryForm initialStrategyId={strategyId} />
-                        </DialogContent>
-                      </Dialog>
+                      <TradeEntryButton 
+                        initialStrategyId={strategyId} 
+                        variant="default" 
+                        size="default"
+                      />
                     )}
                     
                     

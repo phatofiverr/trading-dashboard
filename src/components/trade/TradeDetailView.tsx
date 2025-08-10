@@ -1,13 +1,15 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Trade } from "@/types/Trade";
 import { format } from "date-fns";
 import { useTradeStore } from "@/hooks/useTradeStore";
-import { Trash, Pencil } from "lucide-react";
+import { Trash, Pencil, Calendar, Clock, Target, TrendingUp, TrendingDown, DollarSign, Image as ImageIcon, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,7 +21,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
-import TradeEntryForm from '@/components/trade/TradeEntryForm';
+import EditTradeButton from '@/components/trade/EditTradeButton';
 
 interface TradeDetailViewProps {
   trade: Trade;
@@ -38,118 +40,338 @@ const TradeDetailView: React.FC<TradeDetailViewProps> = ({ trade }) => {
   return (
     <>
       <Card className="border-trading-border bg-trading-panel">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-medium">Trade Details</CardTitle>
-        </CardHeader>
-        
-        <CardContent className="text-sm">
-          <div className="space-y-4">
-            <div className="flex justify-between">
-              <span className="font-semibold">Trade ID:</span>
-              <span>{trade.tradeId || trade.id.substring(0, 8)}</span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="font-semibold">Instrument:</span>
-              <span>{trade.instrument || trade.pair}</span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="font-semibold">Direction:</span>
-              <Badge variant={trade.direction === "long" ? "default" : "destructive"}>
-                {trade.direction === "long" ? "Long" : "Short"}
-              </Badge>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="font-semibold">Entry Date:</span>
-              <span>{format(new Date(trade.entryDate), "yyyy-MM-dd")}</span>
-            </div>
-            
-            {trade.exitDate && (
-              <div className="flex justify-between">
-                <span className="font-semibold">Exit Date:</span>
-                <span>{format(new Date(trade.exitDate), "yyyy-MM-dd")}</span>
-              </div>
-            )}
-            
-            <div className="flex justify-between">
-              <span className="font-semibold">Entry Price:</span>
-              <span>{trade.entryPrice}</span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="font-semibold">Exit Price:</span>
-              <span>{trade.exitPrice}</span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="font-semibold">SL Price:</span>
-              <span>{trade.slPrice || trade.stopLoss}</span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="font-semibold">R-Multiple:</span>
-              <Badge variant={trade.rMultiple > 0 ? "default" : "destructive"}>
-                {trade.rMultiple.toFixed(2)}R
-              </Badge>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="font-semibold">Timeframes:</span>
-              <span>{trade.entryTimeframe || trade.timeframe} / {trade.htfTimeframe || 'N/A'}</span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="font-semibold">Session:</span>
-              <span>{trade.session || 'N/A'} {trade.killzone && trade.killzone !== "None" && `(${trade.killzone})`}</span>
-            </div>
-            
-            {trade.tags && trade.tags.length > 0 && (
-              <div className="space-y-1">
-                <span className="font-semibold">Tags:</span>
-                <div className="flex flex-wrap gap-1">
-                  {trade.tags.map(tag => (
-                    <Badge key={tag} variant="outline">{tag}</Badge>
-                  ))}
+        <CardContent className="text-sm p-0">
+          <TooltipProvider>
+            <Tabs defaultValue="overview" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-4 mx-6 mt-4">
+                <TabsTrigger value="overview" className="text-base">Overview</TabsTrigger>
+                <TabsTrigger value="analysis" className="text-base">Analysis</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="overview" className="mt-0 px-6 pb-4">
+                <div className="space-y-4">
+                  {/* Basic Trade Info */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      <Target className="h-3 w-3" />
+                      Basic Information
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="font-semibold">Trade ID:</span>
+                      <span className="font-mono text-xs">{trade.tradeId || trade.id.substring(0, 8)}</span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="font-semibold">Instrument:</span>
+                      <span className="font-medium">{trade.instrument || trade.pair}</span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="font-semibold">Direction:</span>
+                      <Badge variant={trade.direction === "long" ? "default" : "destructive"}>
+                        {trade.direction === "long" ? (
+                          <><TrendingUp className="h-3 w-3 mr-1" />Long</>
+                        ) : (
+                          <><TrendingDown className="h-3 w-3 mr-1" />Short</>
+                        )}
+                      </Badge>
+                    </div>
+                    
+                    {trade.strategyId && trade.strategyId !== 'none' && (
+                      <div className="flex justify-between">
+                        <span className="font-semibold">Strategy:</span>
+                        <Badge variant="outline">{trade.strategyId}</Badge>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Timing Information */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      <Clock className="h-3 w-3" />
+                      Timing
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="font-semibold">Entry Date:</span>
+                      <span>{format(new Date(trade.entryDate), "MMM dd, yyyy")}</span>
+                    </div>
+                    
+                    {trade.entryTime && (
+                      <div className="flex justify-between">
+                        <span className="font-semibold">Entry Time:</span>
+                        <span>{trade.entryTime} {trade.entryTimezone || 'UTC'}</span>
+                      </div>
+                    )}
+                    
+                    {trade.exitDate && (
+                      <div className="flex justify-between">
+                        <span className="font-semibold">Exit Date:</span>
+                        <span>{format(new Date(trade.exitDate), "MMM dd, yyyy")}</span>
+                      </div>
+                    )}
+                    
+                    {trade.exitTime && (
+                      <div className="flex justify-between">
+                        <span className="font-semibold">Exit Time:</span>
+                        <span>{trade.exitTime} {trade.exitTimezone || 'UTC'}</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-between">
+                      <span className="font-semibold">Session:</span>
+                      <span>{trade.session || 'N/A'}</span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="font-semibold">Timeframes:</span>
+                      <span>{trade.entryTimeframe || trade.timeframe} / {trade.htfTimeframe || 'N/A'}</span>
+                    </div>
+                  </div>
+
+                  {/* Price & Risk Management */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      <DollarSign className="h-3 w-3" />
+                      Prices & Risk
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="font-semibold">Entry Price:</span>
+                      <span className="font-mono">{trade.entryPrice}</span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="font-semibold">Exit Price:</span>
+                      <span className="font-mono">{trade.exitPrice}</span>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="font-semibold">Stop Loss:</span>
+                      <span className="font-mono text-red-400">{trade.slPrice || trade.stopLoss}</span>
+                    </div>
+                    
+                    {trade.riskAmount && (
+                      <div className="flex justify-between">
+                        <span className="font-semibold">Risk Amount:</span>
+                        <span>${trade.riskAmount}</span>
+                      </div>
+                    )}
+                    
+                    {trade.positionSize && typeof trade.positionSize === 'number' && (
+                      <div className="flex justify-between">
+                        <span className="font-semibold">Position Size:</span>
+                        <span>{trade.positionSize.toFixed(4)} lots</span>
+                      </div>
+                    )}
+                    
+                    {trade.riskRewardRatio && typeof trade.riskRewardRatio === 'number' && (
+                      <div className="flex justify-between">
+                        <span className="font-semibold">Risk:Reward:</span>
+                        <span className="font-medium">1:{trade.riskRewardRatio.toFixed(2)}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
-            
-            {trade.notes && (
-              <div className="space-y-1">
-                <span className="font-semibold">Notes:</span>
-                <p className="text-sm whitespace-pre-wrap">{trade.notes}</p>
-              </div>
-            )}
-          </div>
+              </TabsContent>
+              
+              <TabsContent value="analysis" className="mt-0 px-6 pb-4">
+                <div className="space-y-4">
+                  {/* Performance */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      <TrendingUp className="h-3 w-3" />
+                      Performance
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="font-semibold">R-Multiple:</span>
+                      <Badge variant={typeof trade.rMultiple === 'number' && trade.rMultiple > 0 ? "default" : "destructive"}>
+                        {typeof trade.rMultiple === 'number' ? trade.rMultiple.toFixed(2) : '0.00'}R
+                      </Badge>
+                    </div>
+                    
+                    {trade.profit !== undefined && typeof trade.profit === 'number' && (
+                      <div className="flex justify-between">
+                        <span className="font-semibold">Profit/Loss:</span>
+                        <span className={
+                          trade.profit > 0 ? "text-green-400 font-medium" : 
+                          trade.profit < 0 ? "text-red-400 font-medium" :
+                          "text-yellow-400 font-medium"
+                        }>
+                          {trade.profit === 0 ? "Break Even" : `$${trade.profit > 0 ? '+' : ''}${trade.profit.toFixed(2)}`}
+                        </span>
+                      </div>
+                    )}
+
+                    {trade.outcome && (
+                      <div className="flex justify-between">
+                        <span className="font-semibold">Outcome:</span>
+                        <Badge variant={
+                          trade.outcome === 'win' ? "default" : 
+                          trade.outcome === 'loss' ? "destructive" : 
+                          "secondary"
+                        }>
+                          {trade.outcome.toUpperCase()}
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Break Even Analysis */}
+                  {(trade.didHitBE || trade.tpHitAfterBE || trade.reversedAfterBE) && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        <AlertTriangle className="h-3 w-3" />
+                        Break Even Analysis
+                      </div>
+                      
+                      {trade.didHitBE && (
+                        <div className="flex justify-between">
+                          <span className="font-semibold">Hit Break Even:</span>
+                          <Badge variant="secondary">Yes</Badge>
+                        </div>
+                      )}
+                      
+                      {trade.tpHitAfterBE && (
+                        <div className="flex justify-between">
+                          <span className="font-semibold">TP Hit After BE:</span>
+                          <Badge variant="default">Yes</Badge>
+                        </div>
+                      )}
+                      
+                      {trade.reversedAfterBE && (
+                        <div className="flex justify-between">
+                          <span className="font-semibold">Reversed After BE:</span>
+                          <Badge variant="destructive">Yes</Badge>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Tags and Categories */}
+                  {((trade.tags && trade.tags.length > 0) || (trade.behavioralTags && trade.behavioralTags.length > 0)) && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        Tags & Categories
+                      </div>
+                      
+                      {trade.tags && trade.tags.length > 0 && (
+                        <div className="space-y-2">
+                          <span className="font-semibold text-xs">Strategy Tags:</span>
+                          <div className="flex flex-wrap gap-1">
+                            {trade.tags.map(tag => (
+                              <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {trade.behavioralTags && trade.behavioralTags.length > 0 && (
+                        <div className="space-y-2">
+                          <span className="font-semibold text-xs">Behavioral Tags:</span>
+                          <div className="flex flex-wrap gap-1">
+                            {trade.behavioralTags.map(tag => (
+                              <Badge key={tag} variant="destructive" className="text-xs">{tag}</Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Screenshot */}
+                  {trade.chartScreenshot && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        <ImageIcon className="h-3 w-3" />
+                        Chart Screenshot
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold">Screenshot:</span>
+                        <Tooltip delayDuration={200}>
+                          <TooltipTrigger asChild>
+                            <div className="relative cursor-pointer group">
+                              <img 
+                                src={trade.chartScreenshot} 
+                                alt="Trade Screenshot Thumbnail"
+                                className="h-16 w-20 object-cover rounded-lg border-2 border-white/10 hover:border-white/40 transition-all duration-200 group-hover:scale-105"
+                                onError={(e) => {
+                                  e.currentTarget.src = '/placeholder-chart.png';
+                                  e.currentTarget.alt = 'Chart screenshot unavailable';
+                                }}
+                              />
+                              <div className="absolute inset-0 bg-black/30 hover:bg-black/10 transition-all duration-200 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                <span className="text-white text-xs font-medium px-2 py-1 bg-black/50 rounded backdrop-blur-sm">
+                                  Click to enlarge
+                                </span>
+                              </div>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent 
+                            side="left" 
+                            align="center"
+                            className="p-2 border border-white/20 bg-black/90 backdrop-blur-md rounded-xl shadow-2xl max-w-none"
+                            sideOffset={8}
+                          >
+                            <div className="relative">
+                              <img 
+                                src={trade.chartScreenshot} 
+                                alt="Trade Chart Screenshot - Full Size"
+                                className="max-w-[400px] max-h-[300px] w-auto h-auto object-contain rounded-lg shadow-lg"
+                                onError={(e) => {
+                                  e.currentTarget.src = '/placeholder-chart.png';
+                                  e.currentTarget.alt = 'Chart screenshot unavailable';
+                                }}
+                                onLoad={(e) => {
+                                  // Ensure proper aspect ratio
+                                  const img = e.currentTarget;
+                                  if (img.naturalWidth > img.naturalHeight) {
+                                    img.style.maxWidth = '450px';
+                                    img.style.maxHeight = '320px';
+                                  } else {
+                                    img.style.maxWidth = '320px';
+                                    img.style.maxHeight = '450px';
+                                  }
+                                }}
+                              />
+                              <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
+                                Chart Analysis
+                              </div>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Notes */}
+                  {trade.notes && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        Notes
+                      </div>
+                      <div className="bg-black/20 rounded-lg p-3 border border-white/10">
+                        <p className="text-sm whitespace-pre-wrap leading-relaxed">{trade.notes}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </TooltipProvider>
         </CardContent>
         
         <CardFooter className="flex flex-col gap-2">
           {/* Edit Trade Button */}
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full"
-              >
-                <Pencil className="h-4 w-4 mr-2" />
-                Edit Trade
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl bg-black/80 backdrop-blur-xl border-white/10">
-              <DialogHeader>
-                <DialogTitle className="text-foreground font-medium">Edit Trade</DialogTitle>
-              </DialogHeader>
-              <TradeEntryForm 
-                initialTrade={trade} 
-                isEditing 
-                initialAccountId={trade.accountId}
-                initialStrategyId={trade.strategyId}
-              />
-            </DialogContent>
-          </Dialog>
+          <EditTradeButton 
+            trade={trade} 
+            variant="outline" 
+            size="sm"
+            className="w-full"
+          />
           
           {/* Delete Trade Button */}
           <Button 

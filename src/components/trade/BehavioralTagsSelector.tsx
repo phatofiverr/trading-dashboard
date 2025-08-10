@@ -21,8 +21,8 @@ interface BehavioralTagsSelectorProps {
 const BehavioralTagsSelector: React.FC<BehavioralTagsSelectorProps> = ({ strategyId, isDemonMode = false }) => {
   const form = useFormContext<TradeFormValues>();
   
-  // Only show behavioral tags if a strategy is selected (not "none" or empty)
-  const shouldShowBehavioralTags = strategyId && strategyId !== "none";
+  // Show behavioral tags if a strategy is selected OR if in demon mode
+  const shouldShowBehavioralTags = isDemonMode || (strategyId && strategyId !== "none");
   
   if (!shouldShowBehavioralTags) {
     return null;
@@ -62,13 +62,6 @@ const BehavioralTagsSelector: React.FC<BehavioralTagsSelectorProps> = ({ strateg
       render={({ field }) => {
         return (
           <FormItem className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <AlertTriangle className="h-4 w-4 text-400" />
-              <FormLabel className="text-sm font-medium text-400">
-                {isDemonMode ? "Demon Check (Optional)" : "Behavioral Check (Optional)"}
-              </FormLabel>
-            </div>
-            
             <FormDescription className="text-xs text-muted-foreground flex items-start space-x-2">
               <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
               <span>
@@ -82,12 +75,12 @@ const BehavioralTagsSelector: React.FC<BehavioralTagsSelectorProps> = ({ strateg
             <div className="space-y-4">
               {Object.entries(tagsByCategory).map(([category, tags]) => (
                 <div key={category} className="space-y-2">
-                  <div className="flex items-center space-x-2">
+                  {/* <div className="flex items-center space-x-2">
                     {getCategoryIcon(category as BehavioralTagDefinition['category'])}
                     <h4 className="text-sm font-medium capitalize">
                       {isDemonMode ? `${category} Demons` : `${category} Mistakes`}
                     </h4>
-                  </div>
+                  </div> */}
                   
                   <div className="grid grid-cols-1 gap-2 pl-6">
                     {tags.map((tag) => {
@@ -125,10 +118,6 @@ const BehavioralTagsSelector: React.FC<BehavioralTagsSelectorProps> = ({ strateg
                                 {tag.label}
                               </span>
                             </div>
-                            
-                            <p className={`text-xs ${isSelected ? 'text-current' : 'text-muted-foreground'}`}>
-                              {tag.description}
-                            </p>
                           </div>
                         </div>
                       );
@@ -146,10 +135,6 @@ const BehavioralTagsSelector: React.FC<BehavioralTagsSelectorProps> = ({ strateg
                     {isDemonMode ? "Trading Demons Identified" : "Behavioral Issues Identified"}: {field.value?.length || 0}
                   </span>
                 </div>
-                <p className="text-xs text-red-300">
-                  Consider reviewing your trading plan and emotional state. 
-                  If you frequently select these tags, consider taking a break to reassess your approach.
-                </p>
               </div>
             )}
             

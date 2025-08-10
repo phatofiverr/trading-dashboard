@@ -29,12 +29,12 @@ export const transformFormToTradeData = (values: TradeFormValues): TradeFormData
         ? Math.abs(exitPrice - entryPrice) 
         : Math.abs(entryPrice - exitPrice);
       
-      // Return R:R as string (1:X format)
+      // Return R:R as number (ratio value)
       if (risk > 0) {
-        return `1:${(reward / risk).toFixed(2)}`;
+        return reward / risk;
       }
     }
-    return "1:0";
+    return 0;
   };
   
   // Convert form data to TradeFormData ensuring all required fields are present
@@ -68,12 +68,26 @@ export const transformFormToTradeData = (values: TradeFormValues): TradeFormData
     obType: values.obType || '',
     marketStructure: values.marketStructure || '',
     liquidityContext: values.liquidityContext || '',
+    exitReason: values.exitReason || '',
+    slLogic: values.slLogic || '',
+    tpLogic: values.tpLogic || '',
     // Add strategyId from form values
     strategyId: values.strategyId || 'default',
     // Add risk amount
     riskAmount: values.riskAmount || '',
     // Add behavioral tags
     behavioralTags: values.behavioralTags || [],
+    // Add chart screenshot
+    chartScreenshot: values.chartScreenshot || '',
+    // Add notes
+    notes: values.notes || '',
+    // Add drawdown analysis fields
+    maxDrawdown: values.maxDrawdown,
+    recoveryTime: values.recoveryTime,
+    drawdownDuration: values.drawdownDuration,
+    // Add calculated metrics
+    riskRewardRatio: values.riskRewardRatio,
+    positionSize: values.positionSize,
   };
 
 
@@ -100,12 +114,12 @@ export const prepareTradeSave = (tradeData: TradeFormData): Partial<Trade> => {
         ? Math.abs(exitPrice - entryPrice) 
         : Math.abs(entryPrice - exitPrice);
       
-      // Return R:R as string (1:X format)
+      // Return R:R as number (ratio value)
       if (risk > 0) {
-        return `1:${(reward / risk).toFixed(2)}`;
+        return reward / risk;
       }
     }
-    return "1:0";
+    return 0;
   };
   
   // Calculate profit using our centralized calculation system
@@ -163,6 +177,9 @@ export const prepareTradeSave = (tradeData: TradeFormData): Partial<Trade> => {
     obType: tradeData.obType,
     marketStructure: tradeData.marketStructure,
     liquidityContext: tradeData.liquidityContext,
+    exitReason: tradeData.exitReason,
+    slLogic: tradeData.slLogic,
+    tpLogic: tradeData.tpLogic,
     // Add console log to verify
     confidenceRating: tradeData.confidenceRating,
     // Include risk amount and risk-reward ratio
@@ -172,6 +189,16 @@ export const prepareTradeSave = (tradeData: TradeFormData): Partial<Trade> => {
     profit: calculateProfit(),
     // Include behavioral tags
     behavioralTags: tradeData.behavioralTags || [],
+    // Include chart screenshot
+    chartScreenshot: tradeData.chartScreenshot || '',
+    // Include notes
+    notes: tradeData.notes || '',
+    // Include drawdown analysis fields
+    maxDrawdown: tradeData.maxDrawdown,
+    recoveryTime: tradeData.recoveryTime,
+    drawdownDuration: tradeData.drawdownDuration,
+    // Include calculated metrics
+    positionSize: tradeData.positionSize,
   };
 
   // Add console log to verify data is being saved

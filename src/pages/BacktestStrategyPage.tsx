@@ -6,7 +6,7 @@ import { Download, Filter, PlusCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { SidebarProvider } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
-import TradeEntryForm from '@/components/trade/TradeEntryForm';
+import TradeEntryButton from '@/components/trade/TradeEntryButton';
 import EquityCurveChart from '@/components/trade/EquityCurveChart';
 import TradeTable from '@/components/trade/TradeTable';
 import FilterPanel from '@/components/trade/FilterPanel';
@@ -118,21 +118,12 @@ const BacktestStrategyPage: React.FC = () => {
                 </h1>
                 
                 <div className="flex items-center gap-2">
-                  {/* Trade Entry Dialog */}
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="glass" className="flex items-center gap-2 bg-black/30 hover:bg-black/40 text-foreground border-white/5 shadow-md">
-                        <PlusCircle className="h-4 w-4" />
-                        New Backtest Trade
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl bg-black/80 backdrop-blur-xl border-white/10">
-                      <DialogHeader>
-                        <DialogTitle className="text-foreground font-medium">New Backtest Trade Entry</DialogTitle>
-                      </DialogHeader>
-                      <TradeEntryForm initialStrategyId={strategyId} />
-                    </DialogContent>
-                  </Dialog>
+                  {/* Beautiful Trade Entry Form */}
+                  <TradeEntryButton 
+                    initialStrategyId={strategyId} 
+                    variant="default" 
+                    size="default"
+                  />
                   
                   
                   {/* Export Trades Button */}
