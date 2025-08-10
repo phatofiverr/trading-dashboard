@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
 import EditTradeButton from '@/components/trade/EditTradeButton';
+import { getBehavioralTagById } from "@/constants/behavioralTags";
 
 interface TradeDetailViewProps {
   trade: Trade;
@@ -250,34 +251,44 @@ const TradeDetailView: React.FC<TradeDetailViewProps> = ({ trade }) => {
                     </div>
                   )}
 
-                  {/* Tags and Categories */}
-                  {((trade.tags && trade.tags.length > 0) || (trade.behavioralTags && trade.behavioralTags.length > 0)) && (
+                  {/* Demon Tags */}
+                  {trade.behavioralTags && trade.behavioralTags.length > 0 && (
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                        Tags & Categories
+                        <AlertTriangle className="h-3 w-3" />
+                        Demon Tags
                       </div>
                       
-                      {trade.tags && trade.tags.length > 0 && (
-                        <div className="space-y-2">
-                          <span className="font-semibold text-xs">Strategy Tags:</span>
-                          <div className="flex flex-wrap gap-1">
-                            {trade.tags.map(tag => (
-                              <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>
-                            ))}
-                          </div>
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap gap-1">
+                          {trade.behavioralTags.map(tagId => {
+                            const tagInfo = getBehavioralTagById(tagId as any);
+                            return tagInfo ? (
+                              <Tooltip key={tagId} delayDuration={200}>
+                                <TooltipTrigger asChild>
+                                  <Badge variant="destructive" className="text-xs cursor-help">
+                                    {tagInfo.emoji} {tagInfo.label}
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent 
+                                  side="top" 
+                                  className="p-2 border border-white/20 bg-black/90 backdrop-blur-md rounded-xl shadow-2xl max-w-xs"
+                                >
+                                  <div className="space-y-1">
+                                    <div className="font-medium text-sm">{tagInfo.label}</div>
+                                    <div className="text-xs text-muted-foreground">{tagInfo.description}</div>
+                                    <div className="text-xs text-muted-foreground capitalize">Category: {tagInfo.category}</div>
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            ) : (
+                              <Badge key={tagId} variant="destructive" className="text-xs">
+                                {tagId}
+                              </Badge>
+                            );
+                          })}
                         </div>
-                      )}
-                      
-                      {trade.behavioralTags && trade.behavioralTags.length > 0 && (
-                        <div className="space-y-2">
-                          <span className="font-semibold text-xs">Behavioral Tags:</span>
-                          <div className="flex flex-wrap gap-1">
-                            {trade.behavioralTags.map(tag => (
-                              <Badge key={tag} variant="destructive" className="text-xs">{tag}</Badge>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                      </div>
                     </div>
                   )}
 
