@@ -104,13 +104,9 @@ export default function StepReview() {
     const url = watchedValues.chartScreenshot;
     if (!url) return;
     
-    const convertedUrl = getTradingViewImageUrl(url);
-    if (convertedUrl) {
-      setLoadedImageUrl(convertedUrl);
-      setImageError(false);
-    } else {
-      setImageError(true);
-    }
+    // Simply use the URL as provided - no conversion needed
+    setLoadedImageUrl(url);
+    setImageError(false);
   };
 
   const handleChartKeyPress = (e: React.KeyboardEvent) => {
@@ -205,7 +201,7 @@ export default function StepReview() {
           render={({ field }) => (
             <FormItem>
               <FormControl>
-                {chartImageUrl ? (
+                {watchedValues.chartScreenshot ? (
                   <div className="space-y-4">
                     <div className="relative border border-white/10 rounded-lg overflow-hidden bg-black/10 max-w-full min-h-[200px] flex items-center justify-center">
                       {imageLoading && (
@@ -213,40 +209,29 @@ export default function StepReview() {
                           <div className="text-white/60 text-sm">Loading chart...</div>
                         </div>
                       )}
-                      {imageError ? (
-                        <div className="w-full h-full flex flex-col items-center justify-center text-center">
-                          <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                            <svg className="w-6 h-6 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                            </svg>
-                          </div>
-                          <p className="text-white font-medium mb-1">Failed to load chart image</p>
-                          <p className="text-white/60 text-sm">Please check the TradingView link</p>
-                        </div>
-                      ) : (
-                        <img
-                          src={chartImageUrl}
-                          alt="TradingView Chart"
-                          className="max-w-full max-h-full object-contain"
-                          style={{ 
-                            maxWidth: 'calc(100% - 16px)', 
-                            maxHeight: '184px'
-                          }}
-                          onLoad={() => {
-                            setImageLoading(false);
-                            setImageError(false);
-                          }}
-                          onError={() => {
-                            setImageLoading(false);
-                            setImageError(true);
-                            console.error('Error loading chart image from:', chartImageUrl);
-                          }}
-                          onLoadStart={() => {
-                            setImageLoading(true);
-                            setImageError(false);
-                          }}
-                        />
-                      )}
+                      <img
+                        src={watchedValues.chartScreenshot}
+                        alt="TradingView Chart"
+                        className="max-w-full max-h-full object-contain"
+                        style={{ 
+                          maxWidth: 'calc(100% - 16px)', 
+                          maxHeight: '184px'
+                        }}
+                        onLoad={() => {
+                          setImageLoading(false);
+                          setImageError(false);
+                        }}
+                        onError={(e) => {
+                          e.currentTarget.src = '/placeholder-chart.png';
+                          e.currentTarget.alt = 'Chart screenshot unavailable';
+                          setImageLoading(false);
+                          setImageError(true);
+                        }}
+                        onLoadStart={() => {
+                          setImageLoading(true);
+                          setImageError(false);
+                        }}
+                      />
                       {/* Remove button */}
                       <Button
                         type="button"
