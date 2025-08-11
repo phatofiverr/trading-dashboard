@@ -2,8 +2,29 @@
 "use client"
 
 import * as React from "react"
-import * as AspectRatioPrimitive from "@radix-ui/react-aspect-ratio"
+import { cn } from "@/lib/utils"
 
-const AspectRatio = AspectRatioPrimitive.Root
+interface AspectRatioProps {
+  ratio?: number
+  children: React.ReactNode
+  className?: string
+}
+
+const AspectRatio = React.forwardRef<
+  HTMLDivElement,
+  AspectRatioProps
+>(({ ratio = 1, children, className, ...props }, ref) => (
+  <div
+    ref={ref}
+    data-slot="base"
+    className={cn("relative w-full", className)}
+    style={{ aspectRatio: ratio }}
+    {...props}
+  >
+    {children}
+  </div>
+))
+
+AspectRatio.displayName = "AspectRatio"
 
 export { AspectRatio }

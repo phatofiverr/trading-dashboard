@@ -29,21 +29,10 @@ export default defineConfig(({ mode }) => ({
           // React core
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           
-          // UI libraries
+          // UI libraries (now Origin UI native implementations)
           'ui-vendor': [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-popover',
-            '@radix-ui/react-select',
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-accordion',
-            '@radix-ui/react-alert-dialog',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-scroll-area',
-            '@radix-ui/react-separator',
-            '@radix-ui/react-slider',
-            '@radix-ui/react-switch',
-            '@radix-ui/react-toast',
-            '@radix-ui/react-tooltip'
+            'class-variance-authority',
+            'cmdk'
           ],
           
           // Chart libraries (these are heavy)

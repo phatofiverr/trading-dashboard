@@ -1,14 +1,14 @@
 import * as React from "react"
-import * as AvatarPrimitive from "@radix-ui/react-avatar"
 
 import { cn } from "@/lib/utils"
 
 const Avatar = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Root
+  <div
     ref={ref}
+    data-slot="avatar"
     className={cn(
       "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
       className
@@ -16,33 +16,63 @@ const Avatar = React.forwardRef<
     {...props}
   />
 ))
-Avatar.displayName = AvatarPrimitive.Root.displayName
+Avatar.displayName = "Avatar"
 
 const AvatarImage = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Image>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
->(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Image
-    ref={ref}
-    className={cn("aspect-square h-full w-full", className)}
-    {...props}
-  />
-))
-AvatarImage.displayName = AvatarPrimitive.Image.displayName
+  HTMLImageElement,
+  React.ImgHTMLAttributes<HTMLImageElement> & {
+    onLoadingStatusChange?: (status: "idle" | "loading" | "loaded" | "error") => void
+  }
+>(({ className, onLoadingStatusChange, ...props }, ref) => {
+  const [loadingStatus, setLoadingStatus] = React.useState<"idle" | "loading" | "loaded" | "error">("idle")
+
+  const handleLoad = () => {
+    setLoadingStatus("loaded")
+    onLoadingStatusChange?.("loaded")
+  }
+
+  const handleError = () => {
+    setLoadingStatus("error")
+    onLoadingStatusChange?.("error")
+  }
+
+  React.useEffect(() => {
+    if (props.src) {
+      setLoadingStatus("loading")
+      onLoadingStatusChange?.("loading")
+    }
+  }, [props.src, onLoadingStatusChange])
+
+  return (
+    <img
+      ref={ref}
+      data-slot="avatar-image"
+      className={cn("aspect-square h-full w-full object-cover", className)}
+      onLoad={handleLoad}
+      onError={handleError}
+      style={{
+        display: loadingStatus === "loaded" ? "block" : "none"
+      }}
+      {...props}
+    />
+  )
+})
+AvatarImage.displayName = "AvatarImage"
 
 const AvatarFallback = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Fallback>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Fallback
+  <div
     ref={ref}
+    data-slot="avatar-fallback"
     className={cn(
-      "flex h-full w-full items-center justify-center rounded-full bg-muted",
+      "flex h-full w-full items-center justify-center rounded-full bg-muted text-sm font-medium",
       className
     )}
     {...props}
   />
 ))
-AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName
+AvatarFallback.displayName = "AvatarFallback"
 
 export { Avatar, AvatarImage, AvatarFallback }
