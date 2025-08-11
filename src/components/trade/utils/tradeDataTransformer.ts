@@ -55,7 +55,7 @@ export const transformFormToTradeData = (values: TradeFormValues): TradeFormData
     didHitBE: values.didHitBE || false,
     tpHitAfterBE: values.tpHitAfterBE || false,
     reversedAfterBE: values.reversedAfterBE || false,
-    tpHit: values.tpHit || "none",
+    tpHit: values.tpHit,
     // Make sure to preserve entry time and timezone
     entryTime: values.entryTime || "00:00",
     exitTime: values.exitTime || "00:00",

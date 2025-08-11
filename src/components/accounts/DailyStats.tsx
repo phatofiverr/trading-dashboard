@@ -46,23 +46,6 @@ const DailyStats: React.FC<DailyStatsProps> = ({ accountId, currency = 'USD', cl
     return tradeDate.getTime() === today.getTime();
   });
   
-  // Debug logging to match other components
-  console.log('DailyStats Debug:', {
-    accountId,
-    totalProfit,
-    todayTradesCount: todayTrades.length,
-    relevantTradesCount: relevantTrades.length,
-    filteredTradesCount: filteredTrades.length,
-    allTradesCount: trades.length,
-    finalTradesToUseCount: tradesToUse.length,
-    todayTrades: todayTrades.map(t => ({
-      id: t.id,
-      accountId: t.accountId,
-      entryDate: t.entryDate,
-      exitDate: t.exitDate,
-      profit: getTradeProfit(t)
-    }))
-  });
   
   // Calculate today's stats
   const totalTrades = todayTrades.length;

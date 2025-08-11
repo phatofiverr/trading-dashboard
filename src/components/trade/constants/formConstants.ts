@@ -110,3 +110,22 @@ export const metricDescriptions = {
   directionWinRate: "Comparison of win rates between long and short trades",
   sessionPerformance: "Win, loss, and break even rates across different trading sessions"
 };
+
+// Trading instruments (currency pairs and indices)
+export const tradingInstruments = [
+  // Major Currency Pairs
+  { value: 'EURUSD', label: 'EUR/USD' },
+  { value: 'GBPUSD', label: 'GBP/USD' },
+  { value: 'USDJPY', label: 'USD/JPY' },
+  { value: 'AUDUSD', label: 'AUD/USD' },
+  { value: 'USDCAD', label: 'USD/CAD' },
+  { value: 'NZDUSD', label: 'NZD/USD' },
+  { value: 'USDCHF', label: 'USD/CHF' },
+  { value: 'EURGBP', label: 'EUR/GBP' },
+  { value: 'EURJPY', label: 'EUR/JPY' },
+  { value: 'GBPJPY', label: 'GBP/JPY' },  
+  // // Major Indices
+  // { value: 'GER40', label: 'DAX40 (GER40)' },
+  // { value: 'US500', label: 'S&P 500 (US500)' },
+  // { value: 'US100', label: 'NASDAQ 100 (US100)' },
+];

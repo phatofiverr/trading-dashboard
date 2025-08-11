@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import TradeEntryButton from '@/components/trade/TradeEntryButton';
 import TradeTable from '@/components/trade/TradeTable';
@@ -47,6 +47,10 @@ const AccountDetail: React.FC = () => {
   const { getAccountById } = useAccountsStore();
   const { setCurrentAccountId, setFilter, applyFilters, fetchTrades, selectedTrade, filteredTrades, exportAsCSV, selectTrade } = useTradeStore();
   const [showFilterPanel, setShowFilterPanel] = useState<boolean>(false);
+  const [showComponentPopoverMobile, setShowComponentPopoverMobile] = useState<boolean>(false);
+  const [showComponentPopoverDesktop, setShowComponentPopoverDesktop] = useState<boolean>(false);
+  
+
   
   // Visibility state for each component
   const [visibleComponents, setVisibleComponents] = useState<Record<string, boolean>>(() => {
@@ -98,10 +102,15 @@ const AccountDetail: React.FC = () => {
   
   // Toggle a component's visibility
   const toggleComponentVisibility = (componentId: string) => {
-    setVisibleComponents(prev => ({
-      ...prev,
-      [componentId]: !prev[componentId]
-    }));
+    console.log('Toggling component:', componentId);
+    setVisibleComponents(prev => {
+      const newState = {
+        ...prev,
+        [componentId]: !prev[componentId]
+      };
+      console.log('New visibility state:', newState);
+      return newState;
+    });
   };
   
   // Find the account with the given ID
@@ -140,45 +149,53 @@ const AccountDetail: React.FC = () => {
             <div className="h-full space-y-6 max-w-7xl mx-auto">
               
               {/* Header with Account Title and Action Buttons */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                <h1 className="text-2xl font-medium text-foreground">
-                  {account.name} <span className="text-sm font-normal text-muted-foreground ml-1">-BETA</span>
-                </h1>
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
+                <div className="flex items-center gap-3">
+                  <SidebarTrigger className="lg:hidden" />
+                  <h1 className="text-2xl font-medium text-foreground">
+                    {account.name} <span className="text-sm font-normal text-muted-foreground ml-1">-BETA</span>
+                  </h1>
+                </div>
                 
-                <div className="flex items-center gap-2">
+                {/* Mobile: Grid Layout */}
+                <div className="grid grid-cols-2 gap-2 lg:hidden w-full">
                   {/* Beautiful Trade Entry Form */}
-                  <TradeEntryButton 
-                    initialAccountId={accountId} 
-                    variant="default" 
-                    size="default"
-                  />
-                  
-                  
+                  <div className="col-span-2">
+                    <TradeEntryButton 
+                      initialAccountId={accountId} 
+                      variant="default" 
+                      size="default"
+                      className="w-full"
+                    />
+                  </div>
                   
                   {/* Export Trades Button */}
                   <Button 
                     variant="minimal" 
-                    className="flex items-center gap-2 bg-black/20 hover:bg-black/30 text-foreground border-white/5"
+                    className="flex items-center justify-center gap-2 bg-black/20 hover:bg-black/30 text-foreground border-white/5 h-9"
                     onClick={handleExportCSV}
                   >
                     <Download className="h-4 w-4" />
-                    Export
                   </Button>
                   
                   {/* Component Visibility Toggle */}
-                  <Popover>
+                  <Popover open={showComponentPopoverMobile} onOpenChange={setShowComponentPopoverMobile}>
                     <PopoverTrigger asChild>
                       <Button 
                         variant="minimal" 
-                        className="flex items-center gap-2 bg-black/20 hover:bg-black/30 text-foreground border-white/5"
+                        className={`flex items-center justify-center gap-2 ${showComponentPopoverMobile ? 'bg-red-500' : 'bg-black/20'} hover:bg-black/30 text-foreground h-9 w-full`}
                       >
                         <Settings className="h-4 w-4" />
-                        Components
+                        {showComponentPopoverMobile && <span className="text-xs">OPEN</span>}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-80 p-0 bg-black/80 backdrop-blur-xl border-white/10">
-                      <div className="p-4">
-                        <h4 className="text-sm font-medium mb-3 text-white/90">Component Visibility</h4>
+                    <PopoverContent 
+                      className="w-80 p-4 bg-black border-2 z-[9999]" 
+                      side="bottom" 
+                      align="start"
+                      sideOffset={8}
+                    >
+                        {/* <h4 className="text-sm font-medium mb-3 text-white/90">Component Visibility</h4> */}
                         <div className="space-y-2">
                           {COMPONENT_OPTIONS.map(component => (
                             <div key={component.id} className="flex items-center justify-between p-2 rounded-md hover:bg-white/5">
@@ -188,7 +205,7 @@ const AccountDetail: React.FC = () => {
                               <Switch
                                 id={`toggle-${component.id}`}
                                 checked={visibleComponents[component.id] || false}
-                                onCheckedChange={() => toggleComponentVisibility(component.id)}
+                                onChange={() => toggleComponentVisibility(component.id)}
                                 className="data-[state=checked]:bg-trading-accent1"
                               />
                             </div>
@@ -211,19 +228,104 @@ const AccountDetail: React.FC = () => {
                             Reset to Defaults
                           </Button>
                         </div>
-                      </div>
+                    </PopoverContent>
+                  </Popover>
+                   <div className="h-9 lg:hidden flex items-center justify-center w-full">
+                    <ThemeEditor />
+                </div>
+                  {/* Filter Button - Mobile */}
+                  <Button 
+                    variant="minimal" 
+                    className={`flex items-center justify-center gap-2 ${showFilterPanel ? 'bg-white/10 text-white' : 'bg-black/20 hover:bg-black/30 text-foreground'} border-white/5 h-9 lg:hidden`}
+                    onClick={() => setShowFilterPanel(!showFilterPanel)}
+                  >
+                    <Filter className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                {/* Desktop: Original Horizontal Layout */}
+                <div className="hidden lg:flex items-center gap-2">
+                  {/* Beautiful Trade Entry Form */}
+                  <TradeEntryButton 
+                    initialAccountId={accountId} 
+                    variant="default" 
+                    size="default"
+                  />
+                  
+                  {/* Export Trades Button */}
+                  <Button 
+                    variant="minimal" 
+                    className="flex items-center gap-2 bg-black/20 hover:bg-black/30 text-foreground border-white/5"
+                    onClick={handleExportCSV}
+                  >
+                    <Download className="h-4 w-4" />
+                    Export
+                  </Button>
+                  
+                  {/* Component Visibility Toggle */}
+                  <Popover open={showComponentPopoverDesktop} onOpenChange={setShowComponentPopoverDesktop}>
+                    <PopoverTrigger asChild>
+                      <Button 
+                        variant="minimal" 
+                        className="flex items-center gap-2 bg-black/20 hover:bg-black/30 text-foreground "
+                      >
+                        <Settings className="h-4 w-4" />
+                        Components
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent 
+                      className="w-80 p-4 bg-black border-2 z-[9999]" 
+                      side="bottom" 
+                      align="start"
+                      sideOffset={8}
+                    >
+                        {/* <h4 className="text-sm font-medium mb-3 text-white/90">Component Visibility</h4> */}
+                        <div className="space-y-2">
+                          {COMPONENT_OPTIONS.map(component => (
+                            <div key={component.id} className="flex items-center justify-between p-2 rounded-md hover:bg-white/5">
+                              <Label htmlFor={`toggle-${component.id}`} className="cursor-pointer text-white/80">
+                                {component.label}
+                              </Label>
+                              <Switch
+                                id={`toggle-${component.id}`}
+                                checked={visibleComponents[component.id] || false}
+                                onChange={() => toggleComponentVisibility(component.id)}
+                                className="data-[state=checked]:bg-trading-accent1"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="mt-4 pt-3 border-t border-white/10 flex justify-end">
+                          <Button
+                            variant="minimal"
+                            className="text-xs text-white/70"
+                            onClick={() => {
+                              // Reset to defaults
+                              const defaults = COMPONENT_OPTIONS.reduce((acc, option) => {
+                                acc[option.id] = option.defaultVisible;
+                                return acc;
+                              }, {} as Record<string, boolean>);
+                              setVisibleComponents(defaults);
+                              toast.success("Component visibility reset to defaults");
+                            }}
+                          >
+                            Reset to Defaults
+                          </Button>
+                        </div>
                     </PopoverContent>
                   </Popover>
                   
-                  {/* Theme Editor Button */}
-                  <Suspense fallback={<div className="h-32 bg-black/10 rounded-lg animate-pulse" />}>
-                    <ThemeEditor />
+                  {/* Theme Editor Button - Desktop */}
+                  <Suspense fallback={<div className="h-9 bg-black/10 rounded-md animate-pulse" />}>
+                    <div className="hidden lg:block">
+                      <ThemeEditor />
+                    </div>
                   </Suspense>
                   
-                  {/* Filter Button */}
+                  {/* Filter Button - Desktop */}
                   <Button 
                     variant="minimal" 
-                    className={`flex items-center gap-2 ${showFilterPanel ? 'bg-white/10 text-white' : 'bg-black/20 hover:bg-black/30 text-foreground'} border-white/5`}
+                    className={`hidden lg:flex items-center gap-2 ${showFilterPanel ? 'bg-white/10 text-white' : 'bg-black/20 hover:bg-black/30 text-foreground'} border-white/5`}
                     onClick={() => setShowFilterPanel(!showFilterPanel)}
                   >
                     <Filter className="h-4 w-4" />

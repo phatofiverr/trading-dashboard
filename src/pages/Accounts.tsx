@@ -6,7 +6,7 @@ import { useAccountCalculations } from '@/hooks/useAccountCalculations';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -128,7 +128,10 @@ const Accounts: React.FC = () => {
           <main className="flex-1 overflow-auto p-6">
             <div className="max-w-7xl mx-auto">
               <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">Trading Accounts</h1>
+                <div className="flex items-center gap-3">
+                  <SidebarTrigger className="lg:hidden" />
+                  <h1 className="text-2xl font-bold">Trading Accounts</h1>
+                </div>
                 <Dialog open={showAddAccountDialog} onOpenChange={setShowAddAccountDialog}>
                   <DialogTrigger asChild>
                     <Button variant="glass" className="flex items-center gap-2">

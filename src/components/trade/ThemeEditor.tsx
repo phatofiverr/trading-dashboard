@@ -48,7 +48,7 @@ interface ThemeEditorProps {
   children?: React.ReactNode;
 }
 
-const ThemeEditor: React.FC<ThemeEditorProps> = ({ children }) => {
+const ThemeEditor = React.forwardRef<HTMLButtonElement, ThemeEditorProps>(({ children }, ref) => {
   const { strategyId, accountId } = useParams<{ strategyId: string; accountId: string }>();
   const location = useLocation();
   const { 
@@ -167,8 +167,9 @@ const ThemeEditor: React.FC<ThemeEditorProps> = ({ children }) => {
       <SheetTrigger asChild>
         {children || (
           <Button 
+            ref={ref}
             variant="minimal" 
-            className="flex items-center gap-2 bg-black/20 hover:bg-black/30 text-foreground border-white/5"
+            className="flex items-center gap-2 bg-black/20 hover:bg-black/30 text-foreground border-white/5 h-9 w-full"
           >
             <Palette className="h-4 w-4" />
             Theme
@@ -306,6 +307,8 @@ const ThemeEditor: React.FC<ThemeEditorProps> = ({ children }) => {
       </SheetContent>
     </Sheet>
   );
-};
+});
+
+ThemeEditor.displayName = "ThemeEditor";
 
 export default ThemeEditor;

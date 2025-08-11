@@ -29,7 +29,7 @@ const TradeEntryButton: React.FC<TradeEntryButtonProps> = ({
         className={`bg-trading-accent1 hover:bg-trading-accent1/90 text-white ${className}`}
       >
         <Plus className="h-4 w-4 mr-2" />
-        Log New Trade
+        New Trade
       </Button>
 
       <BeautifulTradeEntryForm

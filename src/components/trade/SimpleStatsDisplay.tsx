@@ -30,19 +30,6 @@ const SimpleStatsDisplay: React.FC<SimpleStatsDisplayProps> = ({
   const relevantTrades = accountId ? getAccountTrades(accountId) : [];
   const tradesToUse = accountId ? relevantTrades : (filteredTrades.length > 0 ? filteredTrades : trades);
   
-  // Debug logging to compare with EquityBalanceHistory
-  console.log('SimpleStatsDisplay Trade Filtering:', {
-    accountId,
-    relevantTradesCount: relevantTrades.length,
-    filteredTradesCount: filteredTrades.length,
-    allTradesCount: trades.length,
-    finalTradesToUseCount: tradesToUse.length,
-    sampleTrades: tradesToUse.slice(0, 3).map(t => ({
-      id: t.id,
-      accountId: t.accountId,
-      profit: getTradeProfit(t)
-    }))
-  });
   
   // Calculate stats using centralized logic
   const calculateStats = () => {
@@ -117,20 +104,6 @@ const SimpleStatsDisplay: React.FC<SimpleStatsDisplayProps> = ({
   
   const calculatedStats = calculateStats();
   
-  // Debug logging
-  console.log('SimpleStatsDisplay Debug:', {
-    accountId,
-    tradesToUseCount: tradesToUse.length,
-    calculatedStats,
-    relevantTradesCount: relevantTrades.length,
-    allTradesCount: trades.length,
-    filteredTradesCount: filteredTrades.length,
-    tradesToUse: tradesToUse.slice(0, 3).map(t => ({
-      id: t.id,
-      accountId: t.accountId,
-      profit: getTradeProfit(t)
-    }))
-  });
   
   // Format currency value using centralized formatter
   const formatCurrencyValue = (value: number) => {

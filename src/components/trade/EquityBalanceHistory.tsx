@@ -108,21 +108,7 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
       });
     });
     
-    // Debug logging to match SimpleStatsDisplay
-    console.log('EquityBalanceHistory Debug:', {
-      accountOnly,
-      currentAccountId,
-      tradesToProcessCount: tradesToProcess.length,
-      sortedTradesCount: sortedTrades.length,
-      initialBalance,
-      finalBalance: currentBalance,
-      totalProfit: currentBalance - initialBalance,
-      sampleTrades: sortedTrades.slice(0, 3).map(t => ({
-        id: t.id,
-        accountId: t.accountId,
-        profit: getTradeProfit(t)
-      }))
-    });
+
     
     return points;
   }, [trades, filteredTrades, accounts, currentAccount, accountOnly, currentAccountId]);
@@ -144,14 +130,6 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
     const totalProfit = currentBalance - initialBalance;
     const percentageChange = initialBalance !== 0 ? (totalProfit / initialBalance) * 100 : 0;
     
-    // Debug logging to compare with SimpleStatsDisplay
-    console.log('EquityBalanceHistory Stats:', {
-      initialBalance,
-      currentBalance,
-      totalProfit,
-      percentageChange,
-      balanceDataLength: balanceData.length
-    });
     
     return { 
       currentBalance, 
@@ -209,22 +187,33 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
     <Card className="bg-black/20 backdrop-blur-md border-none shadow-lg h-full flex flex-col">
       <CardContent className="pt-4 pb-2 px-4 flex flex-col h-full">
         <div className="flex items-center justify-between gap-2 mb-2 px-2">
+
           {/* Updated dropdown menu using SelectTrigger for visual consistency */}
           <div className="flex-shrink-0">
-            <Select 
-              value={chartType} 
-              onValueChange={(value) => setChartType(value as 'stepAfter' | 'monotone' | 'linear')}
+          <Select
+              value={chartType}
+              onValueChange={(value) =>
+                setChartType(value as 'stepAfter' | 'monotone' | 'linear')
+              }
             >
-              <SelectTrigger className="w-32 h-8 text-xs bg-black/30 border-white/5 hover:bg-black/40 focus:ring-0 rounded-md">
+              {/* Desktop version */}
+              <SelectTrigger className="hidden lg:flex w-32 h-8 text-xs bg-black/30 border-white/5 hover:bg-black/40 focus:ring-0 rounded-md">
                 <SelectValue placeholder="Chart Style" />
               </SelectTrigger>
+
+              {/* Mobile icon-only version */}
+              <SelectTrigger className="flex lg:hidden w-8 h-8 items-center justify-center bg-black/30 border-white/5 hover:bg-black/40 focus:ring-0 rounded-md p-0">
+              </SelectTrigger>
+
               <SelectContent className="bg-black/80 backdrop-blur-xl border-white/10 text-xs">
                 <SelectItem value="stepAfter" className="text-xs">Step Chart</SelectItem>
                 <SelectItem value="monotone" className="text-xs">Curved Chart</SelectItem>
                 <SelectItem value="linear" className="text-xs">Linear Chart</SelectItem>
               </SelectContent>
             </Select>
+
           </div>
+
 
           <div className="flex items-center ml-auto gap-4 mr-2">
             <div className="text-right">

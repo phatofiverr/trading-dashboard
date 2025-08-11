@@ -15,6 +15,7 @@ import { auth, db } from '../config/firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { useAccountsStore } from '@/hooks/useAccountsStore';
 import { useTradeStore } from '@/hooks/useTradeStore';
+import { useInstrumentStore } from '@/hooks/useInstrumentStore';
 import firebaseService from '@/services/firebaseService';
 import { toast } from 'sonner';
 
@@ -190,6 +191,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Create user document when auth state changes
         await createUserDocument(user);
         
+        // Set user ID for instrument store
+        useInstrumentStore.getState().setUserId(user.uid);
+        
         // Load user data from Firebase after authentication (asynchronously)
         try {
           
@@ -206,6 +210,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } catch (error) {
           // Don't show error toast - let the app fall back to IndexedDB
         }
+      } else {
+        // User logged out - clear instrument store user ID
+        useInstrumentStore.getState().setUserId(null);
       }
     });
 

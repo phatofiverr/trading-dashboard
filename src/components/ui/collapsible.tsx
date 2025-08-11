@@ -1,4 +1,5 @@
 import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
 import { cn } from "@/lib/utils"
 
 interface CollapsibleContextType {
@@ -41,8 +42,8 @@ function Collapsible({
 
 const CollapsibleTrigger = React.forwardRef<
   HTMLButtonElement,
-  React.ButtonHTMLAttributes<HTMLButtonElement>
->(({ onClick, ...props }, ref) => {
+  React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean }
+>(({ onClick, asChild = false, ...props }, ref) => {
   const context = React.useContext(CollapsibleContext)
   if (!context) throw new Error('CollapsibleTrigger must be used within Collapsible')
 
@@ -51,8 +52,10 @@ const CollapsibleTrigger = React.forwardRef<
     onClick?.(event)
   }
 
+  const Comp = asChild ? Slot : "button"
+
   return (
-    <button
+    <Comp
       ref={ref}
       data-slot="collapsible-trigger"
       data-state={context.open ? "open" : "closed"}

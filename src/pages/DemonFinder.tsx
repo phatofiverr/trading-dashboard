@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useTradeStore } from '@/hooks/useTradeStore';
 import { BEHAVIORAL_TAGS, BehavioralTagDefinition, getBehavioralTagById } from '@/constants/behavioralTags';
 import { SidebarProvider } from '@/components/ui/sidebar';
@@ -27,8 +27,13 @@ interface PeriodStats {
 }
 
 const DemonFinder: React.FC = () => {
-  const { trades } = useTradeStore();
+  const { trades, isLoading, initialLoadComplete, fetchTrades } = useTradeStore();
   const [selectedPeriod, setSelectedPeriod] = useState<'current' | 'last' | 'all'>('current');
+  
+  // Fetch trades on component mount
+  useEffect(() => {
+    fetchTrades();
+  }, [fetchTrades]);
   
   // Calculate demon statistics
   const demonStats = useMemo(() => {
@@ -221,6 +226,27 @@ improvementScore: (() => {
                   </div>
                 </div>
               </div>
+              
+              {/* Loading State */}
+              {(isLoading || !initialLoadComplete) && (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                  {[...Array(4)].map((_, i) => (
+                    <Card key={i} className="glass-effect bg-black/5 border-0">
+                      <CardHeader className="pb-2">
+                        <div className="h-4 bg-white/10 rounded animate-pulse"></div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="h-8 bg-white/10 rounded animate-pulse mb-2"></div>
+                        <div className="h-3 bg-white/10 rounded animate-pulse w-3/4"></div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+              
+              {/* Show content only when loading is complete */}
+              {!isLoading && initialLoadComplete && (
+                <>
               
               {/* Warning Alert */}
               {isWarningLevel && (
@@ -467,6 +493,8 @@ improvementScore: (() => {
                   )}
                 </CardContent>
               </Card>
+                </>
+              )}
             </div>
           </main>
         </div>

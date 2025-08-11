@@ -70,17 +70,6 @@ export const detectSession = (time: string, timeZone: string = 'UTC'): string =>
         utcHour = hours;
       }
       
-      // Debug logging
-      console.log(`Session Detection Debug:`, {
-        inputTime: time,
-        timezone: timeZone,
-        inputHours: hours,
-        utcHour,
-        session: utcHour >= 0 && utcHour < 8 ? 'Asia' : 
-                utcHour >= 8 && utcHour < 12 ? 'London' : 
-                utcHour >= 12 && utcHour < 16 ? 'Overlap' : 
-                utcHour >= 16 && utcHour < 20 ? 'NY' : 'Late NY'
-      });
       
     } catch (timezoneError) {
       console.warn(`Error converting timezone ${timeZone}, using UTC as fallback:`, timezoneError);
@@ -104,14 +93,7 @@ export const detectSession = (time: string, timeZone: string = 'UTC'): string =>
       session = 'Late NY';
     }
     
-    // Final debug logging
-    console.log(`Final Session Detection:`, {
-      inputTime: time,
-      timezone: timeZone,
-      inputHours: hours,
-      utcHour,
-      session
-    });
+
     
     return session;
   } catch (error) {

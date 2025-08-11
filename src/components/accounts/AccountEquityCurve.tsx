@@ -268,7 +268,7 @@ const AccountEquityCurve: React.FC<AccountEquityCurveProps> = ({ account }) => {
             <span className="text-xs text-muted-foreground whitespace-nowrap">Projections:</span>
             <Switch
               checked={showProjections}
-              onCheckedChange={toggleProjections}
+              onChange={toggleProjections}
               className="data-[state=checked]:bg-muted/50"
             />
           </div>

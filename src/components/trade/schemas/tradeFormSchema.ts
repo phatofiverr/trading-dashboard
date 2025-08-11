@@ -27,7 +27,7 @@ export const tradeFormSchema = z.object({
   didHitBE: z.boolean().default(false),
   tpHitAfterBE: z.boolean().default(false),
   reversedAfterBE: z.boolean().default(false),
-  tpHit: z.enum(["none", "tp1", "tp2", "tp3"]).default("none"),
+  tpHit: z.enum(["TP", "SL", "BE", "Manual", "Partial"]).optional(),
   strategyId: z.string().optional(), // Optional - can be None/empty
   accountId: z.string().optional(), // Add accountId field for account assignment
   // Add session explicitly 
@@ -54,6 +54,9 @@ export const tradeFormSchema = z.object({
   behavioralTags: z.array(z.string()).default([]),
   // Chart screenshot field for TradingView links
   chartScreenshot: z.string().optional(),
+  // Pip/Price mode preferences
+  stopLossInPips: z.boolean().default(true),
+  takeProfitInPips: z.boolean().default(true),
 });
 
 export type TradeFormValues = z.infer<typeof tradeFormSchema>;

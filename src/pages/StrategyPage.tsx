@@ -3,7 +3,12 @@ import { useTradeStore } from '@/hooks/useTradeStore';
 import { useParams, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Download, Filter, PlusCircle, ToggleLeft, ToggleRight } from 'lucide-react';
-// Dialog components no longer needed with new beautiful form
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle 
+} from '@/components/ui/dialog';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import TradeEntryButton from '@/components/trade/TradeEntryButton';

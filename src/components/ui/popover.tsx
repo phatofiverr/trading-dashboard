@@ -55,14 +55,32 @@ function Popover({
 
 const PopoverTrigger = React.forwardRef<
   HTMLButtonElement,
-  React.ButtonHTMLAttributes<HTMLButtonElement>
->(({ children, onClick, ...props }, ref) => {
+  React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    asChild?: boolean
+  }
+>(({ children, onClick, asChild = false, ...props }, ref) => {
   const context = React.useContext(PopoverContext)
   if (!context) throw new Error('PopoverTrigger must be used within Popover')
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     context.setOpen(!context.open)
     onClick?.(event)
+  }
+
+  if (asChild) {
+    return React.cloneElement(children as React.ReactElement, {
+      ref: (node: HTMLButtonElement) => {
+        context.triggerRef.current = node
+        if (typeof ref === 'function') ref(node)
+        else if (ref) ref.current = node
+      },
+      onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
+        handleClick(event)
+        ;(children as React.ReactElement).props.onClick?.(event)
+      },
+      'aria-expanded': context.open,
+      'data-slot': 'popover-trigger'
+    })
   }
 
   return (
@@ -101,14 +119,18 @@ const PopoverContent = React.forwardRef<
       ref={ref}
       data-slot="popover-content"
       className={cn(
-        "z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none animate-in fade-in-0 zoom-in-95",
+        "z-[9999] w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none animate-in fade-in-0 zoom-in-95",
         "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
         className
       )}
       data-side={side}
       style={{
         position: 'fixed',
-        zIndex: 50,
+        zIndex: 9999,
+        top: context.triggerRef.current ? context.triggerRef.current.getBoundingClientRect().bottom + sideOffset : 0,
+        left: align === 'start' ? context.triggerRef.current?.getBoundingClientRect().left : 
+              align === 'end' ? (context.triggerRef.current?.getBoundingClientRect().right || 0) - 320 : 
+              ((context.triggerRef.current?.getBoundingClientRect().left || 0) + (context.triggerRef.current?.getBoundingClientRect().width || 0) / 2) - 144,
       }}
       {...props}
     />

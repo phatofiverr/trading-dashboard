@@ -67,7 +67,7 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
       didHitBE: false,
       tpHitAfterBE: false,
       reversedAfterBE: false,
-      tpHit: "none",
+      tpHit: undefined,
       confidenceRating: 5,
       tp1Price: "",
       tp2Price: "",
@@ -85,7 +85,10 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
       slLogic: "",
       tpLogic: "",
       strategyId: initialStrategyId || (initialAccountId ? "none" : (strategyId || filters.strategy)) || "",
-      accountId: initialAccountId || ""
+      accountId: initialAccountId || "",
+      // Pip/Price mode preferences
+      stopLossInPips: true,
+      takeProfitInPips: true
     },
   });
 
@@ -244,10 +247,10 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-2">
-      <div className="bg-[#0A0A0A] border border-gray-600/30 rounded-lg w-full max-w-2xl max-h-[75vh] flex flex-col backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-0 sm:p-2">
+      <div className="bg-[#0A0A0A] border border-gray-600/30 rounded-none sm:rounded-lg w-full h-full sm:h-auto sm:max-w-2xl sm:max-h-[90vh] flex flex-col backdrop-blur-sm">
         {/* Header with Stepper */}
-        <div className="p-3 border-b border-gray-600/20 shrink-0">
+        <div className="p-4 sm:p-3 border-b border-gray-600/20 shrink-0 bg-[#0A0A0A]">
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <FormStepper currentStep={currentStep} setCurrentStep={setCurrentStep} />
@@ -268,14 +271,14 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
               
               {/* Content */}
-              <div className="flex-1 px-3 py-2 overflow-y-auto min-h-0">
-                <div className="h-full">
+              <div className="flex-1 px-4 py-4 sm:px-3 sm:py-2 overflow-y-auto min-h-0">
+                <div className="min-h-full">
                   {renderStep()}
                 </div>
               </div>
               
               {/* Footer with buttons */}
-              <div className="p-3 pt-2 border-t border-gray-600/20 shrink-0 bg-[#0A0A0A]">
+              <div className="p-4 sm:p-3 sm:pt-2 border-t border-gray-600/20 shrink-0 bg-[#0A0A0A] safe-area-padding-bottom">
                 <FormButtons
                   currentStep={currentStep}
                   totalSteps={totalSteps}

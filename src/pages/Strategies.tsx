@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { toast } from "sonner";
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import { StrategyPerformance } from '@/types/Trade';
 
@@ -204,7 +204,10 @@ const Strategies: React.FC = () => {
             <div className="max-w-7xl mx-auto">
               <div className="mb-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h1 className="text-2xl font-bold">Trading Strategies</h1>
+                  <div className="flex items-center gap-3">
+                    <SidebarTrigger className="lg:hidden" />
+                    <h1 className="text-2xl font-bold">Trading Strategies</h1>
+                  </div>
                   <Dialog open={showAddStrategyDialog} onOpenChange={setShowAddStrategyDialog}>
                     <DialogTrigger asChild>
                       <Button variant="glass" className="flex items-center gap-2">
@@ -296,12 +299,12 @@ const Strategies: React.FC = () => {
       
       {/* Duplicate Strategy Dialog */}
       <Dialog open={showDuplicateDialog} onOpenChange={setShowDuplicateDialog}>
-        <DialogContent className="bg-black/80 backdrop-blur-md border-white/5">
-          <DialogHeader>
-            <DialogTitle>Duplicate Strategy</DialogTitle>
+        <DialogContent className="bg-black/80 backdrop-blur-md border-white/5 max-w-md w-full">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-lg">Duplicate Strategy</DialogTitle>
           </DialogHeader>
-          <div className="py-4">
-            <p className="text-sm text-muted-foreground mb-4">
+          <div className="py-2">
+            <p className="text-sm text-muted-foreground mb-3">
               Create a copy of "{strategyToDuplicate?.name}" with a new name:
             </p>
             <Input
@@ -311,8 +314,8 @@ const Strategies: React.FC = () => {
               className="bg-black/20 border-white/10"
             />
           </div>
-          <DialogFooter>
-            <Button onClick={handleDuplicateStrategy} variant="glass">
+          <DialogFooter className="pt-2">
+            <Button onClick={handleDuplicateStrategy} variant="glass" size="sm">
               <Copy className="h-4 w-4 mr-2" /> Duplicate
             </Button>
           </DialogFooter>

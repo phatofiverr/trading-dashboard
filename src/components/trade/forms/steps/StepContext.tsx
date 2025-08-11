@@ -9,14 +9,19 @@ import { entryTimeframes, timeZones } from "../../constants/formConstants";
 import { detectSession } from "../../utils/sessionDetector";
 import DateTimeInput from "../DateTimeInput";
 import SessionDisplay from "../../SessionDisplay";
+import CustomInstrumentSelect from "../../CustomInstrumentSelect";
 
 export default function StepContext() {
   const form = useFormContext<TradeFormValues>();
-  const watchedValues = form.watch();
 
   // Auto-detect session when time or timezone changes
   const entryTime = form.watch('entryTime');
   const entryTimezone = form.watch('entryTimezone');
+  const entryTimeframe = form.watch('entryTimeframe');
+  const currentSession = form.watch('session');
+  
+  // Debug logging
+  console.log('StepContext - entryTimeframe:', entryTimeframe);
   
   const detectedSession = useMemo(() => {
     if (entryTime && entryTimezone) {
@@ -26,40 +31,28 @@ export default function StepContext() {
   }, [entryTime, entryTimezone]);
   
   useEffect(() => {
-    if (entryTime && entryTimezone) {
+    if (entryTime && entryTimezone && detectedSession !== 'Unknown' && detectedSession !== currentSession) {
       form.setValue('session', detectedSession);
     }
-  }, [detectedSession, form]);
+  }, [detectedSession, entryTime, entryTimezone, currentSession]);
 
   return (
     <div className="space-y-6">
       {/* First Row: Instrument and Timezone */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField
           control={form.control}
           name="instrument"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-white/80">Instrument</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger className="bg-black/20 border-white/10">
-                    <SelectValue placeholder="Select instrument" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="EURUSD">EUR/USD</SelectItem>
-                  <SelectItem value="GBPUSD">GBP/USD</SelectItem>
-                  <SelectItem value="USDJPY">USD/JPY</SelectItem>
-                  <SelectItem value="AUDUSD">AUD/USD</SelectItem>
-                  <SelectItem value="USDCAD">USD/CAD</SelectItem>
-                  <SelectItem value="NZDUSD">NZD/USD</SelectItem>
-                  <SelectItem value="USDCHF">USD/CHF</SelectItem>
-                  <SelectItem value="EURGBP">EUR/GBP</SelectItem>
-                  <SelectItem value="EURJPY">EUR/JPY</SelectItem>
-                  <SelectItem value="GBPJPY">GBP/JPY</SelectItem>
-                </SelectContent>
-              </Select>
+              <FormControl>
+                <CustomInstrumentSelect
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  placeholder="Select or add instrument"
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -71,7 +64,7 @@ export default function StepContext() {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-white/80">Time Zone</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger className="bg-black/20 border-white/10">
                     <SelectValue placeholder="Select time zone" />
@@ -130,7 +123,7 @@ export default function StepContext() {
       />
 
       {/* Entry and Exit DateTime */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <DateTimeInput
           dateFieldName="entryDate"
           timeFieldName="entryTime"
@@ -151,7 +144,7 @@ export default function StepContext() {
         render={({ field }) => (
           <FormItem>
             <FormLabel className="text-white/80">Entry Timeframe</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select onValueChange={field.onChange} value={field.value}>
               <FormControl>
                 <SelectTrigger className="bg-black/20 border-white/10">
                   <SelectValue placeholder="Select timeframe" />

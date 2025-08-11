@@ -87,6 +87,12 @@ function SelectValue({ placeholder, className }: SelectValueProps) {
   const { value } = useSelectContext()
   const [selectedContent, setSelectedContent] = React.useState<React.ReactNode | undefined>()
   
+  // Find and display content for current value
+  const displayContent = React.useMemo(() => {
+    if (!value) return placeholder
+    return selectedContent || value // Fallback to value if no content is set
+  }, [value, selectedContent, placeholder])
+  
   // Reset selected content when value changes to undefined
   React.useEffect(() => {
     if (!value) {
@@ -101,7 +107,7 @@ function SelectValue({ placeholder, className }: SelectValueProps) {
         className={cn("flex items-center gap-2", className)}
         data-placeholder={!value ? "" : undefined}
       >
-        {selectedContent || placeholder}
+        {displayContent}
       </span>
     </SelectValueContext.Provider>
   )

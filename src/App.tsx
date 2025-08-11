@@ -85,7 +85,7 @@ function App() {
             } />
           </Routes>
         </Suspense>
-        <Toaster position="top-right" richColors closeButton />
+        <Toaster position="bottom-right" richColors closeButton />
       </Router>
     </AuthProvider>
   );

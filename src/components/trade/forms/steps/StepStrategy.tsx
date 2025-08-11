@@ -3,11 +3,9 @@
 import React, { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { TradeFormValues } from "../../schemas/tradeFormSchema";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Switch } from "@/components/ui/switch";
 import { InfoIcon, Calculator, Plus } from "lucide-react";
 import { useTradeStore } from "@/hooks/useTradeStore";
@@ -16,10 +14,17 @@ import { useParams } from "react-router-dom";
 export default function StepStrategy() {
   const form = useFormContext<TradeFormValues>();
   const watchedValues = form.watch();
-  const [stopLossInPips, setStopLossInPips] = useState(true);
-  const [takeProfitInPips, setTakeProfitInPips] = useState(true);
   const { getUniqueStrategies } = useTradeStore();
   const { strategyId } = useParams<{ strategyId: string }>();
+  
+  // Watch current values for conversion
+  const entryPrice = parseFloat(watchedValues.entryPrice || "0");
+  const currentSlPrice = watchedValues.slPrice;
+  const currentExitPrice = watchedValues.exitPrice;
+  
+  // Get mode preferences from form or default to true
+  const stopLossInPips = form.watch('stopLossInPips') ?? true;
+  const takeProfitInPips = form.watch('takeProfitInPips') ?? true;
   
   // Determine if we're in backtest or live trading mode
   const isBacktestMode = window.location.pathname.includes('/backtest');
@@ -35,8 +40,6 @@ export default function StepStrategy() {
     const slPrice = parseFloat(watchedValues.slPrice || "0");
     const direction = watchedValues.direction || "Long";
 
-    // Debug log to check values
-    console.log('RR Calc:', { entryPrice, exitPrice, slPrice, direction });
 
     if (entryPrice > 0 && exitPrice > 0 && slPrice > 0) {
       let reward = 0;
@@ -55,13 +58,13 @@ export default function StepStrategy() {
           riskCalc: `${entryPrice} - ${slPrice} = ${risk}`
         });
         
-        // Validate long setup: SL should be below entry, TP should be above entry
+        // Valilong setup: SL should be below entry, TP should be above entry
         if (slPrice >= entryPrice) {
-          console.log('❌ Invalid long setup: SL should be below entry price');
+          console.log('Invalid long setup: SL should be below entry price');
           return 0;
         }
         if (exitPrice <= entryPrice) {
-          console.log('❌ Invalid long setup: TP should be above entry price');  
+          console.log('Invalid long setup: TP should be above entry price');  
           return 0;
         }
         
@@ -128,11 +131,76 @@ export default function StepStrategy() {
   const riskRewardRatio = calculateRiskReward();
   const positionSize = calculatePositionSize();
 
+  // Convert pips to price and vice versa
+  const convertPipsToPrice = (pips: number, isLong: boolean) => {
+    if (!entryPrice || pips <= 0) return 0;
+    const pipValue = pips * 0.0001; // Standard pip value for most forex pairs
+    return isLong ? entryPrice + pipValue : entryPrice - pipValue;
+  };
+
+  const convertPriceToPips = (price: number, isLong: boolean) => {
+    if (!entryPrice || price <= 0) return 0;
+    const priceDiff = Math.abs(price - entryPrice);
+    return Math.round(priceDiff / 0.0001);
+  };
+
+  // Handle stop loss mode change
+  const handleStopLossModeChange = (usePips: boolean) => {
+    console.log('Stop Loss mode change:', { from: stopLossInPips, to: usePips, currentSlPrice, entryPrice });
+    
+    if (currentSlPrice && entryPrice && parseFloat(currentSlPrice) > 0) {
+      const direction = watchedValues.direction || "Long";
+      const isLong = direction === "Long";
+      
+      try {
+        if (usePips) {
+          // Convert current price to pips
+          const pips = convertPriceToPips(parseFloat(currentSlPrice), isLong);
+          console.log('Converting SL price to pips:', { price: currentSlPrice, pips });
+          form.setValue('slPrice', pips.toString());
+        } else {
+          // Convert current pips to price
+          const price = convertPipsToPrice(parseFloat(currentSlPrice), isLong);
+          console.log('Converting SL pips to price:', { pips: currentSlPrice, price });
+          form.setValue('slPrice', price.toFixed(5));
+        }
+      } catch (error) {
+        console.error('Error converting stop loss value:', error);
+      }
+    }
+  };
+
+  // Handle take profit mode change
+  const handleTakeProfitModeChange = (usePips: boolean) => {
+    console.log('Take Profit mode change:', { from: takeProfitInPips, to: usePips, currentExitPrice, entryPrice });
+    
+    if (currentExitPrice && entryPrice && parseFloat(currentExitPrice) > 0) {
+      const direction = watchedValues.direction || "Long";
+      const isLong = direction === "Long";
+      
+      try {
+        if (usePips) {
+          // Convert current price to pips
+          const pips = convertPriceToPips(parseFloat(currentExitPrice), isLong);
+          console.log('Converting TP price to pips:', { price: currentExitPrice, pips });
+          form.setValue('exitPrice', pips.toString());
+        } else {
+          // Convert current pips to price
+          const price = convertPipsToPrice(parseFloat(currentExitPrice), isLong);
+          console.log('Converting TP pips to price:', { pips: currentExitPrice, price });
+          form.setValue('exitPrice', price.toFixed(5));
+        }
+      } catch (error) {
+        console.error('Error converting take profit value:', error);
+      }
+    }
+  };
+
   // Update form values when calculations change
   React.useEffect(() => {
     form.setValue('riskRewardRatio', riskRewardRatio);
     form.setValue('positionSize', positionSize);
-  }, [riskRewardRatio, positionSize, form]);
+  }, [riskRewardRatio, positionSize]);
 
   return (
     <div className="space-y-6">
@@ -143,7 +211,7 @@ export default function StepStrategy() {
         render={({ field }) => (
           <FormItem>
             <FormLabel className="text-white font-medium">Strategy</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select onValueChange={field.onChange} value={field.value}>
               <FormControl>
                 <SelectTrigger className="bg-[#0A0A0A] border-gray-600/40">
                   <SelectValue placeholder="Select strategy" />
@@ -213,78 +281,114 @@ export default function StepStrategy() {
       />
 
       {/* Stop Loss and Take Profit Row */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Stop Loss */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <FormLabel className="text-white font-medium">Stop Loss {stopLossInPips ? '(pips)' : '(price)'}</FormLabel>
-            <div className="flex items-center space-x-2">
-              <span className="text-xs text-white/60">Pips</span>
-              <Switch
-                checked={stopLossInPips}
-                onCheckedChange={setStopLossInPips}
-                className="data-[state=checked]:bg-white data-[state=unchecked]:bg-white/20"
-              />
-            </div>
-          </div>
+          <FormField
+            control={form.control}
+            name="stopLossInPips"
+            render={({ field }) => {
+              const stopLossInPipsMode = form.watch('stopLossInPips');
+              return (
+                <div className="flex items-center justify-between">
+                  <FormLabel className="text-white font-medium">
+                    Stop Loss {stopLossInPipsMode ? '(pips)' : '(price)'}
+                  </FormLabel>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs text-white/60">Pips</span>
+                    <Switch
+                      checked={field.value}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        const checked = e.target.checked;
+                        field.onChange(checked);
+                        handleStopLossModeChange(checked);
+                      }}
+                      className="data-[state=checked]:bg-white data-[state=unchecked]:bg-white/20"
+                    />
+                  </div>
+                </div>
+              );
+            }}
+          />
           <FormField
             control={form.control}
             name="slPrice"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input
-                    type="number"
-                    step={stopLossInPips ? "1" : "0.00001"}
-                    min="0"
-                    {...field}
-                    className="bg-[#0A0A0A] border-red-500/30 focus:border-red-500/50"
-                    placeholder={stopLossInPips ? "Enter in pips" : "Enter in price"}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            render={({ field }) => {
+              const isInPips = form.watch('stopLossInPips');
+              return (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step={isInPips ? "1" : "0.00001"}
+                      min="0"
+                      {...field}
+                      className="bg-[#0A0A0A] border-red-500/30 focus:border-red-500/50"
+                      placeholder={isInPips ? "Enter in pips" : "Enter in price"}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
           />
         </div>
 
         {/* Take Profit */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <FormLabel className="text-white font-medium">Take Profit {takeProfitInPips ? '(pips)' : '(price)'}</FormLabel>
-            <div className="flex items-center space-x-2">
-              <span className="text-xs text-white/60">Pips</span>
-              <Switch
-                checked={takeProfitInPips}
-                onCheckedChange={setTakeProfitInPips}
-                className="data-[state=checked]:bg-white data-[state=unchecked]:bg-white/20"
-              />
-            </div>
-          </div>
+          <FormField
+            control={form.control}
+            name="takeProfitInPips"
+            render={({ field }) => {
+              const takeProfitInPipsMode = form.watch('takeProfitInPips');
+              return (
+                <div className="flex items-center justify-between">
+                  <FormLabel className="text-white font-medium">
+                    Take Profit {takeProfitInPipsMode ? '(pips)' : '(price)'}
+                  </FormLabel>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs text-white/60">Pips</span>
+                    <Switch
+                      checked={field.value}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        const checked = e.target.checked;
+                        field.onChange(checked);
+                        handleTakeProfitModeChange(checked);
+                      }}
+                      className="data-[state=checked]:bg-white data-[state=unchecked]:bg-white/20"
+                    />
+                  </div>
+                </div>
+              );
+            }}
+          />
           <FormField
             control={form.control}
             name="exitPrice"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input
-                    type="number"
-                    step={takeProfitInPips ? "1" : "0.00001"}
-                    min="0"
-                    {...field}
-                    className="bg-[#0A0A0A] border-green-500/30 focus:border-green-500/50"
-                    placeholder={takeProfitInPips ? "Enter in pips" : "Enter in price"}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            render={({ field }) => {
+              const isInPips = form.watch('takeProfitInPips');
+              return (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step={isInPips ? "1" : "0.00001"}
+                      min="0"
+                      {...field}
+                      className="bg-[#0A0A0A] border-green-500/30 focus:border-green-500/50"
+                      placeholder={isInPips ? "Enter in pips" : "Enter in price"}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
           />
         </div>
       </div>
 
       {/* Dollar Risk and Lot Size Row */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
         {/* Dollar Risk */}
         <FormField

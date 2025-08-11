@@ -5,7 +5,6 @@ import { useFormContext } from 'react-hook-form';
 import { TradeFormValues } from '../schemas/tradeFormSchema';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Calendar, Clock } from 'lucide-react';
 import { useTradeStore } from '@/hooks/useTradeStore';
 import { getDefaultTradeDate } from '@/lib/dateUtils';
 
@@ -100,7 +99,7 @@ const DateTimeInput: React.FC<DateTimeInputProps> = ({
           value={currentValue}
           onChange={(e) => handleDateTimeChange(e.target.value)}
           style={{ width: '100%' }}
-          className="bg-black/20 border-white/10 text-white [&::-webkit-calendar-picker-indicator]:opacity-80 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+          className="bg-black/20 border-white/10 text-white [&::-webkit-calendar-picker-indicator]:opacity-80 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:w-6 [&::-webkit-calendar-picker-indicator]:h-6 [&::-webkit-calendar-picker-indicator]:ml-auto"
         />
       </div>
       

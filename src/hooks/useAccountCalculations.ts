@@ -45,16 +45,6 @@ export const useAccountCalculations = () => {
   // Get trades for a specific account
   const getAccountTrades = (accountId: string) => {
     const filtered = tradesToProcess.filter(trade => trade.accountId === accountId);
-    console.log('getAccountTrades Debug:', {
-      accountId,
-      totalTrades: tradesToProcess.length,
-      filteredCount: filtered.length,
-      sampleTrades: tradesToProcess.slice(0, 3).map(t => ({
-        id: t.id,
-        accountId: t.accountId,
-        hasAccountId: !!t.accountId
-      }))
-    });
     return filtered;
   };
 

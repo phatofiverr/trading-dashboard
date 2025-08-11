@@ -113,6 +113,10 @@ To use the data sync features in this application, you need to set up Firebase F
          match /trades/{document=**} {
            allow read, write: if request.auth != null && request.auth.uid == userId;
          }
+         
+         match /preferences/{document=**} {
+           allow read, write: if request.auth != null && request.auth.uid == userId;
+         }
        }
      }
    }

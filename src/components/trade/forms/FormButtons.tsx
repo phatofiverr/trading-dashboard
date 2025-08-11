@@ -28,22 +28,23 @@ export default function FormButtons({
   // console.log("FormButtons render:", { currentStep, totalSteps, isFirstStep, isLastStep });
 
   return (
-    <div className="flex justify-between w-full">
-      <div>
+    <div className="flex justify-between items-center w-full gap-4">
+      <div className="flex-1">
         {!isFirstStep && (
           <Button
             type="button"
             variant="outline"
             onClick={onPrevStep}
-            className="mr-2 bg-black/20 border-white/20 text-white/80 hover:bg-white/10"
+            className="w-full sm:w-auto bg-black/20 border-white/20 text-white/80 hover:bg-white/10"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            <span className="hidden sm:inline">Back</span>
+            <span className="sm:hidden">Back</span>
           </Button>
         )}
       </div>
 
-      <div>
+      <div className="flex-1 flex justify-end">
         {!isLastStep ? (
           <Button
             type="button"
@@ -52,13 +53,14 @@ export default function FormButtons({
               onNextStep();
             }}
             disabled={!isStepValid}
-            className={`transition-all duration-300 ${
+            className={`w-full sm:w-auto transition-all duration-300 ${
               isStepValid
                 ? "bg-trading-accent1 hover:bg-trading-accent1/90 text-white"
                 : "bg-trading-accent1/50 text-white/70"
             }`}
           >
-            Next
+            <span className="hidden sm:inline">Next</span>
+            <span className="sm:hidden">Next</span>
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         ) : (
@@ -69,9 +71,10 @@ export default function FormButtons({
               onComplete();
             }}
             disabled={!isStepValid || isSubmitting}
-            className="bg-green-600 hover:bg-green-700 text-white"
+            className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"
           >
-            {isSubmitting ? "Saving..." : "Complete Trade"}
+            <span className="hidden sm:inline">{isSubmitting ? "Saving..." : "Complete Trade"}</span>
+            <span className="sm:hidden">{isSubmitting ? "Saving..." : "Complete"}</span>
             <CheckCircle className="w-4 h-4 ml-2" />
           </Button>
         )}

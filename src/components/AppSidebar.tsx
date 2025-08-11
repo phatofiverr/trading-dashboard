@@ -28,7 +28,6 @@ import {
   DialogTrigger,
   DialogDescription
 } from "@/components/ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,6 +64,10 @@ const AppSidebar: React.FC = () => {
   const [renameType, setRenameType] = useState<'account' | 'strategy'>('account');
   const [itemToRename, setItemToRename] = useState<{id: string, currentName: string} | null>(null);
   const [newName, setNewName] = useState<string>("");
+  
+  // Delete confirmation dialog state
+  const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false);
+  const [accountToDelete, setAccountToDelete] = useState<TradingAccount | null>(null);
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -232,14 +235,23 @@ const AppSidebar: React.FC = () => {
   };
 
   const handleDeleteAccount = (account: TradingAccount) => {
-    if (window.confirm('Are you sure you want to delete this account? This action cannot be undone.')) {
-      deleteAccount(account.id);
-      
-      // If we're on the deleted account's page, redirect to the profile page
-      if (location.pathname.includes(`/accounts/${account.id}`)) {
-        navigate('/profile');
-      }
+    setAccountToDelete(account);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDeleteAccount = () => {
+    if (!accountToDelete) return;
+    
+    deleteAccount(accountToDelete.id);
+    
+    // If we're on the deleted account's page, redirect to the profile page
+    if (location.pathname.includes(`/accounts/${accountToDelete.id}`)) {
+      navigate('/profile');
     }
+    
+    toast.success(`${accountToDelete.name} account deleted`);
+    setShowDeleteDialog(false);
+    setAccountToDelete(null);
   };
 
   const handleRenameClick = (type: 'account' | 'strategy', id: string, currentName: string) => {
@@ -658,6 +670,30 @@ const AppSidebar: React.FC = () => {
             </Button>
             <Button onClick={handleRename} variant="glass">
               Rename
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Delete Account Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="bg-black/80 backdrop-blur-md border-white/5">
+          <DialogHeader>
+            <DialogTitle className="text-red-400">Delete Account</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{accountToDelete?.name}"? This action cannot be undone and all associated trades will remain but will no longer be linked to this account.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="glass"
+              className="bg-red-500/20 border-red-500/30 text-red-400 hover:bg-red-500/30"
+              onClick={confirmDeleteAccount}
+            >
+              Delete Account
             </Button>
           </DialogFooter>
         </DialogContent>

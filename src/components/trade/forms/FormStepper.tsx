@@ -38,7 +38,7 @@ export default function FormStepper({ currentStep, setCurrentStep }: FormStepper
             <button
               onClick={() => setCurrentStep(index)}
               className={cn(
-                "px-4 py-1 text-sm font-medium transition-all duration-300",
+                "px-2 sm:px-4 py-1 text-xs sm:text-sm font-medium transition-all duration-300",
                 "hover:text-white focus-visible:outline-none",
                 currentStep === index
                   ? "text-white font-semibold scale-105"
@@ -47,7 +47,8 @@ export default function FormStepper({ currentStep, setCurrentStep }: FormStepper
                   : "text-white/60"
               )}
             >
-              {step.name}
+              <span className="hidden sm:inline">{step.name}</span>
+              <span className="sm:hidden">{step.name.substring(0, 3)}</span>
             </button>
           </li>
         ))}

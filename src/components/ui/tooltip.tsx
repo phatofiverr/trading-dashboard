@@ -1,5 +1,6 @@
 import * as React from "react"
 import { createPortal } from "react-dom"
+import { Slot } from "@radix-ui/react-slot"
 
 import { cn } from "@/lib/utils"
 
@@ -56,8 +57,8 @@ function Tooltip({
 
 const TooltipTrigger = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ children, onMouseEnter, onMouseLeave, onFocus, onBlur, ...props }, ref) => {
+  React.HTMLAttributes<HTMLDivElement> & { asChild?: boolean }
+>(({ children, onMouseEnter, onMouseLeave, onFocus, onBlur, asChild = false, ...props }, ref) => {
   const context = React.useContext(TooltipContext)
   if (!context) throw new Error('TooltipTrigger must be used within Tooltip')
 
@@ -88,12 +89,14 @@ const TooltipTrigger = React.forwardRef<
     onBlur?.(event)
   }
 
+  const Comp = asChild ? Slot : "div"
+
   return (
-    <div
-      ref={(node) => {
+    <Comp
+      ref={(node: HTMLElement) => {
         context.triggerRef.current = node
-        if (typeof ref === 'function') ref(node)
-        else if (ref) ref.current = node
+        if (typeof ref === 'function') ref(node as HTMLDivElement)
+        else if (ref) ref.current = node as HTMLDivElement
       }}
       data-slot="tooltip-trigger"
       onMouseEnter={handleMouseEnter}
@@ -103,7 +106,7 @@ const TooltipTrigger = React.forwardRef<
       {...props}
     >
       {children}
-    </div>
+    </Comp>
   )
 })
 TooltipTrigger.displayName = "TooltipTrigger"
