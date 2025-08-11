@@ -63,7 +63,7 @@ export default function FormButtons({
           </Button>
         ) : (
           <Button 
-            type="submit"
+            type="button"
             onClick={() => {
               console.log("Complete Trade button clicked", { isStepValid, isSubmitting });
               onComplete();
