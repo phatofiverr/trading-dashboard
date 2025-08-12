@@ -36,9 +36,7 @@ interface UserProfile {
   tradingExperience?: string;
   specializations?: string[];
   socialLinks?: {
-    twitter?: string;
-    linkedin?: string;
-    github?: string;
+    discord?: string;
   };
 }
 

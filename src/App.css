@@ -1,9 +1,13 @@
+/* Import Geist font */
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
 #root {
   margin: 0 auto;
   padding: 0;
   text-align: left;
   width: 100%;
   max-width: 100%;
+  font-family: 'Geist', sans-serif;
 }
 
 .logo {
@@ -259,4 +263,86 @@
     padding-left: 4rem;
     padding-right: 4rem;
   }
+}
+
+/* Template animations and styles */
+@keyframes hide {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slideDownAndFade {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideLeftAndFade {
+  from {
+    opacity: 0;
+    transform: translateX(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideUpAndFade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideRightAndFade {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes hover {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes gridMovingLine {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 100;
+  }
+  100% {
+    transform: translateX(-100%);
+    opacity: 100;
+  }
+}
+
+.mask {
+  mask-image: radial-gradient(rgba(0, 0, 0, 1) 0%, transparent 80%);
 }

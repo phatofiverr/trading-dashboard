@@ -173,8 +173,7 @@ export const useAccountStore = create<AccountState>()(
             tradingExperience: '5+ years',
             specializations: ['EUR/USD', 'GBP/JPY', 'Gold'],
             socialLinks: {
-              twitter: 'https://twitter.com/trader_joe',
-              linkedin: 'https://linkedin.com/in/traderj',
+              discord: 'https://discord.gg/trading-community',
             }
           },
           {
@@ -190,8 +189,7 @@ export const useAccountStore = create<AccountState>()(
             tradingExperience: '3 years',
             specializations: ['BTC/USD', 'ETH/USD', 'SOL/USD'],
             socialLinks: {
-              twitter: 'https://twitter.com/crypto_sarah',
-              github: 'https://github.com/sarahcrypto',
+              discord: 'https://discord.gg/crypto-traders',
             }
           },
           {
@@ -207,7 +205,7 @@ export const useAccountStore = create<AccountState>()(
             tradingExperience: '10+ years',
             specializations: ['AAPL', 'MSFT', 'TSLA', 'S&P 500'],
             socialLinks: {
-              linkedin: 'https://linkedin.com/in/mikej',
+              discord: 'https://discord.gg/stock-traders',
             }
           }
         ];
@@ -234,9 +232,7 @@ export const useAccountStore = create<AccountState>()(
           tradingExperience: userData.tradingExperience || '',
           specializations: userData.specializations || [],
           socialLinks: userData.socialLinks || {
-            twitter: '',
-            linkedin: '',
-            github: '',
+            discord: '',
           }
         };
         

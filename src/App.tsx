@@ -17,7 +17,8 @@ const Settings = lazy(() => import('./pages/Settings')); // Use the correct comp
 const DemonFinder = lazy(() => import('./pages/DemonFinder'));
 const Login = lazy(() => import('./pages/Auth/Login'));
 const Register = lazy(() => import('./pages/Auth/Register'));
-const Landing = lazy(() => import('./pages/Landing'));
+// const Landing = lazy(() => import('./pages/Landing'));
+const Landing = lazy(() => import('./pages/page'));
 const PasswordReset = lazy(() => import('./pages/Auth/PasswordReset'));
 const EmailVerification = lazy(() => import('./pages/Auth/EmailVerification'));
 

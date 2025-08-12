@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, MapPin, Edit, User, Twitter, Linkedin, Github } from 'lucide-react';
+import { MessageCircle, MapPin, Edit, User } from 'lucide-react';
 import { Dialog, DialogContent, DialogFooter, DialogTitle, DialogHeader } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { doc, updateDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { useAuth } from '@/contexts/AuthContext';
+import { RiDiscordFill } from "@remixicon/react";
 
 interface UserProfile {
   id: string;
@@ -23,9 +24,7 @@ interface UserProfile {
   tradingExperience?: string;
   specializations?: string[];
   socialLinks?: {
-    twitter?: string;
-    linkedin?: string;
-    github?: string;
+    discord?: string;
   };
 }
 
@@ -43,15 +42,13 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   const { currentUser } = useAuth();
   const [showSocialLinksDialog, setShowSocialLinksDialog] = useState(false);
   const [socialLinks, setSocialLinks] = useState({
-    twitter: user?.socialLinks?.twitter || '',
-    linkedin: user?.socialLinks?.linkedin || '',
-    github: user?.socialLinks?.github || '',
+    discord: user?.socialLinks?.discord || '',
   });
 
   if (!user) return null;
   
   
-  const updateSocialLinks = async (links: {twitter: string, linkedin: string, github: string}) => {
+  const updateSocialLinks = async (links: {discord: string}) => {
     if (!currentUser?.uid) return;
     
     try {
@@ -125,34 +122,14 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         {/* Social Links */}
         <div>
           <div className="flex space-x-2">
-            {user.socialLinks?.twitter && (
+            {user.socialLinks?.discord && (
               <a 
-                href={user.socialLinks.twitter} 
+                href={user.socialLinks.discord} 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="text-muted-foreground hover:text-white p-2 bg-white/5 rounded-full"
               >
-                <Twitter className="h-4 w-4" />
-              </a>
-            )}
-            {user.socialLinks?.linkedin && (
-              <a 
-                href={user.socialLinks.linkedin} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-muted-foreground hover:text-white p-2 bg-white/5 rounded-full"
-              >
-                <Linkedin className="h-4 w-4" />
-              </a>
-            )}
-            {user.socialLinks?.github && (
-              <a 
-                href={user.socialLinks.github} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-muted-foreground hover:text-white p-2 bg-white/5 rounded-full"
-              >
-                <Github className="h-4 w-4" />
+                <RiDiscordFill className="h-4 w-4" />
               </a>
             )}
             {user.isCurrentUser && (
@@ -186,40 +163,14 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           <div className="py-4 space-y-4">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Twitter className="h-4 w-4" />
-                <label htmlFor="twitter" className="text-sm font-medium">Twitter</label>
+                <RiDiscordFill className="h-4 w-4" />
+                <label htmlFor="discord" className="text-sm font-medium">Discord</label>
               </div>
               <Input
-                id="twitter"
-                placeholder="https://twitter.com/yourusername"
-                value={socialLinks.twitter}
-                onChange={(e) => setSocialLinks({...socialLinks, twitter: e.target.value})}
-                className="bg-black/20 border-white/10"
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Linkedin className="h-4 w-4" />
-                <label htmlFor="linkedin" className="text-sm font-medium">LinkedIn</label>
-              </div>
-              <Input
-                id="linkedin"
-                placeholder="https://linkedin.com/in/yourusername"
-                value={socialLinks.linkedin}
-                onChange={(e) => setSocialLinks({...socialLinks, linkedin: e.target.value})}
-                className="bg-black/20 border-white/10"
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Github className="h-4 w-4" />
-                <label htmlFor="github" className="text-sm font-medium">GitHub</label>
-              </div>
-              <Input
-                id="github"
-                placeholder="https://github.com/yourusername"
-                value={socialLinks.github}
-                onChange={(e) => setSocialLinks({...socialLinks, github: e.target.value})}
+                id="discord"
+                placeholder="https://discord.gg/your-server"
+                value={socialLinks.discord}
+                onChange={(e) => setSocialLinks({...socialLinks, discord: e.target.value})}
                 className="bg-black/20 border-white/10"
               />
             </div>
