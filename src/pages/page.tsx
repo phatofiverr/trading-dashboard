@@ -18,7 +18,7 @@ export default function Home() {
           <Hero />
         </div>
 
-        <div className="mt-52 px-4 xl:px-0">
+        <div className="mt-38 px-4 xl:px-0">
           <Features />
         </div>
         

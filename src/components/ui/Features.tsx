@@ -163,7 +163,7 @@ export default function Features() {
                     <path
                       key={i}
                       d={`M${-106 + offset} 110L${22 + offset} -18`}
-                      className="stroke-white/10"
+                      className="stroke-white/5"
                       strokeWidth="1"
                     />
                   )
@@ -285,7 +285,7 @@ export default function Features() {
               >
                 <div className="relative flex h-48 w-48 items-center justify-center">
                   <div className="rounded-full p-1 ring-1 ring-white/20">
-                    <div className="relative z-10 flex size-20 items-center justify-center rounded-full bg-gradient-to-br from-gray-800 to-gray-900 ring-1 shadow-[inset_0px_-15px_20px_rgba(0,0,0,0.3),0_7px_10px_0_rgba(0,0,0,0.4)] ring-white/10">
+                    <div className="relative z-10 flex size-20 items-center justify-center rounded-full bg-gradient-to-br from-[#202020] to-[#101010] ring-1 shadow-[inset_0px_-15px_20px_rgba(0,0,0,0.3),0_7px_10px_0_rgba(0,0,0,0.4)] ring-white/10">
                       <img src="/solarmark.svg" alt="SolarMark" className="size-10" />
                     </div>
                     <div className="absolute inset-12 animate-[spin_8s_linear_infinite] rounded-full bg-linear-to-t from-transparent via-[#818CF8] to-transparent blur-lg" />
@@ -354,14 +354,14 @@ export default function Features() {
 
             <div className="pointer-events-none relative h-full select-none">
               <div className="absolute top-[192px] left-[191.8px]">
-                <div className="flex h-12 w-12 items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 ring-1 shadow-sm ring-white/20">
+                <div className="flex h-12 w-12 items-center justify-center bg-gradient-to-br from-[#202020] to-[#101010] ring-1 shadow-sm ring-white/20">
                   <img src="/solarmark.svg" alt="SolarMark" className="h-8 w-8" />
                 </div>
               </div>
               <div className="absolute top-[144px] left-[48px]">
                 <div className="relative">
                   <div className="absolute inset-0 size-12 animate-pulse bg-[#818CF8]/30 blur-[3px]"></div>
-                  <div className="relative flex h-12 w-12 items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 ring-1 shadow-sm ring-white/20">
+                  <div className="relative flex h-12 w-12 items-center justify-center bg-gradient-to-br from-[#202020] to-[#101010] ring-1 shadow-sm ring-white/20">
                     <span className="text-sm font-medium text-gray-300">
                       +2.5R
                     </span>
@@ -372,7 +372,7 @@ export default function Features() {
               <div className="absolute top-[48px] left-[144px]">
                 <div className="relative">
                   <div className="absolute inset-0 size-12 animate-pulse bg-[#818CF8]/30 blur-[3px]"></div>
-                  <div className="relative flex h-12 w-12 items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 ring-1 shadow-sm ring-white/20">
+                  <div className="relative flex h-12 w-12 items-center justify-center bg-gradient-to-br from-[#202020] to-[#101010] ring-1 shadow-sm ring-white/20">
                     <span className="text-sm font-medium text-gray-300">
                       85%
                     </span>
@@ -383,7 +383,7 @@ export default function Features() {
               <div className="absolute top-[96px] left-[240px]">
                 <div className="relative">
                   <div className="absolute inset-0 size-12 animate-pulse bg-[#818CF8]/30 blur-[3px]"></div>
-                  <div className="relative flex h-12 w-12 items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 ring-1 shadow-sm ring-white/20">
+                  <div className="relative flex h-12 w-12 items-center justify-center bg-gradient-to-br from-[#202020] to-[#101010] ring-1 shadow-sm ring-white/20">
                     <span className="text-sm font-medium text-gray-300">
                       +1.8R
                     </span>
@@ -394,7 +394,7 @@ export default function Features() {
               <div className="absolute top-[240px] left-[385px]">
                 <div className="relative">
                   <div className="absolute inset-0 size-12 animate-pulse bg-[#818CF8]/30 blur-[3px]"></div>
-                  <div className="relative flex h-12 w-12 items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 ring-1 shadow-sm ring-white/20">
+                  <div className="relative flex h-12 w-12 items-center justify-center bg-gradient-to-br from-[#202020] to-[#101010] ring-1 shadow-sm ring-white/20">
                     <span className="text-sm font-medium text-gray-300">
                       92%
                     </span>
@@ -405,7 +405,7 @@ export default function Features() {
               <div className="absolute top-[337px] left-[336px]">
                 <div className="relative">
                   <div className="absolute inset-0 size-12 animate-pulse bg-[#818CF8]/30 blur-[3px]"></div>
-                  <div className="relative flex h-12 w-12 items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 ring-1 shadow-sm ring-white/20">
+                  <div className="relative flex h-12 w-12 items-center justify-center bg-gradient-to-br from-[#202020] to-[#101010] ring-1 shadow-sm ring-white/20">
                     <span className="text-sm font-medium text-gray-300">
                       +3.2R
                     </span>
@@ -416,7 +416,7 @@ export default function Features() {
               <div className="absolute top-[288px] left-[144px]">
                 <div className="relative">
                   <div className="absolute inset-0 size-12 animate-pulse bg-[#818CF8]/30 blur-[3px]"></div>
-                  <div className="relative flex h-12 w-12 items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 ring-1 shadow-sm ring-white/20">
+                  <div className="relative flex h-12 w-12 items-center justify-center bg-gradient-to-br from-[#202020] to-[#101010] ring-1 shadow-sm ring-white/20">
                     <span className="text-sm font-medium text-gray-300">
                       78%
                     </span>
@@ -477,7 +477,7 @@ export default function Features() {
           <div className="pointer-events-none relative flex size-full h-[26rem] items-center justify-center p-10 select-none">
             <div className="relative">
               <div className="absolute top-[6rem] left-[6rem] z-20">
-                <div className="relative mx-auto w-fit rounded-full bg-gray-800 p-1 ring-1 shadow-md shadow-black/20 ring-white/20">
+                <div className="relative mx-auto w-fit rounded-full from-[#202020] to-[#101010] p-1 ring-1 shadow-md shadow-black/20 ring-white/20">
                   <div className="w-fit rounded-full bg-linear-to-b from-gray-700 to-gray-800 p-3 ring-1 shadow-[inset_0px_-2px_6px_rgba(0,0,0,0.09),0_3px_5px_0_rgba(0,0,0,0.19)] ring-white/50 ring-inset">
                     <RiNotification2Line
                       className="size-5 text-white"
@@ -487,7 +487,7 @@ export default function Features() {
                 </div>
               </div>
               <div className="absolute top-[6rem] right-[6rem] z-20">
-                <div className="relative mx-auto w-fit rounded-full bg-gray-800 p-1 ring-1 shadow-md shadow-black/20 ring-white/20">
+                <div className="relative mx-auto w-fit rounded-full from-[#202020] to-[#101010] p-1 ring-1 shadow-md shadow-black/20 ring-white/20">
                   <div className="w-fit rounded-full bg-linear-to-b from-gray-700 to-gray-800 p-3 ring-1 shadow-[inset_0px_-2px_6px_rgba(0,0,0,0.05),0_7px_10px_0_rgba(0,0,0,0.10)] ring-white/50 ring-inset">
                     <RiShieldCheckLine
                       className="size-5 text-white"
@@ -497,7 +497,7 @@ export default function Features() {
                 </div>
               </div>
               <div className="absolute right-[6rem] bottom-[6rem] z-20">
-                <div className="relative mx-auto w-fit rounded-full bg-gray-800 p-1 ring-1 shadow-md shadow-black/20 ring-white/20">
+                <div className="relative mx-auto w-fit rounded-full from-[#202020] to-[#101010] p-1 ring-1 shadow-md shadow-black/20 ring-white/20">
                   <div className="w-fit rounded-full bg-linear-to-b from-gray-700 to-gray-800 p-3 ring-1 shadow-[inset_0px_-2px_6px_rgba(0,0,0,0.05),0_7px_10px_0_rgba(0,0,0,0.10)] ring-white/50 ring-inset">
                     <RiDatabaseLine
                       className="size-5 text-white"
@@ -507,7 +507,7 @@ export default function Features() {
                 </div>
               </div>
               <div className="absolute bottom-[6rem] left-[6rem] z-20">
-                <div className="relative mx-auto w-fit rounded-full bg-gray-800 p-1 ring-1 shadow-md shadow-black/20 ring-white/20">
+                <div className="relative mx-auto w-fit rounded-full from-[#202020] to-[#101010] p-1 ring-1 shadow-md shadow-black/20 ring-white/20">
                   <div className="w-fit rounded-full bg-linear-to-b from-gray-700 to-gray-800 p-3 ring-1 shadow-[inset_0px_-2px_6px_rgba(0,0,0,0.05),0_7px_10px_0_rgba(0,0,0,0.10)] ring-white/50 ring-inset">
                     <RiBarChartLine
                       className="size-5 text-white"

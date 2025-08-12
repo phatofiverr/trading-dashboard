@@ -4,7 +4,7 @@ import GameOfLife from "./HeroBackground"
 
 export function Hero() {
   return (
-    <section aria-label="hero" className="relative min-h-screen flex items-center justify-center">
+    <section aria-label="hero" className="relative min-h-[70vh] flex items-center justify-center">
       {/* Background Canvas */}
       <div className="absolute inset-0 w-full h-full">
         <GameOfLife />
@@ -34,7 +34,7 @@ export function Hero() {
             </div> */}
           </a>
         </FadeDiv>
-        <h1 className="mt-8 text-center text-5xl font-semibold tracking-tighter text-white sm:text-8xl sm:leading-[5.5rem]">
+        <h1 className="mt-8 text-center text-5xl font-semibold tracking-tighter text-white sm:text-7xl sm:leading-[5.5rem]">
           <FadeSpan>Data</FadeSpan> <FadeSpan>Driven</FadeSpan>
           <br />
           <FadeSpan>Trading</FadeSpan> <FadeSpan>Decisions</FadeSpan>

@@ -93,6 +93,17 @@
     color-scheme: dark;
     scroll-behavior: smooth;
   }
+
+  /* Custom text selection color    */
+  *::selection {
+    background-color: #042F2E !important;
+    color: #2DD4BF !important;
+  }
+
+  *::-moz-selection {
+    background-color: #042F2E !important;
+    color: #0A5F5C !important;
+  }
   
   /* Custom classes */
   .trade-profit {
