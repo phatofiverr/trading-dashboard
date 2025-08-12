@@ -94,13 +94,23 @@ const DateTimeInput: React.FC<DateTimeInputProps> = ({
     <div className={`w-full min-w-0 flex-1 ${className}`}>
       <FormLabel className="text-white/80">{label}</FormLabel>
       <div className="relative mt-2 w-full">
-        <Input
-          type="datetime-local"
-          value={currentValue}
-          onChange={(e) => handleDateTimeChange(e.target.value)}
-          style={{ width: '100%' }}
-          className="bg-black/20 border-white/10 text-white [&::-webkit-calendar-picker-indicator]:opacity-80 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:w-6 [&::-webkit-calendar-picker-indicator]:h-6 [&::-webkit-calendar-picker-indicator]:ml-auto"
-        />
+      <Input
+        type="datetime-local"
+        value={currentValue}
+        onChange={(e) => handleDateTimeChange(e.target.value)}
+        style={{ width: '100%', paddingRight: '2.5rem' }} // Add right padding to make room
+        className="
+          bg-black/20 border-white/10 text-white
+          [&::-webkit-calendar-picker-indicator]:opacity-80
+          [&::-webkit-calendar-picker-indicator]:cursor-pointer
+          [&::-webkit-calendar-picker-indicator]:w-6
+          [&::-webkit-calendar-picker-indicator]:h-6
+          [&::-webkit-calendar-picker-indicator]:absolute
+          [&::-webkit-calendar-picker-indicator]:right-2
+          [&::-webkit-calendar-picker-indicator]:top-1/2
+          [&::-webkit-calendar-picker-indicator]:-translate-y-1/2
+        "
+      />
       </div>
       
       {/* Show validation errors for both fields */}

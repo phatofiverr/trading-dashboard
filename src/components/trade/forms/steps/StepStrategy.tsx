@@ -147,6 +147,7 @@ export default function StepStrategy() {
   // Handle stop loss mode change
   const handleStopLossModeChange = (usePips: boolean) => {
     console.log('Stop Loss mode change:', { from: stopLossInPips, to: usePips, currentSlPrice, entryPrice });
+    form.setValue('stopLossInPips', usePips);
     
     if (currentSlPrice && entryPrice && parseFloat(currentSlPrice) > 0) {
       const direction = watchedValues.direction || "Long";
@@ -173,6 +174,7 @@ export default function StepStrategy() {
   // Handle take profit mode change
   const handleTakeProfitModeChange = (usePips: boolean) => {
     console.log('Take Profit mode change:', { from: takeProfitInPips, to: usePips, currentExitPrice, entryPrice });
+    form.setValue('takeProfitInPips', usePips);
     
     if (currentExitPrice && entryPrice && parseFloat(currentExitPrice) > 0) {
       const direction = watchedValues.direction || "Long";
@@ -300,6 +302,11 @@ export default function StepStrategy() {
                       checked={field.value}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                         const checked = e.target.checked;
+                        console.log('Stop Loss Switch onChange:', { 
+                          fieldValue: field.value, 
+                          targetChecked: checked, 
+                          formValue: form.getValues('stopLossInPips')
+                        });
                         field.onChange(checked);
                         handleStopLossModeChange(checked);
                       }}
@@ -352,6 +359,11 @@ export default function StepStrategy() {
                       checked={field.value}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                         const checked = e.target.checked;
+                        console.log('Take Profit Switch onChange:', { 
+                          fieldValue: field.value, 
+                          targetChecked: checked, 
+                          formValue: form.getValues('takeProfitInPips')
+                        });
                         field.onChange(checked);
                         handleTakeProfitModeChange(checked);
                       }}

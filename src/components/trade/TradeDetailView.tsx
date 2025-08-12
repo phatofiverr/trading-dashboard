@@ -302,8 +302,8 @@ const TradeDetailView: React.FC<TradeDetailViewProps> = ({ trade }) => {
                       
                       <div className="flex justify-between items-center">
                         <span className="font-semibold">Screenshot:</span>
-                        <Tooltip delayDuration={200}>
-                          <TooltipTrigger asChild>
+                        <Dialog>
+                          <DialogTrigger asChild>
                             <div className="relative cursor-pointer group">
                               <img 
                                 src={trade.chartScreenshot} 
@@ -320,40 +320,27 @@ const TradeDetailView: React.FC<TradeDetailViewProps> = ({ trade }) => {
                                 </span>
                               </div>
                             </div>
-                          </TooltipTrigger>
-                          <TooltipContent 
-                            side="left" 
-                            align="center"
-                            className="p-2 border border-white/20 bg-black/90 backdrop-blur-md rounded-xl shadow-2xl max-w-none"
-                            sideOffset={8}
-                          >
-                            <div className="relative">
+                          </DialogTrigger>
+                          <DialogContent className="max-w-4xl w-auto p-2 bg-black/90 backdrop-blur-md border-white/20">
+                            <DialogHeader className="sr-only">
+                              <DialogTitle>Chart Screenshot</DialogTitle>
+                            </DialogHeader>
+                            <div className="relative flex items-center justify-center">
                               <img 
                                 src={trade.chartScreenshot} 
                                 alt="Trade Chart Screenshot - Full Size"
-                                className="max-w-[400px] max-h-[300px] w-auto h-auto object-contain rounded-lg shadow-lg"
+                                className="max-w-full max-h-[80vh] w-auto h-auto object-contain rounded-lg shadow-2xl"
                                 onError={(e) => {
                                   e.currentTarget.src = '/placeholder-chart.png';
                                   e.currentTarget.alt = 'Chart screenshot unavailable';
                                 }}
-                                onLoad={(e) => {
-                                  // Ensure proper aspect ratio
-                                  const img = e.currentTarget;
-                                  if (img.naturalWidth > img.naturalHeight) {
-                                    img.style.maxWidth = '450px';
-                                    img.style.maxHeight = '320px';
-                                  } else {
-                                    img.style.maxWidth = '320px';
-                                    img.style.maxHeight = '450px';
-                                  }
-                                }}
                               />
-                              <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
+                              <div className="absolute top-4 right-4 bg-black/70 text-white text-sm px-3 py-2 rounded backdrop-blur-sm">
                                 Chart Analysis
                               </div>
                             </div>
-                          </TooltipContent>
-                        </Tooltip>
+                          </DialogContent>
+                        </Dialog>
                       </div>
                     </div>
                   )}

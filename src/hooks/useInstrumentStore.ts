@@ -31,6 +31,7 @@ interface InstrumentStore {
   syncWithFirestore: () => Promise<void>;
   saveToFirestore: () => Promise<void>;
   initializeDefaultInstruments: () => void;
+  mergeNewDefaults: () => Promise<void>;
 }
 
 // Default instruments from the existing constants
@@ -46,7 +47,24 @@ const defaultInstruments: Omit<CustomInstrument, 'id' | 'createdAt'>[] = [
   { symbol: 'EURGBP', name: 'EUR/GBP', isFavorite: false, isCustom: false },
   { symbol: 'EURJPY', name: 'EUR/JPY', isFavorite: false, isCustom: false },
   { symbol: 'GBPJPY', name: 'GBP/JPY', isFavorite: false, isCustom: false },
+
+  // Major Indices
+  { symbol: 'DAX40', name: 'DAX 40 (GER40)', isFavorite: false, isCustom: false },
+  { symbol: 'SP500', name: 'S&P 500 (US500)', isFavorite: false, isCustom: false },
+  { symbol: 'NAS100', name: 'NASDAQ 100 (US100)', isFavorite: false, isCustom: false },
+  { symbol: 'DJI', name: 'Dow Jones Industrial Average (US30)', isFavorite: false, isCustom: false },
+  { symbol: 'FTSE100', name: 'FTSE 100 (UK100)', isFavorite: false, isCustom: false },
+  { symbol: 'NIKKEI225', name: 'Nikkei 225 (JP225)', isFavorite: false, isCustom: false },
+  { symbol: 'HANGSENG', name: 'Hang Seng (HK50)', isFavorite: false, isCustom: false },
+
+  // Major Commodities
+  { symbol: 'XAUUSD', name: 'Gold (XAU/USD)', isFavorite: false, isCustom: false },
+  { symbol: 'XAGUSD', name: 'Silver (XAG/USD)', isFavorite: false, isCustom: false },
+  { symbol: 'WTI', name: 'Crude Oil WTI (USOIL)', isFavorite: false, isCustom: false },
+  { symbol: 'BRENT', name: 'Brent Oil (UKOIL)', isFavorite: false, isCustom: false },
+  { symbol: 'NGAS', name: 'Natural Gas (NGAS)', isFavorite: false, isCustom: false },
 ];
+
 
 export const useInstrumentStore = create<InstrumentStore>()(
   persist(
@@ -65,6 +83,7 @@ export const useInstrumentStore = create<InstrumentStore>()(
 
       syncWithFirestore: async () => {
         const { userId } = get();
+        console.log('syncWithFirestore called with userId:', userId);
         if (!userId) return;
 
         set({ isLoading: true });
@@ -73,18 +92,26 @@ export const useInstrumentStore = create<InstrumentStore>()(
           const userInstrumentsRef = doc(db, 'users', userId, 'preferences', 'instruments');
           const docSnap = await getDoc(userInstrumentsRef);
           
+          console.log('Firestore document exists:', docSnap.exists());
+          
           if (docSnap.exists()) {
             const data = docSnap.data();
+            console.log('Firestore data:', data);
             const instruments = (data.instruments || []).map((inst: any) => ({
               ...inst,
               createdAt: inst.createdAt instanceof Date ? inst.createdAt : new Date(inst.createdAt),
             }));
             
+            console.log('Setting instruments from Firestore:', instruments.length);
             set({
               instruments,
               favoriteInstruments: data.favoriteInstruments || [],
             });
+            
+            // Merge any new default instruments that weren't in Firestore
+            await get().mergeNewDefaults();
           } else {
+            console.log('No Firestore document found, initializing defaults');
             // Initialize with default instruments for new users
             get().initializeDefaultInstruments();
             await get().saveToFirestore();
@@ -194,8 +221,13 @@ export const useInstrumentStore = create<InstrumentStore>()(
       initializeDefaultInstruments: () => {
         const state = get();
         
+        console.log('initializeDefaultInstruments called');
+        console.log('Current instruments length:', state.instruments.length);
+        console.log('UserId:', state.userId);
+        
         // Only initialize if we don't have any instruments yet
         if (state.instruments.length === 0) {
+          console.log('Initializing default instruments...');
           const initialInstruments: CustomInstrument[] = defaultInstruments.map(
             (instrument, index) => ({
               ...instrument,
@@ -204,9 +236,46 @@ export const useInstrumentStore = create<InstrumentStore>()(
             })
           );
 
+          console.log('Setting initial instruments:', initialInstruments.length);
           set({
             instruments: initialInstruments,
           });
+        } else {
+          console.log('Instruments already exist, not initializing defaults');
+        }
+      },
+
+      mergeNewDefaults: async () => {
+        const state = get();
+        console.log('mergeNewDefaults called');
+        
+        // Find default instruments that don't exist in current instruments
+        const existingSymbols = new Set(state.instruments.map(inst => inst.symbol));
+        const newDefaults = defaultInstruments.filter(
+          defaultInst => !existingSymbols.has(defaultInst.symbol)
+        );
+        
+        if (newDefaults.length > 0) {
+          console.log('Found new default instruments to add:', newDefaults.length);
+          console.log('New instruments:', newDefaults.map(inst => inst.symbol));
+          
+          const newInstruments: CustomInstrument[] = newDefaults.map(
+            (instrument, index) => ({
+              ...instrument,
+              id: `default-${Date.now()}-${index}`,
+              createdAt: new Date(),
+            })
+          );
+
+          set((state) => ({
+            instruments: [...state.instruments, ...newInstruments],
+          }));
+
+          // Save the updated instruments to Firestore
+          await get().saveToFirestore();
+          console.log('Added and saved new default instruments to Firestore');
+        } else {
+          console.log('No new default instruments to add');
         }
       },
     }),

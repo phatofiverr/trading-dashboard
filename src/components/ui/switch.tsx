@@ -4,14 +4,21 @@ import { cn } from "@/lib/utils"
 
 const Switch = React.forwardRef<
   HTMLInputElement,
-  React.InputHTMLAttributes<HTMLInputElement>
->(({ className, ...props }, ref) => {
-  const [isChecked, setIsChecked] = React.useState(false);
+  React.InputHTMLAttributes<HTMLInputElement> & { checked?: boolean }
+>(({ className, checked, ...props }, ref) => {
+  console.log('Switch render:', { checked, propsChecked: props.checked });
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setIsChecked(e.target.checked);
+    console.log('Switch onChange:', { 
+      targetChecked: e.target.checked, 
+      currentChecked: checked,
+      propsChecked: props.checked 
+    });
     props.onChange?.(e);
   };
+
+  // Use controlled checked prop if provided, otherwise fall back to internal state
+  const isChecked = checked !== undefined ? checked : false;
 
   return (
     <label className="relative inline-flex items-center cursor-pointer">
@@ -21,6 +28,7 @@ const Switch = React.forwardRef<
         data-slot="switch"
         className="sr-only"
         {...props}
+        checked={isChecked}
         onChange={handleChange}
       />
       <div className={cn(

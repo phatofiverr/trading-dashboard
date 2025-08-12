@@ -25,7 +25,6 @@ export default function CustomInstrumentSelect({
   const [newInstrumentName, setNewInstrumentName] = useState("");
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const [selectOpen, setSelectOpen] = useState(false);
 
   const {
     instruments,
@@ -39,6 +38,9 @@ export default function CustomInstrumentSelect({
 
   // Initialize instruments on component mount
   useEffect(() => {
+    console.log('CustomInstrumentSelect: Initializing instruments');
+    console.log('Current instruments count:', instruments.length);
+    console.log('Current instruments:', instruments);
     initializeDefaultInstruments();
   }, [initializeDefaultInstruments]);
 
@@ -100,16 +102,13 @@ export default function CustomInstrumentSelect({
   };
 
   const handleAddButtonClick = () => {
-    setSelectOpen(false); // Close the select first
-    setTimeout(() => {
-      setShowAddDialog(true); // Then open the dialog
-    }, 100);
+    setShowAddDialog(true);
   };
 
   return (
     <div className="space-y-2">
       {/* Main Select Component */}
-      <Select value={value} onValueChange={onValueChange} open={selectOpen} onOpenChange={setSelectOpen}>
+      <Select value={value} onValueChange={onValueChange}>
         <SelectTrigger className="bg-black/20 border-white/10">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>

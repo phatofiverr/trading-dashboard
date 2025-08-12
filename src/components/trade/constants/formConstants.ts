@@ -125,7 +125,7 @@ export const tradingInstruments = [
   { value: 'EURJPY', label: 'EUR/JPY' },
   { value: 'GBPJPY', label: 'GBP/JPY' },  
   // // Major Indices
-  // { value: 'GER40', label: 'DAX40 (GER40)' },
-  // { value: 'US500', label: 'S&P 500 (US500)' },
-  // { value: 'US100', label: 'NASDAQ 100 (US100)' },
+  { value: 'GER40', label: 'DAX40 (GER40)' },
+  { value: 'US500', label: 'S&P 500 (US500)' },
+  { value: 'US100', label: 'NASDAQ 100 (US100)' },
 ];
