@@ -21,6 +21,8 @@ const Register = lazy(() => import('./pages/Auth/Register'));
 const Landing = lazy(() => import('./pages/page'));
 const PasswordReset = lazy(() => import('./pages/Auth/PasswordReset'));
 const EmailVerification = lazy(() => import('./pages/Auth/EmailVerification'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 
 // Route with conditional redirect based on auth state
 const HomeRoute = () => {
@@ -39,6 +41,10 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/reset-password" element={<PasswordReset />} />
             <Route path="/verify-email" element={<EmailVerification />} />
+            
+            {/* Legal Pages */}
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
             
             {/* Default Route - Conditional Redirect */}
             <Route path="/" element={<HomeRoute />} />

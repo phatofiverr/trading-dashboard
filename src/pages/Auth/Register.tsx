@@ -7,14 +7,17 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, Lock, Mail, User, CheckCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import GoogleButton from "@/components/ui/GoogleButton";
+import Divider from "@/components/ui/Divider";
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
-  const { register, updateUserProfile } = useAuth();
+  const { register, updateUserProfile, registerWithGoogle } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
@@ -50,6 +53,34 @@ const Register: React.FC = () => {
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGoogleRegister = async () => {
+    setIsGoogleLoading(true);
+    setError('');
+
+    try {
+      await registerWithGoogle();
+      toast.success('Account created successfully!');
+      navigate('/accounts');
+    } catch (error: any) {
+      console.error(error);
+      let errorMessage = 'Failed to create account with Google';
+      
+      // Handle specific Firebase auth errors
+      if (error.code === 'auth/popup-closed-by-user') {
+        errorMessage = 'Registration was cancelled';
+      } else if (error.code === 'auth/popup-blocked') {
+        errorMessage = 'Pop-up was blocked. Please allow pop-ups for this site.';
+      } else if (error.code === 'auth/account-exists-with-different-credential') {
+        errorMessage = 'An account already exists with the same email address but different sign-in credentials.';
+      }
+      
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
@@ -156,6 +187,15 @@ const Register: React.FC = () => {
               {isLoading ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
+          
+          <Divider />
+          
+          <GoogleButton
+            onClick={handleGoogleRegister}
+            loading={isGoogleLoading}
+          >
+            Sign up with Google
+          </GoogleButton>
         </CardContent>
         <CardFooter className="flex flex-col">
           <p className="text-left text-sm text-muted-foreground">

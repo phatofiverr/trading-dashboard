@@ -1,6 +1,7 @@
 import {
   RiDiscordFill,
 } from "@remixicon/react"
+import { Link } from "react-router-dom"
 // import { SolarLogo } from "../../../public/SolarLogo"
 const CURRENT_YEAR = new Date().getFullYear()
 
@@ -34,8 +35,8 @@ const Footer = () => {
         },
         { label: "Contact", href: "#" },
         { label: "Support", href: "#" },
-        { label: "Privacy Policy", href: "#" },
-        { label: "Terms of Service", href: "#" },
+        { label: "Privacy Policy", href: "/privacy" },
+        { label: "Terms of Service", href: "/terms" },
       ],
     },
     tools: {
@@ -165,12 +166,23 @@ const Footer = () => {
             <ul className="space-y-4">
               {section.items.map((item) => (
                 <li key={item.label} className="text-sm">
-                  <a
-                    href={item.href}
-                    className="text-gray-400 transition-colors duration-200 hover:text-white"
-                  >
-                    {item.label}
-                  </a>
+                  {item.external ? (
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-400 transition-colors duration-200 hover:text-white"
+                    >
+                      {item.label}
+                    </a>
+                  ) : (
+                    <Link
+                      to={item.href}
+                      className="text-gray-400 transition-colors duration-200 hover:text-white"
+                    >
+                      {item.label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>

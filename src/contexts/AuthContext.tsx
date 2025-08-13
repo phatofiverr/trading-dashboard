@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signInWithPopup,
   signOut,
   onAuthStateChanged,
   User,
@@ -11,7 +12,7 @@ import {
   setPersistence,
   browserLocalPersistence
 } from 'firebase/auth';
-import { auth, db } from '../config/firebase';
+import { auth, db, googleProvider } from '../config/firebase';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { useAccountsStore } from '@/hooks/useAccountsStore';
 import { useTradeStore } from '@/hooks/useTradeStore';
@@ -24,6 +25,8 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<any>;
   register: (email: string, password: string) => Promise<any>;
+  signInWithGoogle: () => Promise<any>;
+  registerWithGoogle: () => Promise<any>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updateUserProfile: (displayName: string) => Promise<void>;
@@ -105,6 +108,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await setPersistence(auth, browserLocalPersistence);
     
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    
+    // Create or update user document
+    if (userCredential.user) {
+      await createUserDocument(userCredential.user);
+    }
+    
+    return userCredential;
+  };
+
+  // Google Sign In function
+  const signInWithGoogle = async () => {
+    // Set persistence to LOCAL (default is SESSION)
+    await setPersistence(auth, browserLocalPersistence);
+    
+    const userCredential = await signInWithPopup(auth, googleProvider);
+    
+    // Create or update user document
+    if (userCredential.user) {
+      await createUserDocument(userCredential.user);
+    }
+    
+    return userCredential;
+  };
+
+  // Google Register function (same as sign in, but creates new account if doesn't exist)
+  const registerWithGoogle = async () => {
+    // Set persistence to LOCAL (default is SESSION)
+    await setPersistence(auth, browserLocalPersistence);
+    
+    const userCredential = await signInWithPopup(auth, googleProvider);
     
     // Create or update user document
     if (userCredential.user) {
@@ -225,6 +258,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loading,
     login,
     register,
+    signInWithGoogle,
+    registerWithGoogle,
     logout,
     resetPassword,
     updateUserProfile,
