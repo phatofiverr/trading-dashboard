@@ -68,7 +68,13 @@ export default function FormButtons({
             type="button"
             onClick={() => {
               console.log("Complete Trade button clicked", { isStepValid, isSubmitting });
+              if (!isStepValid) {
+                console.log("Step not valid - Complete Trade button should be disabled");
+                return;
+              }
+              console.log("About to call onComplete...");
               onComplete();
+              console.log("onComplete called successfully");
             }}
             disabled={!isStepValid || isSubmitting}
             className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"

@@ -37,7 +37,7 @@ export default function StepContext() {
   }, [detectedSession, entryTime, entryTimezone, currentSession]);
 
   return (
-    <div className="space-y-6">
+    <div className="h-[60vh] overflow-y-auto space-y-6 pr-2">
       {/* First Row: Instrument and Timezone */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField

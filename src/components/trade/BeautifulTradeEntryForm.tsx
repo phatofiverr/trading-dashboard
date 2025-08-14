@@ -20,7 +20,7 @@ import FormButtons from './forms/FormButtons';
 // Import step components
 import StepContext from './forms/steps/StepContext';
 import StepStrategy from './forms/steps/StepStrategy';
-import StepOutcome from './forms/steps/StepOutcome';
+import StepDemon from './forms/steps/StepDemon';
 import StepReview from './forms/steps/StepReview';
 
 interface BeautifulTradeEntryFormProps extends TradeEntryFormProps {
@@ -63,11 +63,10 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
       entryTimezone: "America/New_York",
       exitTimezone: "America/New_York",
       tags: [],
-      behavioralTags: [],
+      demonTags: [],
       didHitBE: false,
       tpHitAfterBE: false,
       reversedAfterBE: false,
-      tpHit: undefined,
       confidenceRating: 5,
       tp1Price: "",
       tp2Price: "",
@@ -86,6 +85,8 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
       tpLogic: "",
       strategyId: initialStrategyId || (initialAccountId ? "none" : (strategyId || filters.strategy)) || "",
       accountId: initialAccountId || "",
+      // Chart analysis for screenshots and notes
+      chartAnalysis: [],
       // Pip/Price mode preferences
       stopLossInPips: true,
       takeProfitInPips: true
@@ -101,7 +102,7 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
   const exitPrice = form.watch("exitPrice");
   const slPrice = form.watch("slPrice");
   const riskAmount = form.watch("riskAmount");
-  const tpHit = form.watch("tpHit");
+  const demonTags = form.watch("demonTags");
   
   // Step validation with memoization to prevent infinite renders
   const isStepValid = useMemo(() => {
@@ -123,21 +124,56 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
                   parseFloat(exitPrice) > 0 &&
                   parseFloat(riskAmount) > 0);
         break;
-      case 2: // Outcome
-        isValid = tpHit !== undefined;
+      case 2: // Demon
+        isValid = true; // Demon tags are optional, so step is always valid
         break;
       case 3: // Review
-        isValid = true; // All fields optional
+        isValid = true; // All fields optional - chart screenshots and notes are optional
         break;
       default:
         isValid = false;
     }
     
     return isValid;
-  }, [currentStep, instrument, entryDate, entryTime, entryTimeframe, entryPrice, exitPrice, slPrice, riskAmount, tpHit]);
+  }, [currentStep, instrument, entryDate, entryTime, entryTimeframe, entryPrice, exitPrice, slPrice, riskAmount, demonTags]);
+
+  // Function to get validation error message for current step
+  const getValidationErrorMessage = (step: number) => {
+    switch (step) {
+      case 0: // Context
+        if (!instrument) return "Please select an instrument";
+        if (!entryDate) return "Please select an entry date";
+        if (!entryTime) return "Please select an entry time";
+        if (!entryTimeframe) return "Please select an entry timeframe";
+        return "";
+      case 1: // Strategy
+        if (!entryPrice) return "Please enter an entry price";
+        if (!exitPrice) return "Please enter an exit price";
+        if (!slPrice) return "Please enter a stop loss price";
+        if (!riskAmount) return "Please enter a risk amount";
+        if (parseFloat(entryPrice) <= 0) return "Entry price must be greater than 0";
+        if (parseFloat(exitPrice) <= 0) return "Exit price must be greater than 0";
+        if (parseFloat(riskAmount) <= 0) return "Risk amount must be greater than 0";
+        return "";
+      case 2: // Demon
+        return ""; // Always valid
+      case 3: // Review
+        return ""; // Always valid
+      default:
+        return "Unknown validation error";
+    }
+  };
 
   const handleNextStep = () => {
     console.log("handleNextStep called", { currentStep, totalSteps, condition: currentStep < totalSteps - 1 });
+    
+    // Check validation before moving to next step
+    if (!isStepValid) {
+      const errorMessage = getValidationErrorMessage(currentStep);
+      toast.error(errorMessage || "Please complete all required fields");
+      return;
+    }
+    
     if (currentStep < totalSteps - 1) {
       setCurrentStep(currentStep + 1);
       console.log("Moving to step:", currentStep + 1);
@@ -159,7 +195,7 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
       case 1:
         return <StepStrategy />;
       case 2:
-        return <StepOutcome />;
+        return <StepDemon />;
       case 3:
         return <StepReview />;
       default:
@@ -284,7 +320,21 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
                   totalSteps={totalSteps}
                   onPrevStep={handlePrevStep}
                   onNextStep={handleNextStep}
-                  onComplete={form.handleSubmit(onSubmit)}
+                  onComplete={form.handleSubmit(onSubmit, (errors) => {
+                    console.error("Form validation errors:", errors);
+                    console.error("Form values at submission:", form.getValues());
+                    
+                    // Show toast for the first validation error
+                    const errorFields = Object.keys(errors);
+                    if (errorFields.length > 0) {
+                      const firstField = errorFields[0];
+                      const firstError = errors[firstField];
+                      const errorMessage = firstError?.message || `Please check ${firstField}`;
+                      toast.error(`Validation Error: ${errorMessage}`);
+                    } else {
+                      toast.error("Please complete all required fields before submitting");
+                    }
+                  })}
                   isStepValid={isStepValid}
                   isSubmitting={isSubmitting}
                 />

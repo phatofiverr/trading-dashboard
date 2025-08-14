@@ -37,10 +37,21 @@ const DemonFinder: React.FC = () => {
   
   // Calculate demon statistics
   const demonStats = useMemo(() => {
-    // Filter trades that have behavioral tags
-    const tradesWithDemons = trades.filter(trade => 
-      trade.behavioralTags && trade.behavioralTags.length > 0
-    );
+    // Helper function to normalize demon tags from dash-separated to underscore-separated
+    const normalizeDemonTag = (tag: string): string => {
+      return tag.replace(/-/g, '_');
+    };
+
+    // Get demon tags and normalize them
+    const getDemonTags = (trade: any): string[] => {
+      return (trade.demonTags || []).map(normalizeDemonTag);
+    };
+
+    // Filter trades that have demon tags
+    const tradesWithDemons = trades.filter(trade => {
+      const demonTags = getDemonTags(trade);
+      return demonTags.length > 0;
+    });
     
     // Get date ranges
     const now = new Date();
@@ -69,7 +80,8 @@ const DemonFinder: React.FC = () => {
     const demonDates: Record<string, Date[]> = {};
     
     periodTrades.forEach(trade => {
-      trade.behavioralTags?.forEach(tagId => {
+      const demonTags = getDemonTags(trade);
+      demonTags.forEach(tagId => {
         demonCounts[tagId] = (demonCounts[tagId] || 0) + 1;
         if (!demonDates[tagId]) demonDates[tagId] = [];
         demonDates[tagId].push(new Date(trade.entryDate));
@@ -81,13 +93,15 @@ const DemonFinder: React.FC = () => {
     const lastCounts: Record<string, number> = {};
     
     currentMonthTrades.forEach(trade => {
-      trade.behavioralTags?.forEach(tagId => {
+      const demonTags = getDemonTags(trade);
+      demonTags.forEach(tagId => {
         currentCounts[tagId] = (currentCounts[tagId] || 0) + 1;
       });
     });
     
     lastMonthTrades.forEach(trade => {
-      trade.behavioralTags?.forEach(tagId => {
+      const demonTags = getDemonTags(trade);
+      demonTags.forEach(tagId => {
         lastCounts[tagId] = (lastCounts[tagId] || 0) + 1;
       });
     });
@@ -144,9 +158,10 @@ improvementScore: (() => {
         const allPeriodTrades = getAllTradesForPeriod(selectedPeriod);
         if (allPeriodTrades.length === 0) return 100;
         
-        const cleanTrades = allPeriodTrades.filter(trade => 
-          !trade.behavioralTags || trade.behavioralTags.length === 0
-        ).length;
+        const cleanTrades = allPeriodTrades.filter(trade => {
+          const demonTags = getDemonTags(trade);
+          return demonTags.length === 0;
+        }).length;
         
         // Simple percentage of clean trades
         return Math.round((cleanTrades / allPeriodTrades.length) * 100);
@@ -165,16 +180,27 @@ improvementScore: (() => {
     }
   };
   
+  // Helper function to normalize demon tags from dash-separated to underscore-separated
+  const normalizeDemonTag = (tag: string): string => {
+    return tag.replace(/-/g, '_');
+  };
+
+  // Get demon tags and normalize them
+  const getDemonTags = (trade: any): string[] => {
+    return (trade.demonTags || []).map(normalizeDemonTag);
+  };
+
   // Check if any individual demon has reached the warning threshold (10 occurrences this month)
   const criticalDemons = demonStats.stats.filter(demon => {
     // Get current month count for this specific demon
-    const currentMonthTrades = trades.filter(trade => 
-      trade.behavioralTags?.includes(demon.tagId) &&
-      isWithinInterval(new Date(trade.entryDate), { 
-        start: startOfMonth(new Date()), 
-        end: endOfMonth(new Date()) 
-      })
-    );
+    const currentMonthTrades = trades.filter(trade => {
+      const demonTags = getDemonTags(trade);
+      return demonTags.includes(demon.tagId) &&
+        isWithinInterval(new Date(trade.entryDate), { 
+          start: startOfMonth(new Date()), 
+          end: endOfMonth(new Date()) 
+        });
+    });
     return currentMonthTrades.length >= 10;
   });
   
@@ -264,13 +290,15 @@ improvementScore: (() => {
                         <ul className="text-red-300 mb-2 list-disc list-inside">
                           {criticalDemons.map(demon => {
                             const tagInfo = getBehavioralTagById(demon.tagId as any);
-                            const currentMonthCount = trades.filter(trade => 
-                              trade.behavioralTags?.includes(demon.tagId) &&
-                              isWithinInterval(new Date(trade.entryDate), { 
-                                start: startOfMonth(new Date()), 
-                                end: endOfMonth(new Date()) 
-                              })
-                            ).length;
+                            
+                            const currentMonthCount = trades.filter(trade => {
+                              const demonTags = getDemonTags(trade);
+                              return demonTags.includes(demon.tagId) &&
+                                isWithinInterval(new Date(trade.entryDate), { 
+                                  start: startOfMonth(new Date()), 
+                                  end: endOfMonth(new Date()) 
+                                });
+                            }).length;
                             return (
                               <li key={demon.tagId}>
                                 <strong>{tagInfo?.label}</strong> - {currentMonthCount} times
@@ -352,13 +380,14 @@ improvementScore: (() => {
                     {(() => {
                       // Find the demon with highest count this month
                       const currentMonthDemonCounts = demonStats.stats.map(demon => {
-                        const currentMonthCount = trades.filter(trade => 
-                          trade.behavioralTags?.includes(demon.tagId) &&
-                          isWithinInterval(new Date(trade.entryDate), { 
-                            start: startOfMonth(new Date()), 
-                            end: endOfMonth(new Date()) 
-                          })
-                        ).length;
+                        const currentMonthCount = trades.filter(trade => {
+                          const demonTags = getDemonTags(trade);
+                          return demonTags.includes(demon.tagId) &&
+                            isWithinInterval(new Date(trade.entryDate), { 
+                              start: startOfMonth(new Date()), 
+                              end: endOfMonth(new Date()) 
+                            });
+                        }).length;
                         return { demon, count: currentMonthCount };
                       }).filter(item => item.count > 0);
                       
@@ -432,10 +461,6 @@ improvementScore: (() => {
                                 {(() => {
                                   // Calculate what percentage of total trades in the period had this demon
                                   const getTradesForPeriod = (period: 'current' | 'last' | 'all') => {
-                                    const tradesWithDemons = trades.filter(trade => 
-                                      trade.behavioralTags && trade.behavioralTags.length > 0
-                                    );
-                                    
                                     if (period === 'all') return trades; // All trades, not just those with demons
                                     
                                     const now = new Date();
@@ -453,9 +478,10 @@ improvementScore: (() => {
                                   
                                   const currentPeriodTrades = getTradesForPeriod(selectedPeriod);
                                   const totalTradesInPeriod = currentPeriodTrades.length;
-                                  const tradesWithThisDemon = currentPeriodTrades.filter((trade: any) => 
-                                    trade.behavioralTags?.includes(demon.tagId)
-                                  ).length;
+                                  const tradesWithThisDemon = currentPeriodTrades.filter((trade: any) => {
+                                    const demonTags = getDemonTags(trade);
+                                    return demonTags.includes(demon.tagId);
+                                  }).length;
                                   const tradeRatio = totalTradesInPeriod > 0 ? 
                                     ((tradesWithThisDemon / totalTradesInPeriod) * 100).toFixed(1) : '0';
                                   

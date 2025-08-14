@@ -60,11 +60,18 @@ export interface Trade {
   // New field for risk amount
   riskAmount?: string;    // Amount risked on this trade
   riskRewardRatio?: number; // Risk to reward ratio (calculated)
-  positionSize?: number;  // Calculated position size (lot size)
-  // Behavioral tags for tracking trading mistakes
-  behavioralTags?: string[]; // Array of BehavioralTag IDs
-  // Chart screenshot field for TradingView links
+  positionSize?: string;  // Calculated position size (lot size)
+  // Demon tags for tracking trading issues
+  demonTags?: string[]; // Array of demon tag IDs
+  // Chart screenshot field for TradingView links (legacy)
   chartScreenshot?: string;
+  // Multiple chart analysis entries
+  chartAnalysis?: Array<{
+    id: string;
+    imageUrl: string;
+    notes: string;
+    order: number;
+  }>;
 }
 
 export interface TradeFormData {
@@ -103,9 +110,15 @@ export interface TradeFormData {
   tpHit: "none" | "tp1" | "tp2" | "tp3";
   session?: string;
   riskAmount?: string;  // New field for risk amount
-  behavioralTags?: string[]; // Behavioral tags for trading mistakes
-  // Chart screenshot field for TradingView links
+  // Chart screenshot field for TradingView links (legacy)
   chartScreenshot?: string;
+  // Multiple chart analysis entries
+  chartAnalysis?: Array<{
+    id: string;
+    imageUrl: string;
+    notes: string;
+    order: number;
+  }>;
   // Add missing fields
   notes?: string;
   exitReason?: string;
@@ -117,7 +130,9 @@ export interface TradeFormData {
   drawdownDuration?: number;
   // Calculated trading metrics
   riskRewardRatio?: number; // Risk to reward ratio (calculated)
-  positionSize?: number;  // Calculated position size (lot size)
+  positionSize?: string;  // Calculated position size (lot size)
+  // Demon tags for tracking trading issues
+  demonTags?: string[]; // Array of demon tag IDs
 }
 
 export interface StrategyPerformance {

@@ -2,305 +2,246 @@
 
 import { useFormContext } from "react-hook-form";
 import { TradeFormValues } from "../../schemas/tradeFormSchema";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Image, X, Trash2 } from "lucide-react";
-import { BEHAVIORAL_TAGS } from "@/constants/behavioralTags";
-import { useState } from "react";
+import { Plus, X, Image as ImageIcon } from "lucide-react";
+import { useState, useEffect } from "react";
+
+interface ChartEntry {
+  id: string;
+  imageUrl: string;
+  notes: string;
+  order: number;
+}
 
 export default function StepReview() {
   const form = useFormContext<TradeFormValues>();
   const watchedValues = form.watch();
-  const [newTag, setNewTag] = useState("");
-  const [imageLoading, setImageLoading] = useState(false);
-  const [imageError, setImageError] = useState(false);
-  const [loadedImageUrl, setLoadedImageUrl] = useState("");
+  const [imageLoadingStates, setImageLoadingStates] = useState<Record<string, boolean>>({});
+  const [imageErrorStates, setImageErrorStates] = useState<Record<string, boolean>>({});
 
-  // Convert TradingView link to S3 image URL
-  const getTradingViewImageUrl = (url: string) => {
-    if (!url) return null;
-    
-    // Check if it's a TradingView link
-    const tradingViewPattern = /https:\/\/www\.tradingview\.com\/x\/([A-Za-z0-9]+)\/?/;
-    const match = url.match(tradingViewPattern);
-    
-    if (match) {
-      const chartId = match[1];
-      // Convert to S3 image URL
-      return `https://s3.tradingview.com/snapshots/m/${chartId}.png`;
+  // Get chart analysis entries, initialize with one empty entry if none exist
+  const chartAnalysis = watchedValues.chartAnalysis || [];
+  
+  // Initialize with one empty entry if none exist using useEffect
+  useEffect(() => {
+    if (chartAnalysis.length === 0) {
+      const initialEntry: ChartEntry = {
+        id: generateId(),
+        imageUrl: "",
+        notes: "",
+        order: 0
+      };
+      form.setValue("chartAnalysis", [initialEntry]);
     }
+  }, [chartAnalysis.length, form]);
+
+  function generateId(): string {
+    return `chart_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+  }
+
+  const handleAddChartEntry = () => {
+    const currentEntries = form.getValues("chartAnalysis") || [];
+    const newEntry: ChartEntry = {
+      id: generateId(),
+      imageUrl: "",
+      notes: "",
+      order: currentEntries.length
+    };
+    form.setValue("chartAnalysis", [...currentEntries, newEntry]);
+  };
+
+  const handleRemoveChartEntry = (entryId: string) => {
+    const currentEntries = form.getValues("chartAnalysis") || [];
+    if (currentEntries.length <= 1) return; // Don't allow removing the last entry
     
-    // Check if it's already an S3 URL
-    const s3Pattern = /https:\/\/s3\.tradingview\.com\/snapshots\/1\/([A-Za-z0-9]+)\.png/;
-    if (s3Pattern.test(url)) {
-      return url;
-    }
+    const updatedEntries = currentEntries.filter(entry => entry.id !== entryId);
+    // Reorder the remaining entries
+    const reorderedEntries = updatedEntries.map((entry, index) => ({
+      ...entry,
+      order: index
+    }));
+    form.setValue("chartAnalysis", reorderedEntries);
     
-    return null;
+    // Clean up loading/error states
+    setImageLoadingStates(prev => {
+      const newState = { ...prev };
+      delete newState[entryId];
+      return newState;
+    });
+    setImageErrorStates(prev => {
+      const newState = { ...prev };
+      delete newState[entryId];
+      return newState;
+    });
   };
 
-  // Only show image if user has clicked Enter to load it
-  const chartImageUrl = loadedImageUrl;
-
-  // Predefined trade tags including behavioral tags and common trade characteristics
-  const predefinedTags = [
-    // Behavioral tags from the constants
-    ...BEHAVIORAL_TAGS.map(tag => tag.label),
-    // Additional trade characteristic tags
-    // "Liquidity Grab",
-    // "News Event", 
-    // "Late Entry",
-    // "Fomo",
-    // "Overtrading",
-    // "Discipline",
-    // "Perfect Setup",
-    // "Revenge Trade",
-    // "Gap Fill",
-    // "Trend Continuation"
-  ];
-
-  const handleAddTag = () => {
-    if (!newTag.trim()) return;
-    
-    const currentTags = watchedValues.tags || [];
-    if (!currentTags.includes(newTag.trim())) {
-      form.setValue("tags", [...currentTags, newTag.trim()]);
-    }
-    setNewTag("");
+  const handleImageUrlChange = (entryId: string, newUrl: string) => {
+    const currentEntries = form.getValues("chartAnalysis") || [];
+    const updatedEntries = currentEntries.map(entry => 
+      entry.id === entryId ? { ...entry, imageUrl: newUrl } : entry
+    );
+    form.setValue("chartAnalysis", updatedEntries);
   };
 
-  const handleRemoveTag = (tagToRemove: string) => {
-    const currentTags = watchedValues.tags || [];
-    form.setValue("tags", currentTags.filter(tag => tag !== tagToRemove));
+  const handleNotesChange = (entryId: string, newNotes: string) => {
+    const currentEntries = form.getValues("chartAnalysis") || [];
+    const updatedEntries = currentEntries.map(entry => 
+      entry.id === entryId ? { ...entry, notes: newNotes } : entry
+    );
+    form.setValue("chartAnalysis", updatedEntries);
   };
 
-  const handlePredefinedTagClick = (tag: string) => {
-    const currentTags = watchedValues.tags || [];
-    if (currentTags.includes(tag)) {
-      handleRemoveTag(tag);
-    } else {
-      form.setValue("tags", [...currentTags, tag]);
-    }
+  const handleImageLoad = (entryId: string) => {
+    setImageLoadingStates(prev => ({ ...prev, [entryId]: false }));
+    setImageErrorStates(prev => ({ ...prev, [entryId]: false }));
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddTag();
-    }
+  const handleImageError = (entryId: string) => {
+    setImageLoadingStates(prev => ({ ...prev, [entryId]: false }));
+    setImageErrorStates(prev => ({ ...prev, [entryId]: true }));
   };
 
-  const handleRemoveChart = () => {
-    form.setValue("chartScreenshot", "");
-    setLoadedImageUrl("");
-    setImageError(false);
+  const handleImageLoadStart = (entryId: string) => {
+    setImageLoadingStates(prev => ({ ...prev, [entryId]: true }));
+    setImageErrorStates(prev => ({ ...prev, [entryId]: false }));
   };
 
-  const handleLoadChart = () => {
-    const url = watchedValues.chartScreenshot;
-    if (!url) return;
-    
-    // Simply use the URL as provided - no conversion needed
-    setLoadedImageUrl(url);
-    setImageError(false);
-  };
+  const renderChartContainer = (entry: ChartEntry) => {
+    const isLoading = imageLoadingStates[entry.id];
+    const hasError = imageErrorStates[entry.id];
 
-  const handleChartKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleLoadChart();
-    }
+    return (
+      <div className="relative bg-black/20 border-2 border-dashed border-white/20 rounded-lg min-h-[200px]">
+        {/* Chart Image Area or Placeholder */}
+        <div className="p-4 pb-16"> {/* Extra padding bottom for URL input */}
+          {!entry.imageUrl ? (
+            <div className="h-32 flex flex-col items-center justify-center">
+              <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center mb-3">
+                <ImageIcon className="w-6 h-6 text-white/60" />
+              </div>
+              <p className="text-white/60 text-sm text-center">Upload chart image</p>
+            </div>
+          ) : (
+            <div className="relative min-h-[120px] flex items-center justify-center">
+              {isLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                  <div className="text-white/60 text-sm">Loading chart...</div>
+                </div>
+              )}
+              <img
+                src={entry.imageUrl}
+                alt="Trading Chart"
+                className="max-w-full max-h-[120px] object-contain rounded"
+                onLoad={() => handleImageLoad(entry.id)}
+                onError={() => handleImageError(entry.id)}
+                onLoadStart={() => handleImageLoadStart(entry.id)}
+              />
+              {hasError && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70">
+                  <div className="w-12 h-12 bg-red-500/20 rounded-lg flex items-center justify-center mb-2">
+                    <X className="w-6 h-6 text-red-400" />
+                  </div>
+                  <p className="text-red-400 text-sm text-center">Failed to load image</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        
+        {/* URL Input at Bottom */}
+        <div className="absolute bottom-4 left-4 right-4">
+          <div className="flex gap-2">
+            <Input
+              placeholder="Paste your TradingView chart link here (e.g., https://www.tradingview.com/x/abcd1234/)"
+              value={entry.imageUrl}
+              onChange={(e) => handleImageUrlChange(entry.id, e.target.value)}
+              className="flex-1 bg-black/20 border-white/10 text-white placeholder:text-white/40 text-sm"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  // Input is already handled by onChange
+                }
+              }}
+            />
+
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
-    <div className="space-y-6">
-      {/* Trade Tags */}
-      <div className="space-y-3">
-        <Label className="text-white/80">Demon Tags</Label>
-        
-        {/* Add new tag input */}
-        {/* <div className="flex gap-2">
-          <Input
-            placeholder="Add a tag and press Enter"
-            value={newTag}
-            onChange={(e) => setNewTag(e.target.value)}
-            onKeyPress={handleKeyPress}
-            className="flex-1 bg-black/20 border-white/10 text-white placeholder:text-white/40"
-          />
-          <Button 
-            type="button"
-            onClick={handleAddTag}
-            className="bg-white text-black hover:bg-white/90"
-          >
-            Add
-          </Button>
-        </div> */}
-
-        {/* Predefined tags */}
-        <div className="flex flex-wrap gap-2">
-          {predefinedTags.map((tag) => {
-            const isSelected = (watchedValues.tags || []).includes(tag);
-            return (
-              <Badge
-                key={tag}
-                variant={isSelected ? "default" : "outline"}
-                className={`cursor-pointer transition-colors ${
-                  isSelected 
-                    ? "bg-white text-black hover:bg-white/90" 
-                    : "border-white/20 text-white hover:bg-white/10"
-                }`}
-                onClick={() => handlePredefinedTagClick(tag)}
-              >
-                {tag}
-              </Badge>
-            );
-          })}
-        </div>
-
-        {/* Status message */}
-        {(watchedValues.tags || []).length === 0 ? (
-          <p className="text-xs text-white/40">
-            No tags selected
-          </p>
-        ) : (
-          <p className="text-xs text-white/40">
-            {(watchedValues.tags || []).length} tag{(watchedValues.tags || []).length !== 1 ? 's' : ''} selected - Click tags to remove them
-          </p>
-        )}
-      </div>
-
-      {/* Notes */}
+    <div className="h-[60vh] overflow-y-auto space-y-6 pr-2">
+      <h3 className="text-xl font-medium text-white">Chart Analysis</h3>
+      
       <FormField
         control={form.control}
-        name="notes"
-        render={({ field }) => (
+        name="chartAnalysis"
+        render={() => (
           <FormItem>
-            <FormLabel className="text-white/80">Notes</FormLabel>
             <FormControl>
-              <Textarea
-                placeholder="Write your thoughts about this trade, lessons learned, or things to improve..."
-                className="min-h-[120px] bg-black/20 border-white/10 text-white placeholder:text-white/40"
-                {...field}
-              />
+              <div className="space-y-6">
+                {chartAnalysis.map((entry: ChartEntry) => (
+                  <div key={entry.id} className="relative bg-black/5 border border-white/10 rounded-lg p-4">
+                    {/* Cancel button on top-right */}
+                    {chartAnalysis.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleRemoveChartEntry(entry.id)}
+                        className="absolute top-2 right-2 h-8 w-8 p-0 bg-black/40 hover:bg-red-500/40 border-white/20 hover:border-red-500/40 z-10"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+
+                    {/* Main Container Layout */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Chart Container */}
+                      <div className="order-2 lg:order-1">
+                        <div className="mb-2">
+                          <h4 className="text-sm font-medium text-white">Chart Screenshot</h4>
+                        </div>
+                        {renderChartContainer(entry)}
+                      </div>
+
+                      {/* Notes Area */}
+                      <div className="order-1 lg:order-2">
+                        <div className="mb-2">
+                          <h4 className="text-sm font-medium text-white">Notes</h4>
+                        </div>
+                        <Textarea
+                          placeholder="Write your thoughts about this trade, lessons learned, or things to improve..."
+                          value={entry.notes}
+                          onChange={(e) => handleNotesChange(entry.id, e.target.value)}
+                          className="min-h-[200px] bg-black/20 border-white/10 text-white placeholder:text-white/40 resize-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
 
-      {/* Chart Screenshot */}
-      <div className="space-y-3">
-        <Label className="text-white/80">Chart Screenshot</Label>
-        <FormField
-          control={form.control}
-          name="chartScreenshot"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                {watchedValues.chartScreenshot ? (
-                  <div className="space-y-4">
-                    <div className="relative border border-white/10 rounded-lg overflow-hidden bg-black/10 max-w-full min-h-[200px] flex items-center justify-center">
-                      {imageLoading && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                          <div className="text-white/60 text-sm">Loading chart...</div>
-                        </div>
-                      )}
-                      <img
-                        src={watchedValues.chartScreenshot}
-                        alt="TradingView Chart"
-                        className="max-w-full max-h-full object-contain"
-                        style={{ 
-                          maxWidth: 'calc(100% - 16px)', 
-                          maxHeight: '184px'
-                        }}
-                        onLoad={() => {
-                          setImageLoading(false);
-                          setImageError(false);
-                        }}
-                        onError={(e) => {
-                          e.currentTarget.src = '/placeholder-chart.png';
-                          e.currentTarget.alt = 'Chart screenshot unavailable';
-                          setImageLoading(false);
-                          setImageError(true);
-                        }}
-                        onLoadStart={() => {
-                          setImageLoading(true);
-                          setImageError(false);
-                        }}
-                      />
-                      {/* Remove button */}
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        onClick={handleRemoveChart}
-                        className="absolute top-2 right-2 h-8 w-8 p-0 bg-red-500/80 hover:bg-red-500 backdrop-blur-sm"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                                ) : imageError ? (
-                  <div className="min-h-[200px] p-8 bg-black/20 border-2 border-dashed border-white/20 rounded-lg flex flex-col items-center justify-center text-center">
-                    <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                      <svg className="w-6 h-6 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                      </svg>
-                    </div>
-                    <p className="text-white font-medium mb-1">Invalid TradingView link</p>
-                    <p className="text-white/60 text-sm mb-4">Please use a valid TradingView chart link</p>
-                    <div className="flex gap-2 w-full max-w-md">
-                      <Input
-                        placeholder="Paste your TradingView chart link here (e.g., https://www.tradingview.com/x/abcd1234/)"
-                        className="flex-1 bg-black/20 border-white/10 text-white placeholder:text-white/40"
-                        onKeyPress={handleChartKeyPress}
-                        {...field}
-                      />
-                      <Button
-                        type="button"
-                        onClick={handleLoadChart}
-                        disabled={!watchedValues.chartScreenshot}
-                        className="bg-white text-black hover:bg-white/90 disabled:bg-white/20 disabled:text-white/40"
-                      >
-                        Enter
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="min-h-[200px] p-8 bg-black/20 border-2 border-dashed border-white/20 rounded-lg flex flex-col items-center justify-center text-center">
-                    <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                      <svg className="w-6 h-6 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                      </svg>
-                    </div>
-                    <p className="text-white font-medium mb-1">Upload chart image</p>
-                    <div className="flex gap-2 w-full max-w-md">
-                      <Input
-                        placeholder="Paste your TradingView chart link here (e.g., https://www.tradingview.com/x/abcd1234/)"
-                        className="flex-1 bg-black/20 border-white/10 text-white placeholder:text-white/40"
-                        onKeyPress={handleChartKeyPress}
-                        {...field}
-                      />
-                      <Button
-                        type="button"
-                        onClick={handleLoadChart}
-                        disabled={!watchedValues.chartScreenshot}
-                        className="bg-white text-black hover:bg-white/90 disabled:bg-white/20 disabled:text-white/40"
-                      >
-                        Enter
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      {/* Add Chart Button */}
+      <div className="flex justify-center">
+        <Button
+          type="button"
+          onClick={handleAddChartEntry}
+          variant="outline"
+          className="bg-black/20 border-white/20 text-white hover:bg-white/10 hover:border-white/40"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Chart Analysis
+        </Button>
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 const steps = [
   { name: "Context" },
   { name: "Strategy" },
-  { name: "Outcome" },
+  { name: "Demon" },
   { name: "Review" },
 ];
 

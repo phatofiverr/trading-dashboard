@@ -75,10 +75,12 @@ export const transformFormToTradeData = (values: TradeFormValues): TradeFormData
     strategyId: values.strategyId || 'default',
     // Add risk amount
     riskAmount: values.riskAmount || '',
-    // Add behavioral tags
-    behavioralTags: values.behavioralTags || [],
+    // Add demon tags
+    demonTags: values.demonTags || [],
     // Add chart screenshot
     chartScreenshot: values.chartScreenshot || '',
+    // Add chart analysis with screenshots and notes
+    chartAnalysis: values.chartAnalysis || [],
     // Add notes
     notes: values.notes || '',
     // Add drawdown analysis fields
@@ -187,10 +189,12 @@ export const prepareTradeSave = (tradeData: TradeFormData): Partial<Trade> => {
     riskRewardRatio: calculateRiskReward(),
     // Calculate and include profit
     profit: calculateProfit(),
-    // Include behavioral tags
-    behavioralTags: tradeData.behavioralTags || [],
+    // Include demon tags
+    demonTags: tradeData.demonTags || [],
     // Include chart screenshot
     chartScreenshot: tradeData.chartScreenshot || '',
+    // Include chart analysis with screenshots and notes
+    chartAnalysis: tradeData.chartAnalysis || [],
     // Include notes
     notes: tradeData.notes || '',
     // Include drawdown analysis fields

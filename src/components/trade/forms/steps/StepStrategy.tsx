@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useFormContext } from "react-hook-form";
-import { TradeFormValues } from "../../schemas/tradeFormSchema";
+import { TradeFormValues } from "../../../schemas/tradeFormSchema";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
@@ -201,11 +201,11 @@ export default function StepStrategy() {
   // Update form values when calculations change
   React.useEffect(() => {
     form.setValue('riskRewardRatio', riskRewardRatio);
-    form.setValue('positionSize', positionSize);
+    form.setValue('positionSize', positionSize > 0 ? positionSize.toFixed(4) : "");
   }, [riskRewardRatio, positionSize]);
 
   return (
-    <div className="space-y-6">
+    <div className="h-[60vh] overflow-y-auto space-y-6 pr-2">
       {/* Strategy Selection */}
       <FormField
         control={form.control}
@@ -426,17 +426,29 @@ export default function StepStrategy() {
         />
 
         {/* Lot Size */}
-        <div className="space-y-3">
-          <div className="flex items-center">
-            <FormLabel className="text-white font-medium">Lot Size</FormLabel>
-          </div>
-          <Input
-            type="number"
-            value={positionSize > 0 ? positionSize.toFixed(4) : "0.0000"}
-            readOnly
-            className="bg-[#0A0A0A] border-gray-600/40 text-gray-300"
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="positionSize"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-white font-medium flex items-center">
+                Lot Size
+              </FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="0.0001"
+                  min="0"
+                  {...field}
+                  value={field.value !== undefined && field.value !== null ? field.value : (positionSize > 0 ? positionSize.toFixed(4) : "")}
+                  placeholder="Enter lot size"
+                  className="bg-[#0A0A0A] border-gray-600/40 focus:border-green-500/50"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </div>
 
       {/* Risk-Reward Ratio Card with Animation */}

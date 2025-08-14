@@ -27,7 +27,8 @@ export const tradeFormSchema = z.object({
   didHitBE: z.boolean().default(false),
   tpHitAfterBE: z.boolean().default(false),
   reversedAfterBE: z.boolean().default(false),
-  tpHit: z.enum(["TP", "SL", "BE", "Manual", "Partial"]).optional(),
+  // Demon selector for trading issues
+  demonTags: z.array(z.string()).default([]),
   strategyId: z.string().optional(), // Optional - can be None/empty
   accountId: z.string().optional(), // Add accountId field for account assignment
   // Add session explicitly 
@@ -49,11 +50,16 @@ export const tradeFormSchema = z.object({
   riskAmount: z.string().optional(),
   // Calculated trading metrics
   riskRewardRatio: z.number().optional(),
-  positionSize: z.number().optional(),
-  // Behavioral tags for tracking trading mistakes
-  behavioralTags: z.array(z.string()).default([]),
-  // Chart screenshot field for TradingView links
+  positionSize: z.string().optional(),
+  // Chart screenshot field for TradingView links (legacy)
   chartScreenshot: z.string().optional(),
+  // Multiple chart analysis entries
+  chartAnalysis: z.array(z.object({
+    id: z.string(),
+    imageUrl: z.string(),
+    notes: z.string(),
+    order: z.number(),
+  })).default([]),
   // Pip/Price mode preferences
   stopLossInPips: z.boolean().default(true),
   takeProfitInPips: z.boolean().default(true),

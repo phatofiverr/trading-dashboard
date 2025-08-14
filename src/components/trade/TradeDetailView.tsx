@@ -292,8 +292,100 @@ const TradeDetailView: React.FC<TradeDetailViewProps> = ({ trade }) => {
                     </div>
                   )}
 
-                  {/* Screenshot */}
-                  {trade.chartScreenshot && (
+                  {/* Chart Analysis */}
+                  {trade.chartAnalysis && trade.chartAnalysis.length > 0 && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        <ImageIcon className="h-3 w-3" />
+                        Chart Analysis
+                      </div>
+                      
+                      <div className="space-y-4">
+                        {trade.chartAnalysis
+                          .sort((a, b) => a.order - b.order)
+                          .map((chartEntry, index) => (
+                          <div key={chartEntry.id} className="bg-black/10 rounded-lg p-4 border border-white/10">
+                            <div className="flex justify-between items-start mb-3">
+                              <span className="font-semibold text-sm">Chart {index + 1}</span>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                              {/* Chart Image */}
+                              <div>
+                                {chartEntry.imageUrl ? (
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <div className="relative cursor-pointer group">
+                                        <img 
+                                          src={chartEntry.imageUrl} 
+                                          alt={`Trade Chart ${index + 1}`}
+                                          className="w-full h-32 object-cover rounded-lg border-2 border-white/10 hover:border-white/40 transition-all duration-200 group-hover:scale-105"
+                                          onError={(e) => {
+                                            e.currentTarget.src = '/placeholder-chart.png';
+                                            e.currentTarget.alt = 'Chart screenshot unavailable';
+                                          }}
+                                        />
+                                        <div className="absolute inset-0 bg-black/30 hover:bg-black/10 transition-all duration-200 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                          <span className="text-white text-xs font-medium px-2 py-1 bg-black/50 rounded backdrop-blur-sm">
+                                            Click to enlarge
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-4xl w-auto p-2 bg-black/90 backdrop-blur-md border-white/20">
+                                      <DialogHeader className="sr-only">
+                                        <DialogTitle>Chart Analysis {index + 1}</DialogTitle>
+                                      </DialogHeader>
+                                      <div className="relative flex items-center justify-center">
+                                        <img 
+                                          src={chartEntry.imageUrl} 
+                                          alt={`Trade Chart Analysis ${index + 1} - Full Size`}
+                                          className="max-w-full max-h-[80vh] w-auto h-auto object-contain rounded-lg shadow-2xl"
+                                          onError={(e) => {
+                                            e.currentTarget.src = '/placeholder-chart.png';
+                                            e.currentTarget.alt = 'Chart screenshot unavailable';
+                                          }}
+                                        />
+                                        <div className="absolute top-4 right-4 bg-black/70 text-white text-sm px-3 py-2 rounded backdrop-blur-sm">
+                                          Chart {index + 1}
+                                        </div>
+                                      </div>
+                                    </DialogContent>
+                                  </Dialog>
+                                ) : (
+                                  <div className="w-full h-32 bg-black/20 border-2 border-dashed border-white/20 rounded-lg flex items-center justify-center">
+                                    <div className="text-center">
+                                      <ImageIcon className="w-6 h-6 text-white/40 mx-auto mb-2" />
+                                      <p className="text-white/40 text-xs">No chart image</p>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {/* Chart Notes */}
+                              <div>
+                                <div className="mb-2">
+                                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Notes</span>
+                                </div>
+                                {chartEntry.notes ? (
+                                  <div className="bg-black/20 rounded-lg p-3 border border-white/10">
+                                    <p className="text-sm whitespace-pre-wrap leading-relaxed">{chartEntry.notes}</p>
+                                  </div>
+                                ) : (
+                                  <div className="bg-black/10 rounded-lg p-3 border border-white/10 text-center">
+                                    <p className="text-white/40 text-xs">No notes for this chart</p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Legacy Screenshot (fallback) */}
+                  {(!trade.chartAnalysis || trade.chartAnalysis.length === 0) && trade.chartScreenshot && (
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                         <ImageIcon className="h-3 w-3" />
@@ -345,13 +437,13 @@ const TradeDetailView: React.FC<TradeDetailViewProps> = ({ trade }) => {
                     </div>
                   )}
                   
-                  {/* Notes */}
+                  {/* General Notes */}
                   {trade.notes && (
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                        Notes
+                        General Notes
                       </div>
-                      <div className="bg-black/20 rounded-lg p-3 border border-white/10">
+                      <div className="bg-black/20 rounded-lg p-4 border border-white/10">
                         <p className="text-sm whitespace-pre-wrap leading-relaxed">{trade.notes}</p>
                       </div>
                     </div>

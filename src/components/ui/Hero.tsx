@@ -1,6 +1,7 @@
 import { RiArrowRightUpLine } from "@remixicon/react"
 import { FadeContainer, FadeDiv, FadeSpan } from "../Fade"
 import GameOfLife from "./HeroBackground"
+import { SparkleButton } from "./SparkleButton"
 
 export function Hero() {
   return (
@@ -44,14 +45,15 @@ export function Hero() {
           <FadeSpan>your trading performance</FadeSpan>{" "}
           <FadeSpan>with institutional-grade analytics.</FadeSpan>
         </p>  
+        
         <FadeDiv>
-          <a
-            className="mt-6 inline-flex cursor-pointer flex-row items-center justify-center gap-1 rounded-md border-b-[1.5px] border-indigo-700 bg-linear-to-b from-[#818CF8] to-indigo-500 px-5 py-3 leading-4 font-medium tracking-wide whitespace-nowrap text-white shadow-[0_0_0_2px_rgba(0,0,0,0.2),0_0_14px_0_rgba(129,140,248,0.3)] transition-all duration-200 ease-in-out hover:shadow-indigo-300"
-            href="/register"
-          >
-            Get Started
-          </a>
+          <div className="mt-6">
+            <SparkleButton href="/register">
+              Get Started
+            </SparkleButton>
+          </div>
         </FadeDiv>
+
       </FadeContainer>
     </section>
   )

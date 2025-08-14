@@ -31,7 +31,7 @@ export function NavBar() {
       className={cx(
         "fixed inset-x-4 top-4 z-50 mx-auto flex max-w-6xl justify-center rounded-lg border border-transparent px-3 py-3 transition duration-300",
         scrolled || open
-          ? "border-white/20 bg-black/80 shadow-2xl shadow-black/20 backdrop-blur-sm"
+          ? "border-white/20 bg-[#0F0F0F]/80 shadow-2xl shadow-black/20 backdrop-blur-sm"
           : "bg-black/0",
       )}
     >
@@ -39,8 +39,13 @@ export function NavBar() {
         <div className="relative flex items-center justify-between">
           <a href="/" aria-label="Home" className="flex items-center gap-2">
             <span className="sr-only">Trade Workstation</span>
-            {/* <SolarLogo className="w-22" /> */}
-            <span className="text-xl font-semibold text-white">TradeWorkstation</span>
+            <img
+              src="/TradeWorkstation.svg"
+              alt="Trade Workstation Logo"
+              className="h-5 w-auto"
+              draggable={false}
+            />
+            
           </a>
           <nav className="hidden sm:block md:absolute md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:transform">
             <div className="flex items-center gap-10 font-medium">
