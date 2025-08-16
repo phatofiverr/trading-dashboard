@@ -42,7 +42,7 @@ export function NavBar() {
             <img
               src="/TradeWorkstation.svg"
               alt="Trade Workstation Logo"
-              className="h-5 w-auto"
+              className="h-4 w-auto"
               draggable={false}
             />
             
