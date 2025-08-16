@@ -2,7 +2,6 @@
 import { TradeFormValues } from '../schemas/tradeFormSchema';
 import { Trade, TradeFormData } from '@/types/Trade';
 import { detectSession } from './sessionDetector';
-import { calculateTradeProfit } from '@/lib/accountCalculations';
 
 // Transforms form data to match the TradeFormData interface
 export const transformFormToTradeData = (values: TradeFormValues): TradeFormData => {
@@ -126,30 +125,30 @@ export const prepareTradeSave = (tradeData: TradeFormData): Partial<Trade> => {
   
   // Calculate profit using our centralized calculation system
   const calculateProfit = () => {
-    // Create a temporary trade object for calculation
-    const tempTrade: Partial<Trade> = {
-      entryPrice: parseFloat(tradeData.entryPrice || "0"),
-      exitPrice: parseFloat(tradeData.exitPrice || "0"),
-      slPrice: parseFloat(tradeData.slPrice || "0"),
-      direction: tradeData.direction.toLowerCase() as "long" | "short",
-      riskAmount: tradeData.riskAmount,
-      // Calculate R-multiple for the temp trade
-      rMultiple: (() => {
-        const entryPrice = parseFloat(tradeData.entryPrice || "0");
-        const exitPrice = parseFloat(tradeData.exitPrice || "0");
-        const slPrice = parseFloat(tradeData.slPrice || "0");
-        const direction = tradeData.direction.toLowerCase() as "long" | "short";
-        
-        const slDistance = Math.abs(entryPrice - slPrice);
-        if (slDistance > 0) {
-          const priceChange = exitPrice - entryPrice;
-          return direction === "long" ? priceChange / slDistance : -priceChange / slDistance;
-        }
-        return 0;
-      })()
-    };
+    // Use the rMultiple we calculated and riskAmount to get profit
+    const rMultiple = calculateRMultipleValue();
+    const riskAmount = tradeData.riskAmount ? parseFloat(tradeData.riskAmount) : 0;
     
-    return calculateTradeProfit(tempTrade as Trade);
+    if (riskAmount > 0 && isFinite(rMultiple)) {
+      return riskAmount * rMultiple;
+    }
+    
+    return 0;
+  };
+
+  // Calculate the rMultiple value
+  const calculateRMultipleValue = () => {
+    const entryPrice = parseFloat(tradeData.entryPrice || "0");
+    const exitPrice = parseFloat(tradeData.exitPrice || "0");
+    const slPrice = parseFloat(tradeData.slPrice || "0");
+    const direction = tradeData.direction.toLowerCase() as "long" | "short";
+    
+    const slDistance = Math.abs(entryPrice - slPrice);
+    if (slDistance > 0) {
+      const priceChange = exitPrice - entryPrice;
+      return direction === "long" ? priceChange / slDistance : -priceChange / slDistance;
+    }
+    return 0;
   };
 
   // Ensure the session is included in the save data
@@ -187,6 +186,8 @@ export const prepareTradeSave = (tradeData: TradeFormData): Partial<Trade> => {
     // Include risk amount and risk-reward ratio
     riskAmount: tradeData.riskAmount,
     riskRewardRatio: calculateRiskReward(),
+    // Calculate and include rMultiple - THIS WAS MISSING!
+    rMultiple: calculateRMultipleValue(),
     // Calculate and include profit
     profit: calculateProfit(),
     // Include demon tags

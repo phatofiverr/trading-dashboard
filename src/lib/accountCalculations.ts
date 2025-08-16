@@ -23,21 +23,22 @@ export interface TradeProfit {
  */
 export const calculateTradeProfit = (trade: Trade): number => {
   // Priority order for profit calculation:
-  // 1. Use trade.profit if explicitly set
-  // 2. Use riskAmount * rMultiple if riskAmount exists
-  // 3. Use rMultiple as direct profit amount (fallback)
+  // 1. Use trade.profit if explicitly set (direct dollar amount)
+  // 2. Calculate from riskAmount * rMultiple (proper trading formula)
+  // 3. Fallback to 0 if insufficient data
   
   if (trade.profit !== undefined && trade.profit !== null && isFinite(trade.profit)) {
     return trade.profit;
   }
   
-  if (trade.riskAmount && !isNaN(parseFloat(trade.riskAmount))) {
+  // Standard trading calculation: profit = risk × R-multiple
+  if (trade.riskAmount && !isNaN(parseFloat(trade.riskAmount)) && isFinite(trade.rMultiple)) {
     const riskAmount = parseFloat(trade.riskAmount);
     return riskAmount * trade.rMultiple;
   }
   
-  // Fallback: treat rMultiple as direct profit amount
-  return trade.rMultiple;
+  // Fallback: insufficient data to calculate profit
+  return 0;
 };
 
 /**
