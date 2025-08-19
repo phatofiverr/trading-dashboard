@@ -72,6 +72,12 @@ export interface Trade {
     notes: string;
     order: number;
   }>;
+  // Confluence tracking for setup quality assessment
+  confluenceChecks?: Array<{
+    confluenceId: string;
+    isPresent: boolean;
+  }>;
+  setupQuality?: number; // Calculated percentage based on checked confluences (0-100)
 }
 
 export interface TradeFormData {
@@ -133,6 +139,12 @@ export interface TradeFormData {
   positionSize?: string;  // Calculated position size (lot size)
   // Demon tags for tracking trading issues
   demonTags?: string[]; // Array of demon tag IDs
+  // Confluence tracking for setup quality assessment
+  confluenceChecks?: Array<{
+    confluenceId: string;
+    isPresent: boolean;
+  }>;
+  setupQuality?: number; // Calculated percentage based on checked confluences (0-100)
 }
 
 export interface StrategyPerformance {

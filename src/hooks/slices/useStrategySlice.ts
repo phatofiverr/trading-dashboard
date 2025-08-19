@@ -1,10 +1,11 @@
 import { StateCreator } from "zustand";
 import { GlobalState, StrategyState } from "./types";
-import { Strategy } from "./types";
+import { Strategy, Confluence } from "./types";
 import { toast } from "sonner";
 import { Trade, StrategyPerformance } from "@/types/Trade";
 import { isTradeWin } from "./useTradesSlice";
 import firebaseService from "@/services/firebaseService";
+import { createDefaultConfluence, validateConfluenceWeights } from "@/utils/confluenceUtils";
 
 export const createStrategySlice: StateCreator<
   GlobalState,
@@ -12,8 +13,8 @@ export const createStrategySlice: StateCreator<
   [],
   StrategyState
 > = (set, get) => ({
-  // Create a new strategy
-  createStrategy: async (name: string, type: 'live' | 'backtest' = 'live') => {
+  // Create a new strategy with optional confluences
+  createStrategy: async (name: string, type: 'live' | 'backtest' = 'live', confluences?: Confluence[]) => {
     try {
       // Basic validation
       if (!name) {
@@ -30,6 +31,7 @@ export const createStrategySlice: StateCreator<
         id: crypto.randomUUID(),
         name, 
         type, // Use the type parameter, defaulting to 'live'
+        confluences: confluences || [createDefaultConfluence()], // Default confluence if none provided
         createdAt: new Date().toISOString(),
       };
 
@@ -282,6 +284,52 @@ export const createStrategySlice: StateCreator<
     
     // If a type was specified, filter the results
     return type ? result.filter(strategy => strategy.type === type) : result;
+  },
+
+  // Update strategy confluences
+  updateStrategyConfluences: async (strategyId: string, confluences: Confluence[]) => {
+    try {
+      // Validate confluences
+      if (!validateConfluenceWeights(confluences)) {
+        toast.error("Confluence weights must sum to 100");
+        return false;
+      }
+
+      const strategies = get().strategies;
+      const strategyIndex = strategies.findIndex(s => s.id === strategyId);
+      
+      if (strategyIndex === -1) {
+        toast.error("Strategy not found");
+        return false;
+      }
+
+      // Update strategy with new confluences
+      const updatedStrategies = [...strategies];
+      updatedStrategies[strategyIndex] = {
+        ...updatedStrategies[strategyIndex],
+        confluences
+      };
+      
+      // Update the store
+      set({ strategies: updatedStrategies });
+      
+      // Auto-sync to Firestore
+      firebaseService.saveStrategy(updatedStrategies[strategyIndex]).catch(error => {
+        console.error('Failed to auto-sync strategy confluences to Firestore:', error);
+      });
+      
+      toast.success("Strategy confluences updated successfully");
+      return true;
+    } catch (error) {
+      console.error("Error updating strategy confluences:", error);
+      toast.error("Failed to update strategy confluences");
+      return false;
+    }
+  },
+
+  // Get strategy by ID
+  getStrategyById: (strategyId: string) => {
+    return get().strategies.find(s => s.id === strategyId);
   }
 });
 

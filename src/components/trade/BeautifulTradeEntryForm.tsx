@@ -19,6 +19,7 @@ import FormButtons from './forms/FormButtons';
 
 // Import step components
 import StepContext from './forms/steps/StepContext';
+import StepLevels from './forms/steps/StepLevels';
 import StepStrategy from './forms/steps/StepStrategy';
 import StepDemon from './forms/steps/StepDemon';
 import StepReview from './forms/steps/StepReview';
@@ -115,7 +116,7 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
                   entryTime && 
                   entryTimeframe);
         break;
-      case 1: // Strategy
+      case 1: // Levels
         isValid = !!(entryPrice && 
                   exitPrice && 
                   slPrice && 
@@ -124,10 +125,13 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
                   parseFloat(exitPrice) > 0 &&
                   parseFloat(riskAmount) > 0);
         break;
-      case 2: // Demon
+
+      case 2: //strategy
+        isValid = true;
+      case 3: // Demon
         isValid = true; // Demon tags are optional, so step is always valid
         break;
-      case 3: // Review
+      case 4: // Review
         isValid = true; // All fields optional - chart screenshots and notes are optional
         break;
       default:
@@ -193,10 +197,12 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
       case 0:
         return <StepContext />;
       case 1:
-        return <StepStrategy />;
+        return <StepLevels />;
       case 2:
-        return <StepDemon />;
+        return <StepStrategy />;
       case 3:
+        return <StepDemon />;
+      case 4:
         return <StepReview />;
       default:
         return <StepContext />;

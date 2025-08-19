@@ -15,6 +15,7 @@ import TradeEntryButton from '@/components/trade/TradeEntryButton';
 import TradeTable from '@/components/trade/TradeTable';
 import FilterPanel from '@/components/trade/FilterPanel';
 import TradeDetailView from '@/components/trade/TradeDetailView';
+import EditConfluencesDialog from '@/components/EditConfluencesDialog';
 
 // Lazy load heavy components
 const EquityCurveChart = lazy(() => import('@/components/trade/EquityCurveChart'));
@@ -138,6 +139,15 @@ const StrategyPage: React.FC = () => {
                       />
                     )}
                     
+                    
+                    {/* Edit Confluences Button */}
+                    <EditConfluencesDialog 
+                      strategyId={strategyId || ''}
+                      onConfluencesUpdated={() => {
+                        // Optionally refresh data or show success message
+                        console.log('Confluences updated for strategy:', strategyId);
+                      }}
+                    />
                     
                     {/* Export Trades Button */}
                     <Button 

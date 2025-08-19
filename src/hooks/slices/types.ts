@@ -1,11 +1,20 @@
 
 import { Trade, TradeStats, StrategyPerformance } from "@/types/Trade";
 
+// Confluence interface for strategy setup assessment
+export interface Confluence {
+  id: string;
+  name: string;
+  weight: number; // 1-100, must sum to 100 across all confluences in a strategy
+  description?: string;
+}
+
 // Define a Strategy type
 export interface Strategy {
   id: string;
   name: string;
   type: 'live' | 'backtest';  // Add type field
+  confluences?: Confluence[]; // Optional confluences for setup quality assessment
   createdAt: string;
 }
 
@@ -48,7 +57,7 @@ export interface TradesState {
 }
 
 export interface StrategyState {
-  createStrategy: (name: string, type: 'live' | 'backtest') => Promise<Strategy>;
+  createStrategy: (name: string, type: 'live' | 'backtest', confluences?: Confluence[]) => Promise<Strategy>;
   getUniqueStrategies: (type?: 'live' | 'backtest') => string[];
   renameStrategy: (oldName: string, newName: string) => boolean;
   deleteStrategy: (name: string) => boolean;
@@ -56,6 +65,9 @@ export interface StrategyState {
   fetchAllStrategyPerformance: (type?: 'live' | 'backtest') => StrategyPerformance[];
   loadStrategiesFromFirebase: () => Promise<void>;
   setStrategies: (strategies: Strategy[]) => void;
+  // Confluence management methods
+  updateStrategyConfluences: (strategyId: string, confluences: Confluence[]) => Promise<boolean>;
+  getStrategyById: (strategyId: string) => Strategy | undefined;
 }
 
 export interface ImportExportState {

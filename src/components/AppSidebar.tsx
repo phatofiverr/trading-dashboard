@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, User, Wallet, Edit, MoreVertical, Ghost, ChevronDown } from 'lucide-react';
+import { LogOut, User, Wallet, Edit, MoreVertical, Ghost, ChevronDown, BarChart3 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Sidebar,
@@ -17,17 +17,9 @@ import {
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { toast } from "sonner";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle,
-  DialogTrigger,
-  DialogDescription
-} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,6 +29,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTradeStore } from '@/hooks/useTradeStore';
 import { useAccountsStore, TradingAccount } from '@/hooks/useAccountsStore';
+import AddAccountDialog from './AddAccountDialog';
+import AddStrategyDialog from './AddStrategyDialog';
 import { useAccountStore } from '@/hooks/useAccountStore';
 import MiniProfile from './sidebar/MiniProfile';
 import { useAuth } from '@/contexts/AuthContext';
@@ -45,18 +39,10 @@ const AppSidebar: React.FC = () => {
   const [accountsOpen, setAccountsOpen] = useState(false); // Initially closed
   const [strategiesOpen, setStrategiesOpen] = useState(false); // Initially closed
   const { getUniqueStrategies, deleteStrategy, createStrategy, renameStrategy } = useTradeStore();
-  const { accounts, addAccount, deleteAccount, renameAccount } = useAccountsStore();
+  const { accounts, deleteAccount, renameAccount } = useAccountsStore();
   const { currentUser, loadUserFromFirebase, clearPersistedData } = useAccountStore();
   const { currentUser: authUser, logout } = useAuth();
   const [strategies, setStrategies] = useState<string[]>([]);
-  const [newStrategy, setNewStrategy] = useState<string>("");
-  const [showAddStrategyDialog, setShowAddStrategyDialog] = useState<boolean>(false);
-  const [showAddAccountDialog, setShowAddAccountDialog] = useState<boolean>(false);
-  const [newAccount, setNewAccount] = useState({
-    name: '',
-    currency: 'USD',
-    initialBalance: 0,
-  });
   const [isHovering, setIsHovering] = useState<boolean>(false);
   
   // Rename dialog state
@@ -152,70 +138,9 @@ const AppSidebar: React.FC = () => {
     }
   };
   
-  const handleAddStrategy = async () => {
-    if (newStrategy.trim() === "") {
-      toast.error("Strategy name cannot be empty");
-      return;
-    }
-    
-    // Check if strategy exists in either live or backtest
-    const allExistingStrategies = [...new Set([
-      ...getUniqueStrategies('live'),
-      ...getUniqueStrategies('backtest')
-    ])];
-    
-    if (allExistingStrategies.includes(newStrategy)) {
-      toast.error("Strategy already exists");
-      return;
-    }
-    
-    try {
-      // Create the strategy as live by default (users can toggle to backtest mode within the strategy)
-      await createStrategy(newStrategy, 'live');
-      
-      // Update local state immediately for better UX
-      setStrategies(prev => [...prev, newStrategy]);
-      
-      toast.success(`${newStrategy} strategy added`);
-      setNewStrategy("");
-      setShowAddStrategyDialog(false);
-      
-      // Navigate to the new strategy
-      navigate(`/strategies/${encodeURIComponent(newStrategy)}`);
-    } catch (error) {
-      console.error("Error creating strategy:", error);
-      toast.error("Failed to create strategy");
-    }
-  };
+
   
-  const handleAddAccount = () => {
-    if (!newAccount.name) {
-      toast.error("Account name is required");
-      return;
-    }
-    
-    if (accounts.some(acc => acc.name === newAccount.name)) {
-      toast.error("Account already exists");
-      return;
-    }
-    
-    // Store the return value from addAccount
-    const createdAccount = addAccount({
-      name: newAccount.name,
-      currency: newAccount.currency,
-      balance: parseFloat(newAccount.initialBalance.toString()), // Set balance to initial balance at creation
-      initialBalance: parseFloat(newAccount.initialBalance.toString()),
-    });
-    
-    // Reset form and close dialog
-    setNewAccount({ name: '', currency: 'USD', initialBalance: 0 });
-    setShowAddAccountDialog(false);
-    
-    // Navigate to the new account - only if createdAccount is defined
-    if (createdAccount && typeof createdAccount === 'object' && 'id' in createdAccount) {
-      navigate(`/accounts/${createdAccount.id}`);
-    }
-  };
+
   
   const handleDeleteStrategy = (strategy: string) => {
     const success = deleteStrategy(strategy);
@@ -293,7 +218,7 @@ const AppSidebar: React.FC = () => {
     }
   };
 
-  const currencies = ["USD", "EUR", "GBP", "JPY", "AUD", "CAD", "CHF", "CNY", "INR", "BTC", "ETH"];
+
 
   const handleLogout = async () => {
     try {
@@ -332,21 +257,21 @@ const AppSidebar: React.FC = () => {
               <SidebarMenu className="space-y-0.5">
                 <SidebarMenuItem>
                   <SidebarMenuButton 
-                    tooltip="Profile" 
-                    isActive={location.pathname === '/profile' || location.pathname.startsWith('/profile/')}
-                    className={location.pathname === '/profile' || location.pathname.startsWith('/profile/') ? "" : "text-white/40 hover:text-white/60"}
+                    tooltip="Summary" 
+                    isActive={location.pathname === '/summary'}
+                    className={location.pathname === '/summary' ? "" : "text-white/40 hover:text-white/60"}
                     asChild
                   >
-                    <Link to="/profile">
-                      <User className="h-4 w-4" />
-                      <span>Profile</span>
+                    <Link to="/summary">
+                      <BarChart3 className="h-4 w-4" />
+                      <span>Workstation</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
 
                 <SidebarMenuItem>
                   <SidebarMenuButton 
-                    tooltip="Strategies" 
+                    tooltip="Summary" 
                     //isActive={location.pathname === '/strategies' || location.pathname.startsWith('/strategies/')}
                     className={location.pathname === '/strategies' ? "" : "text-white/40 hover:text-white/60"}
                     asChild
@@ -455,66 +380,9 @@ const AppSidebar: React.FC = () => {
                   </SidebarMenuItem>
                 ))}
                 
-                {/* Add Account Button */}
+                {/* Add Account Dialog */}
                 <SidebarMenuItem>
-                  <Dialog open={showAddAccountDialog} onOpenChange={setShowAddAccountDialog}>
-                    <DialogTrigger asChild>
-                      <SidebarMenuButton className="text-white/40 hover:text-white/60">
-                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <line x1="12" y1="5" x2="12" y2="19"></line>
-                          <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                        <span>Add Account</span>
-                      </SidebarMenuButton>
-                    </DialogTrigger>
-                    <DialogContent className="bg-black/80 backdrop-blur-md border-white/5">
-                      <DialogHeader>
-                        <DialogTitle>Add New Trading Account</DialogTitle>
-                        <DialogDescription>Create a new trading account to track your performance</DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                          <label htmlFor="name" className="text-sm font-medium">Account Name</label>
-                          <Input
-                            id="name"
-                            value={newAccount.name}
-                            onChange={(e) => setNewAccount({ ...newAccount, name: e.target.value })}
-                            placeholder="My Trading Account"
-                            className="bg-black/20 border-white/10"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <label htmlFor="currency" className="text-sm font-medium">Currency</label>
-                          <select
-                            id="currency"
-                            value={newAccount.currency}
-                            onChange={(e) => setNewAccount({ ...newAccount, currency: e.target.value })}
-                            className="w-full bg-black/20 border-white/10 rounded-md p-2"
-                          >
-                            {currencies.map(currency => (
-                              <option key={currency} value={currency}>{currency}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className="space-y-2">
-                          <label htmlFor="initialBalance" className="text-sm font-medium">Initial Balance</label>
-                          <Input
-                            id="initialBalance"
-                            type="number"
-                            value={newAccount.initialBalance}
-                            onChange={(e) => setNewAccount({ ...newAccount, initialBalance: parseFloat(e.target.value) })}
-                            placeholder="10000"
-                            className="bg-black/20 border-white/10"
-                          />
-                          <p className="text-xs text-muted-foreground">Current balance will be calculated automatically from your trades</p>
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowAddAccountDialog(false)}>Cancel</Button>
-                        <Button onClick={handleAddAccount}>Add Account</Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                  <AddAccountDialog />
                 </SidebarMenuItem>
               </SidebarMenu>
             </CollapsibleContent>
@@ -592,16 +460,7 @@ const AppSidebar: React.FC = () => {
                 
                 {/* Add Strategy Button */}
                 <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    onClick={() => setShowAddStrategyDialog(true)}
-                    className="text-white/40 hover:text-white/60"
-                  >
-                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="12" y1="5" x2="12" y2="19"></line>
-                      <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                    <span>Add Strategy</span>
-                  </SidebarMenuButton>
+                  <AddStrategyDialog />
                 </SidebarMenuItem>
               </SidebarMenu>
             </CollapsibleContent>
@@ -620,29 +479,7 @@ const AppSidebar: React.FC = () => {
         </SidebarFooter>
       </Sidebar>
       
-      {/* Add Strategy Dialog */}
-      <Dialog open={showAddStrategyDialog} onOpenChange={setShowAddStrategyDialog}>
-        <DialogContent className="bg-black/80 backdrop-blur-md border-white/5">
-          <DialogHeader>
-            <DialogTitle>
-              Add New Strategy
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <Input
-              placeholder="Strategy Name"
-              value={newStrategy}
-              onChange={(e) => setNewStrategy(e.target.value)}
-              className="bg-black/20 border-white/10"
-            />
-          </div>
-          <DialogFooter>
-            <Button onClick={handleAddStrategy} variant="glass">
-              Add Strategy
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
       
       {/* Rename Dialog */}
       <Dialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>

@@ -11,6 +11,7 @@ const LiveTradingStrategies = lazy(() => import('./pages/LiveTradingStrategies')
 const StrategyPage = lazy(() => import('./pages/StrategyPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const ProfileEditPage = lazy(() => import('./pages/ProfileEditPage'));
+const Summary = lazy(() => import('./pages/Summary'));
 const Accounts = lazy(() => import('./pages/Accounts')); // Use the correct component names
 const AccountDetail = lazy(() => import('./pages/AccountDetail')); // Use the correct component names
 const Settings = lazy(() => import('./pages/Settings')); // Use the correct component names
@@ -68,6 +69,11 @@ function App() {
             <Route path="/profile/edit" element={
               <PrivateRoute>
                 <ProfileEditPage />
+              </PrivateRoute>
+            } />
+            <Route path="/summary" element={
+              <PrivateRoute>
+                <Summary />
               </PrivateRoute>
             } />
             <Route path="/accounts" element={
