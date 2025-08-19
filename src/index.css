@@ -382,14 +382,14 @@
     ),
     hsl(260 calc(var(--active) * 97%) calc((var(--active) * 44%) + 12%));
   background: var(--bg);
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 500;
   border: 0;
   cursor: pointer;
-  padding: 1.1em 1.5em;
+  padding: 0.75em 1.2em;
   display: flex;
   align-items: center;
-  gap: 0.25em;
+  gap: 0.2em;
   white-space: nowrap;
   border-radius: 100px;
   position: relative;
@@ -567,7 +567,7 @@
 .sparkle-button .text {
   translate: 2% -6%;
   letter-spacing: 0.01ch;
-  font-size: 0.895rem;
+  font-size: 0.8rem;
   background: linear-gradient(90deg, hsl(0 0% calc((var(--active) * 100%) + 65%)), hsl(0 0% calc((var(--active) * 100%) + 26%)));
   -webkit-background-clip: text;
   color: transparent;
@@ -575,7 +575,7 @@
 }
 
 .sparkle-button button svg {
-  inline-size: 1.25em;
+  inline-size: 1em;
   translate: -25% -5%;
 }
 
