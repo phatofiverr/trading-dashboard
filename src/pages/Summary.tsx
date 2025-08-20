@@ -139,18 +139,18 @@ const Summary: React.FC = () => {
                           {trades.slice(0, 5).map((trade, index) => (
                             <div key={index} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
                               <div className="flex items-center space-x-3">
-                                <div className={`w-2 h-2 rounded-full ${trade.profit >= 0 ? 'bg-green-500' : 'bg-red-500'}`} />
+                                <div className={`w-2 h-2 rounded-full ${(trade.profit ?? 0) >= 0 ? 'bg-green-500' : 'bg-red-500'}`} />
                                 <div>
-                                  <p className="font-medium text-sm">{trade.instrument}</p>
+                                  <p className="font-medium text-sm">{trade.instrument || trade.pair}</p>
                                   <p className="text-xs text-muted-foreground">{trade.strategyId || 'Manual'}</p>
                                 </div>
                               </div>
                               <div className="text-right">
-                                <p className={`font-medium text-sm ${trade.profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                <p className={`font-medium text-sm ${(trade.profit ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                                   ${trade.profit?.toFixed(2) || '0.00'}
                                 </p>
                                 <p className="text-xs text-muted-foreground">
-                                  {trade.entryTime ? new Date(trade.entryTime).toLocaleDateString() : 'N/A'}
+                                  {trade.entryDate ? new Date(trade.entryDate).toLocaleDateString() : 'N/A'}
                                 </p>
                               </div>
                             </div>
