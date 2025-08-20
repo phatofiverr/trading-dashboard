@@ -63,6 +63,11 @@ export const tradeFormSchema = z.object({
   // Pip/Price mode preferences
   stopLossInPips: z.boolean().default(true),
   takeProfitInPips: z.boolean().default(true),
+  // Confluence checks for strategy quality assessment
+  confluenceChecks: z.array(z.object({
+    confluenceId: z.string(),
+    isPresent: z.boolean(),
+  })).default([]),
 });
 
 export type TradeFormValues = z.infer<typeof tradeFormSchema>;

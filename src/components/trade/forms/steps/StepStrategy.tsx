@@ -24,10 +24,6 @@ export default function StepLevels() {
   const userStrategies = getUniqueStrategies(strategyType);
   const watchedValues = form.watch();
   
-  // Confluence tracking state
-  const [confluenceChecks, setConfluenceChecks] = useState<TradeConfluenceCheck[]>([]);
-  
-
   // Get selected strategy for confluences
   const selectedStrategyId = watchedValues.strategyId || strategyId;
   const selectedStrategy = selectedStrategyId ? 
@@ -38,15 +34,34 @@ export default function StepLevels() {
   // Initialize confluence checks when strategy changes
   useEffect(() => {
     if (selectedStrategy?.confluences?.length) {
-      const initialChecks = selectedStrategy.confluences.map(confluence => ({
+      // Get existing checks from form or initialize new ones
+      const existingChecks = form.getValues('confluenceChecks') || [];
+      const strategyConfluenceIds = selectedStrategy.confluences.map(c => c.id);
+      
+      // Filter out checks for confluences that don't belong to this strategy
+      const relevantChecks = existingChecks.filter(check => 
+        strategyConfluenceIds.includes(check.confluenceId)
+      );
+      
+      // Add any missing confluences with default false state
+      const missingConfluences = selectedStrategy.confluences.filter(confluence => 
+        !relevantChecks.some(check => check.confluenceId === confluence.id)
+      );
+      
+      const newChecks = missingConfluences.map(confluence => ({
         confluenceId: confluence.id,
         isPresent: false
       }));
-      setConfluenceChecks(initialChecks);
+      
+      const allChecks = [...relevantChecks, ...newChecks];
+      form.setValue('confluenceChecks', allChecks);
     } else {
-      setConfluenceChecks([]);
+      form.setValue('confluenceChecks', []);
     }
-  }, [selectedStrategy?.id]);
+  }, [selectedStrategy?.id, form]);
+  
+  // Get confluence checks from form
+  const confluenceChecks = form.watch('confluenceChecks') || [];
   
   // Calculate setup quality
   const setupQuality = selectedStrategy?.confluences 
@@ -55,13 +70,13 @@ export default function StepLevels() {
   
   // Handle confluence check change
   const handleConfluenceCheck = (confluenceId: string, checked: boolean) => {
-    setConfluenceChecks(prev => 
-      prev.map(check => 
-        check.confluenceId === confluenceId 
-          ? { ...check, isPresent: checked }
-          : check
-      )
+    const currentChecks = form.getValues('confluenceChecks') || [];
+    const updatedChecks = currentChecks.map(check => 
+      check.confluenceId === confluenceId 
+        ? { ...check, isPresent: checked }
+        : check
     );
+    form.setValue('confluenceChecks', updatedChecks);
   };
 
   return (

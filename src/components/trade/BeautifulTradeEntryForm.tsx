@@ -42,7 +42,7 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { strategyId } = useParams<{ strategyId: string }>();
   
-  const totalSteps = 4;
+  const totalSteps = 5;
 
   // Initialize form with default values
   const form = useForm<TradeFormValues>({
