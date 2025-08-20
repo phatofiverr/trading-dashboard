@@ -11,6 +11,7 @@ interface FormButtonsProps {
   onComplete: () => void;
   isStepValid: boolean;
   isSubmitting?: boolean;
+  isEditing?: boolean;
 }
 
 export default function FormButtons({ 
@@ -20,7 +21,8 @@ export default function FormButtons({
   onNextStep, 
   onComplete, 
   isStepValid,
-  isSubmitting = false 
+  isSubmitting = false,
+  isEditing = false 
 }: FormButtonsProps) {
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === totalSteps - 1;
@@ -79,8 +81,8 @@ export default function FormButtons({
             disabled={!isStepValid || isSubmitting}
             className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"
           >
-            <span className="hidden sm:inline">{isSubmitting ? "Saving..." : "Complete Trade"}</span>
-            <span className="sm:hidden">{isSubmitting ? "Saving..." : "Complete"}</span>
+            <span className="hidden sm:inline">{isSubmitting ? "Saving..." : (isEditing ? "Update Trade" : "Complete Trade")}</span>
+            <span className="sm:hidden">{isSubmitting ? "Saving..." : (isEditing ? "Update" : "Complete")}</span>
             <CheckCircle className="w-4 h-4 ml-2" />
           </Button>
         )}

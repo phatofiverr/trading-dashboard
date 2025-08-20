@@ -12,7 +12,6 @@ import { InfoIcon, Calculator, Plus, Target } from "lucide-react";
 import { useTradeStore } from "@/hooks/useTradeStore";
 import { useParams } from "react-router-dom";
 import { calculateSetupQuality, TradeConfluenceCheck } from "@/utils/confluenceUtils";
-import { Confluence } from "@/hooks/slices/types";
 
 export default function StepLevels() {
   const { getUniqueStrategies, getStrategyById, strategies } = useTradeStore();
@@ -65,8 +64,13 @@ export default function StepLevels() {
   
   // Calculate setup quality
   const setupQuality = selectedStrategy?.confluences 
-    ? calculateSetupQuality(selectedStrategy.confluences, confluenceChecks)
+    ? calculateSetupQuality(selectedStrategy.confluences, confluenceChecks as TradeConfluenceCheck[])
     : 0;
+  
+  // Update form with calculated setup quality
+  useEffect(() => {
+    form.setValue('setupQuality', setupQuality);
+  }, [setupQuality, form]);
   
   // Handle confluence check change
   const handleConfluenceCheck = (confluenceId: string, checked: boolean) => {

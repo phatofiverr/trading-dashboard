@@ -3,7 +3,7 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTradeStore } from '@/hooks/useTradeStore';
 import { tradeFormSchema, TradeFormValues } from './schemas/tradeFormSchema';
-import { transformFormToTradeData, prepareTradeSave } from './utils/tradeDataTransformer';
+import { transformFormToTradeData, prepareTradeSave, transformTradeToFormValues } from './utils/tradeDataTransformer';
 import { useParams } from 'react-router-dom';
 import { Trade } from '@/types/Trade';
 import { TradeEntryFormProps } from './TradeEntryFormProps';
@@ -44,10 +44,13 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
   
   const totalSteps = 5;
 
-  // Initialize form with default values
-  const form = useForm<TradeFormValues>({
-    resolver: zodResolver(tradeFormSchema),
-    defaultValues: {
+  // Initialize form with default values or pre-populated trade data
+  const getDefaultValues = (): TradeFormValues => {
+    if (isEditing && initialTrade) {
+      return transformTradeToFormValues(initialTrade);
+    }
+    
+    return {
       // Required fields
       instrument: "",
       entryPrice: "",
@@ -68,6 +71,7 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
       didHitBE: false,
       tpHitAfterBE: false,
       reversedAfterBE: false,
+      tpHit: "none",
       confidenceRating: 5,
       tp1Price: "",
       tp2Price: "",
@@ -90,8 +94,15 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
       chartAnalysis: [],
       // Pip/Price mode preferences
       stopLossInPips: true,
-      takeProfitInPips: true
-    },
+      takeProfitInPips: true,
+      confluenceChecks: [],
+      setupQuality: 0
+    };
+  };
+
+  const form = useForm<TradeFormValues>({
+    resolver: zodResolver(tradeFormSchema),
+    defaultValues: getDefaultValues(),
   });
 
   // Watch specific fields needed for validation to avoid infinite renders
@@ -343,6 +354,7 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
                   })}
                   isStepValid={isStepValid}
                   isSubmitting={isSubmitting}
+                  isEditing={isEditing}
                 />
               </div>
             </form>

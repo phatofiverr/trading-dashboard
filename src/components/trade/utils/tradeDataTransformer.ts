@@ -3,6 +3,72 @@ import { TradeFormValues } from '../schemas/tradeFormSchema';
 import { Trade, TradeFormData } from '@/types/Trade';
 import { detectSession } from './sessionDetector';
 
+// Transform Trade object back to TradeFormValues for editing
+export const transformTradeToFormValues = (trade: Trade): TradeFormValues => {
+  // Parse dates properly
+  const entryDate = trade.entryDate ? new Date(trade.entryDate) : new Date();
+  const exitDate = trade.exitDate ? new Date(trade.exitDate) : undefined;
+  
+  return {
+    tradeId: trade.tradeId || trade.id || "",
+    instrument: trade.instrument || "",
+    entryPrice: trade.entryPrice?.toString() || "",
+    exitPrice: trade.exitPrice?.toString() || "",
+    slPrice: trade.slPrice?.toString() || "",
+    tp1Price: trade.tp1Price?.toString() || "",
+    tp2Price: trade.tp2Price?.toString() || "",
+    tp3Price: trade.tp3Price?.toString() || "",
+    entryDate: entryDate,
+    exitDate: exitDate,
+    entryTime: trade.entryTime || "00:00",
+    exitTime: trade.exitTime || "00:00",
+    entryTimezone: trade.entryTimezone || "UTC",
+    exitTimezone: trade.exitTimezone || "UTC", 
+    direction: (trade.direction === "long" ? "Long" : "Short") as "Long" | "Short",
+    entryTimeframe: trade.entryTimeframe || "15m",
+    htfTimeframe: trade.htfTimeframe || "1h",
+    slPips: trade.slPips?.toString() || "0",
+    confidenceRating: trade.confidenceRating || 5,
+    tags: trade.tags || [],
+    didHitBE: trade.didHitBE || false,
+    tpHitAfterBE: trade.tpHitAfterBE || false,
+    reversedAfterBE: trade.reversedAfterBE || false,
+    tpHit: trade.tpHit || "none",
+    demonTags: trade.demonTags || [],
+    strategyId: trade.strategyId || "",
+    accountId: trade.accountId || "",
+    session: trade.session || "",
+    entryType: trade.entryType || "",
+    obType: trade.obType || "",
+    marketStructure: trade.marketStructure || "",
+    liquidityContext: trade.liquidityContext || "",
+    exitReason: trade.exitReason || "",
+    slLogic: trade.slLogic || "",
+    tpLogic: trade.tpLogic || "",
+    notes: trade.notes || "",
+    maxDrawdown: trade.maxDrawdown,
+    recoveryTime: trade.recoveryTime,
+    drawdownDuration: trade.drawdownDuration,
+    riskAmount: trade.riskAmount || "",
+    riskRewardRatio: trade.riskRewardRatio,
+    positionSize: trade.positionSize?.toString() || "",
+    chartScreenshot: trade.chartScreenshot || "",
+    chartAnalysis: (trade.chartAnalysis || []).map(item => ({
+      id: item.id || '',
+      imageUrl: item.imageUrl || '',
+      notes: item.notes || '',
+      order: item.order || 0
+    })),
+    stopLossInPips: true, // Default to true
+    takeProfitInPips: true, // Default to true
+    confluenceChecks: (trade.confluenceChecks || []).map(item => ({
+      confluenceId: item.confluenceId || '',
+      isPresent: item.isPresent || false
+    })),
+    setupQuality: trade.setupQuality
+  };
+};
+
 // Transforms form data to match the TradeFormData interface
 export const transformFormToTradeData = (values: TradeFormValues): TradeFormData => {
   // Calculate session based on entry time and timezone
@@ -54,7 +120,7 @@ export const transformFormToTradeData = (values: TradeFormValues): TradeFormData
     didHitBE: values.didHitBE || false,
     tpHitAfterBE: values.tpHitAfterBE || false,
     reversedAfterBE: values.reversedAfterBE || false,
-    tpHit: values.tpHit,
+    tpHit: values.tpHit || "none",
     // Make sure to preserve entry time and timezone
     entryTime: values.entryTime || "00:00",
     exitTime: values.exitTime || "00:00",
@@ -79,7 +145,12 @@ export const transformFormToTradeData = (values: TradeFormValues): TradeFormData
     // Add chart screenshot
     chartScreenshot: values.chartScreenshot || '',
     // Add chart analysis with screenshots and notes
-    chartAnalysis: values.chartAnalysis || [],
+    chartAnalysis: (values.chartAnalysis || []).map(item => ({
+      id: item.id || '',
+      imageUrl: item.imageUrl || '',
+      notes: item.notes || '',
+      order: item.order || 0
+    })),
     // Add notes
     notes: values.notes || '',
     // Add drawdown analysis fields
@@ -89,6 +160,13 @@ export const transformFormToTradeData = (values: TradeFormValues): TradeFormData
     // Add calculated metrics
     riskRewardRatio: values.riskRewardRatio,
     positionSize: values.positionSize,
+    // Add confluence checks
+    confluenceChecks: (values.confluenceChecks || []).map(item => ({
+      confluenceId: item.confluenceId || '',
+      isPresent: item.isPresent || false
+    })),
+    // Add setup quality
+    setupQuality: values.setupQuality
   };
 
 
@@ -204,6 +282,8 @@ export const prepareTradeSave = (tradeData: TradeFormData): Partial<Trade> => {
     drawdownDuration: tradeData.drawdownDuration,
     // Include calculated metrics
     positionSize: tradeData.positionSize,
+    // Include setup quality
+    setupQuality: tradeData.setupQuality,
   };
 
   // Add console log to verify data is being saved

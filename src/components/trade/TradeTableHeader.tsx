@@ -14,6 +14,7 @@ const TradeTableHeader: React.FC = () => {
         <TableHead className="text-white/70 font-medium">R</TableHead>
         <TableHead className="text-white/70 font-medium">Risk Amount</TableHead>
         <TableHead className="text-white/70 font-medium">Profit</TableHead>
+        <TableHead className="text-white/70 font-medium">Setup Quality</TableHead>
         <TableHead className="text-white/70 font-medium">Timeframe</TableHead>
         <TableHead className="text-white/70 font-medium">Session</TableHead>
       </TableRow>

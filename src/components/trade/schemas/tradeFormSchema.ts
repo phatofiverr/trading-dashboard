@@ -27,6 +27,7 @@ export const tradeFormSchema = z.object({
   didHitBE: z.boolean().default(false),
   tpHitAfterBE: z.boolean().default(false),
   reversedAfterBE: z.boolean().default(false),
+  tpHit: z.enum(["none", "tp1", "tp2", "tp3"]).default("none"),
   // Demon selector for trading issues
   demonTags: z.array(z.string()).default([]),
   strategyId: z.string().optional(), // Optional - can be None/empty
@@ -68,6 +69,8 @@ export const tradeFormSchema = z.object({
     confluenceId: z.string(),
     isPresent: z.boolean(),
   })).default([]),
+  // Setup quality calculated from confluence checks (0-100)
+  setupQuality: z.number().min(0).max(100).optional(),
 });
 
 export type TradeFormValues = z.infer<typeof tradeFormSchema>;
