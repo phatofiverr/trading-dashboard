@@ -16,7 +16,7 @@ interface NavigationItem {
   description?: string;
 }
 
-interface AccountNavigationProps {
+interface StrategyNavigationProps {
   activeSection: string;
   onSectionChange: (sectionId: string) => void;
   className?: string;
@@ -27,22 +27,27 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
   {
     id: 'overview',
     label: 'Overview',
-    description: 'Equity curves and risk metrics'
+    description: 'Equity curves and performance metrics'
   },
   {
     id: 'analysis',
     label: 'Analysis',
-    description: 'Statistics and trading calendar'
-  },
-  {
-    id: 'models',
-    label: 'Models',
-    description: 'Volatility and advanced models'
+    description: 'R-analysis and statistical breakdowns'
   },
   {
     id: 'performance',
     label: 'Performance',
-    description: 'KPIs and heatmaps'
+    description: 'KPIs and detailed metrics'
+  },
+  {
+    id: 'activity',
+    label: 'Activity',
+    description: 'Trade heatmaps and patterns'
+  },
+  {
+    id: 'models',
+    label: 'Models',
+    description: 'Advanced statistical models'
   },
   {
     id: 'trades',
@@ -51,7 +56,7 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
   }
 ];
 
-const AccountNavigation: React.FC<AccountNavigationProps> = memo(({
+const StrategyNavigation: React.FC<StrategyNavigationProps> = memo(({
   activeSection,
   onSectionChange,
   className
@@ -165,7 +170,7 @@ const AccountNavigation: React.FC<AccountNavigationProps> = memo(({
 
   return (
     <NavigationMenu className={cn(
-      "relative flex items-center justify-start w-full border-b border-white/10 max-w-none",
+      "relative flex items-center justify-start w-full bg-trading-bg border-b border-white/10 max-w-none",
       className
     )}>
       <div
@@ -182,10 +187,10 @@ const AccountNavigation: React.FC<AccountNavigationProps> = memo(({
               <NavigationMenuItem key={item.id} className="h-full">
                 <button
                   ref={(el) => (tabRefs.current[index] = el)}
-                                onClick={() => {
-                // Navigate immediately without clearing hover state
-                onSectionChange(item.id);
-              }}
+                  onClick={() => {
+                    // Navigate immediately without clearing hover state
+                    onSectionChange(item.id);
+                  }}
                   onMouseEnter={() => setHoveredIndex(index)}
                   className={cn(
                     "relative h-full flex items-center justify-center py-4 px-6 cursor-pointer",
@@ -259,6 +264,6 @@ const AccountNavigation: React.FC<AccountNavigationProps> = memo(({
   );
 });
 
-AccountNavigation.displayName = 'AccountNavigation';
+StrategyNavigation.displayName = 'StrategyNavigation';
 
-export default AccountNavigation;
+export default StrategyNavigation;

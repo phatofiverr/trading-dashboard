@@ -31,7 +31,6 @@ const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
         <input
           ref={ref}
           type="range"
-          data-slot="slider"
           min={min}
           max={max}
           step={step}

@@ -60,7 +60,7 @@ const AccountAnalysisSection: React.FC<AccountAnalysisSectionProps> = ({
           </div>
         </div>
 
-        <div className="lg:col-span-3 h-full">
+        <div className="lg:col-span-3">
           <Suspense fallback={<div className="h-96 bg-black/10 rounded-lg animate-pulse" />}>
             <TradingCalendar account={account} />
           </Suspense>

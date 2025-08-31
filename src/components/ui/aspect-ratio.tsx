@@ -16,7 +16,6 @@ const AspectRatio = React.forwardRef<
 >(({ ratio = 1, children, className, ...props }, ref) => (
   <div
     ref={ref}
-    data-slot="base"
     className={cn("relative w-full", className)}
     style={{ aspectRatio: ratio }}
     {...props}

@@ -54,7 +54,7 @@ function Select({ value, defaultValue, onValueChange, disabled, children }: Sele
       setOpen, 
       disabled 
     }}>
-      <div data-slot="select" className="relative">
+      <div className="relative">
         {children}
       </div>
     </SelectContext.Provider>
@@ -68,7 +68,7 @@ interface SelectGroupProps {
 
 function SelectGroup({ children, className }: SelectGroupProps) {
   return (
-    <div data-slot="select-group" className={className}>
+    <div className={className}>
       {children}
     </div>
   )
@@ -103,7 +103,7 @@ function SelectValue({ placeholder, className }: SelectValueProps) {
   return (
     <SelectValueContext.Provider value={{ setSelectedContent }}>
       <span 
-        data-slot="select-value" 
+ 
         className={cn("flex items-center gap-2", className)}
         data-placeholder={!value ? "" : undefined}
       >
@@ -137,7 +137,7 @@ function SelectTrigger({ className, children, ...props }: SelectTriggerProps) {
   return (
     <button
       type="button"
-      data-slot="select-trigger"
+      data-select-trigger
       className={cn(
         "border-input text-foreground data-[placeholder]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive flex h-9 w-full items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&>span]:line-clamp-1",
         !value && "text-muted-foreground",
@@ -179,7 +179,7 @@ function SelectContent({ className, children, position = "popper" }: SelectConte
     
     const handleClickOutside = (event: MouseEvent) => {
       if (contentRef.current && !contentRef.current.contains(event.target as Node)) {
-        const trigger = document.querySelector('[data-slot="select-trigger"]')
+        const trigger = document.querySelector('[data-select-trigger]')
         if (trigger && !trigger.contains(event.target as Node)) {
           setOpen(false)
         }
@@ -209,7 +209,6 @@ function SelectContent({ className, children, position = "popper" }: SelectConte
   return (
     <div
       ref={contentRef}
-      data-slot="select-content"
       className={cn(
         "border-input bg-popover text-popover-foreground absolute z-50 max-h-96 min-w-32 overflow-hidden rounded-md border shadow-lg animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-2",
         "w-full mt-1",
@@ -234,7 +233,6 @@ interface SelectLabelProps {
 function SelectLabel({ className, children }: SelectLabelProps) {
   return (
     <div
-      data-slot="select-label"
       className={cn(
         "text-muted-foreground py-1.5 ps-8 pe-2 text-xs font-medium",
         className
@@ -279,7 +277,6 @@ function SelectItem({ className, children, value, disabled }: SelectItemProps) {
   
   return (
     <div
-      data-slot="select-item"
       className={cn(
         "focus:bg-accent focus:text-accent-foreground relative flex w-full cursor-default items-center rounded py-1.5 ps-8 pe-2 text-sm outline-hidden select-none transition-colors",
         "hover:bg-accent hover:text-accent-foreground",
@@ -307,7 +304,6 @@ interface SelectSeparatorProps {
 function SelectSeparator({ className }: SelectSeparatorProps) {
   return (
     <div
-      data-slot="select-separator"
       className={cn("bg-border -mx-1 my-1 h-px", className)}
     />
   )

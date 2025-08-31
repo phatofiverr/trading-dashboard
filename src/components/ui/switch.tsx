@@ -25,7 +25,6 @@ const Switch = React.forwardRef<
       <input
         type="checkbox"
         ref={ref}
-        data-slot="switch"
         className="sr-only"
         {...props}
         checked={isChecked}

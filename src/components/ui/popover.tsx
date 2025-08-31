@@ -35,7 +35,7 @@ function Popover({
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (open && triggerRef.current && !triggerRef.current.contains(event.target as Node)) {
-        const popoverContent = document.querySelector('[data-slot="popover-content"]')
+        const popoverContent = document.querySelector('[data-popover-content]')
         if (popoverContent && !popoverContent.contains(event.target as Node)) {
           setOpen(false)
         }
@@ -79,7 +79,6 @@ const PopoverTrigger = React.forwardRef<
         ;(children as React.ReactElement).props.onClick?.(event)
       },
       'aria-expanded': context.open,
-      'data-slot': 'popover-trigger'
     })
   }
 
@@ -90,7 +89,6 @@ const PopoverTrigger = React.forwardRef<
         if (typeof ref === 'function') ref(node)
         else if (ref) ref.current = node
       }}
-      data-slot="popover-trigger"
       onClick={handleClick}
       aria-expanded={context.open}
       {...props}
@@ -117,7 +115,7 @@ const PopoverContent = React.forwardRef<
   const content = (
     <div
       ref={ref}
-      data-slot="popover-content"
+      data-popover-content
       className={cn(
         "z-[9999] w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none animate-in fade-in-0 zoom-in-95",
         "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",

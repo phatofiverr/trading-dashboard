@@ -13,7 +13,6 @@ const Label = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <label
     ref={ref}
-    data-slot="label"
     className={cn(labelVariants(), className)}
     {...props}
   />

@@ -131,7 +131,6 @@ const SidebarProvider = React.forwardRef<
       <SidebarContext.Provider value={contextValue}>
         <TooltipProvider delayDuration={0}>
           <div
-            data-slot="sidebar-provider"
             style={
               {
                 "--sidebar-width": SIDEBAR_WIDTH,
@@ -179,7 +178,6 @@ const Sidebar = React.forwardRef<
     if (collapsible === "none") {
       return (
         <div
-          data-slot="sidebar"
           className={cn(
             "flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
             className
@@ -215,7 +213,6 @@ const Sidebar = React.forwardRef<
     return (
       <div
         ref={ref}
-        data-slot="sidebar"
         className="group peer hidden md:block text-sidebar-foreground"
         data-state={state}
         data-collapsible={state === "collapsed" ? collapsible : ""}

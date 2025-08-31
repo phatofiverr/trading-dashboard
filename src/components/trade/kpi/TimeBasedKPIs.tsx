@@ -33,11 +33,11 @@ export const TimeBasedWinRateCard = ({ title, data, dataKey, valueFormatter }: T
   
   return (
     <Card className="glass-effect col-span-1 h-full">
-      <CardContent className="p-6 h-full flex flex-col">
-        <div className="flex items-center gap-1 mb-6">
+      <CardContent className="p-4 h-full flex flex-col">
+        <div className="flex items-center gap-1 mb-3">
           <p className="text-sm text-muted-foreground">{title}</p>
         </div>
-        <div className="flex-1" style={{ minHeight: "280px" }}>
+        <div className="flex-1 min-h-[200px]">
           {!isEmpty ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart 
@@ -347,11 +347,11 @@ const TimeBasedKPIs = () => {
   const sessionStats = calculateSessionStats();
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <EntryTimeWinRateCard />
       <DayWiseWinRateCard />
       <MonthlyWinRateCard />
-      <div className="h-[350px]">
+      <div className="min-h-[200px]">
         <SessionPerformanceChart sessionStats={sessionStats} />
       </div>
     </div>

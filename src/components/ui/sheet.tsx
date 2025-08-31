@@ -8,25 +8,25 @@ import { cn } from "@/lib/utils"
 function Sheet({
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Root>) {
-  return <SheetPrimitive.Root data-slot="sheet" {...props} />
+  return <SheetPrimitive.Root {...props} />
 }
 
 function SheetTrigger({
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Trigger>) {
-  return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />
+  return <SheetPrimitive.Trigger {...props} />
 }
 
 function SheetClose({
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Close>) {
-  return <SheetPrimitive.Close data-slot="sheet-close" {...props} />
+  return <SheetPrimitive.Close {...props} />
 }
 
 function SheetPortal({
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Portal>) {
-  return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />
+  return <SheetPrimitive.Portal {...props} />
 }
 
 const SheetOverlay = React.forwardRef<
@@ -35,7 +35,6 @@ const SheetOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SheetPrimitive.Overlay
     ref={ref}
-    data-slot="sheet-overlay"
     className={cn(
       "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/80",
       className
@@ -76,7 +75,6 @@ const SheetContent = React.forwardRef<
     <SheetOverlay />
     <SheetPrimitive.Content
       ref={ref}
-      data-slot="sheet-content"
       className={cn(sheetVariants({ side }), className)}
       {...props}
     >
@@ -96,7 +94,6 @@ SheetContent.displayName = SheetPrimitive.Content.displayName
 function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
-      data-slot="sheet-header"
       className={cn("flex flex-col gap-1 text-center sm:text-left", className)}
       {...props}
     />
@@ -106,7 +103,6 @@ function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
 function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
-      data-slot="sheet-footer"
       className={cn(
         "flex flex-col-reverse gap-3 sm:flex-row sm:justify-end",
         className
@@ -122,7 +118,6 @@ const SheetTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SheetPrimitive.Title
     ref={ref}
-    data-slot="sheet-title"
     className={cn("text-lg leading-none font-medium", className)}
     {...props}
   />
@@ -135,7 +130,6 @@ const SheetDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SheetPrimitive.Description
     ref={ref}
-    data-slot="sheet-description"
     className={cn("text-muted-foreground text-sm", className)}
     {...props}
   />

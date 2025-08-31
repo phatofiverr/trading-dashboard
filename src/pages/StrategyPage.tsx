@@ -11,33 +11,20 @@ import {
 } from '@/components/ui/dialog';
 import SingleSidebarLayout from '@/components/SingleSidebarLayout';
 import TradeEntryButton from '@/components/trade/TradeEntryButton';
-import TradeTable from '@/components/trade/TradeTable';
 import FilterPanel from '@/components/trade/FilterPanel';
 import TradeDetailView from '@/components/trade/TradeDetailView';
 import EditConfluencesDialog from '@/components/EditConfluencesDialog';
-
+import StrategyNavigation from '@/components/navigation/StrategyNavigation';
+import StrategyOverviewSection from '@/components/strategy/sections/StrategyOverviewSection';
+import StrategyAnalysisSection from '@/components/strategy/sections/StrategyAnalysisSection';
+import StrategyPerformanceSection from '@/components/strategy/sections/StrategyPerformanceSection';
+import StrategyActivitySection from '@/components/strategy/sections/StrategyActivitySection';
+import StrategyModelsSection from '@/components/strategy/sections/StrategyModelsSection';
+import StrategyTradesSection from '@/components/strategy/sections/StrategyTradesSection';
+import { Trade } from '@/types/Trade';
 
 // Lazy load heavy components
-const EquityCurveChart = lazy(() => import('@/components/trade/EquityCurveChart'));
-const TradingKPIs = lazy(() => import('@/components/trade/TradingKPIs'));
-const RAnalysisCard = lazy(() => import('@/components/trade/analysis/RAnalysisCard'));
-const MostTradedPairsCard = lazy(() => import('@/components/trade/MostTradedPairsCard'));
-const TradeActivityHeatmap = lazy(() => import('@/components/trade/TradeActivityHeatmap'));
 const ThemeEditor = lazy(() => import('@/components/trade/ThemeEditor'));
-const StochasticVolatilityModel = lazy(() => import('@/components/trade/analysis/StochasticVolatilityModel'));
-const SimpleStatsDisplay = lazy(() => import('@/components/trade/SimpleStatsDisplay'));
-import { Trade } from '@/types/Trade';
-import { 
-  TradeTableProps, 
-  TradeActivityProps,
-  TradeActivityHeatmapProps, 
-  SimpleStatsDisplayProps,
-  EquityCurveChartProps,
-  MostTradedPairsCardProps,
-  RAnalysisCardProps,
-  TradingKPIsProps,
-  StochasticVolatilityModelProps
-} from '@/components/trade/TradeComponentProps';
 
 const StrategyPage: React.FC = () => {
   const { strategyId } = useParams<{ strategyId: string }>();
@@ -55,6 +42,7 @@ const StrategyPage: React.FC = () => {
   } = useTradeStore();
   const [showFilterPanel, setShowFilterPanel] = React.useState<boolean>(false);
   const [showLiveData, setShowLiveData] = useState<boolean>(true);
+  const [activeSection, setActiveSection] = useState<string>('overview');
   
   // First, declare all hooks
   useEffect(() => {
@@ -120,7 +108,7 @@ const StrategyPage: React.FC = () => {
         {/* Header with Strategy Title and Action Buttons */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <h1 className="text-2xl font-medium text-foreground">
-            {strategyId} Strategy <span className="text-sm font-normal text-muted-foreground ml-1">-BETA</span>
+            {strategyId} Strategy <span className="text-sm font-normal text-muted-foreground ml-1"></span>
           </h1>
           
           <div className="flex items-center gap-2">
@@ -179,6 +167,14 @@ const StrategyPage: React.FC = () => {
           </div>
         </div>
         
+        {/* Navigation Bar */}
+        <div className="mb-6">
+          <StrategyNavigation
+            activeSection={activeSection}
+            onSectionChange={setActiveSection}
+          />
+        </div>
+
         {/* Filter Panel (Collapsible) */}
         {showFilterPanel && (
           <div className="animate-fade-in mb-6">
@@ -186,62 +182,30 @@ const StrategyPage: React.FC = () => {
           </div>
         )}
         
-        {/* Reorganized Layout - Strategy Page specific layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          {/* Equity Curve Chart (takes 2 columns) */}
-          <div className="lg:col-span-2">
-            <Suspense fallback={<div className="h-96 bg-black/10 rounded-lg animate-pulse" />}>
-              <EquityCurveChart trades={filteredByTagTrades} />
-            </Suspense>
-          </div>
-          
-          {/* Most Traded Pairs */}
-          <div className="lg:col-span-1">
-            <Suspense fallback={<div className="h-48 bg-black/10 rounded-lg animate-pulse" />}>
-              <MostTradedPairsCard trades={filteredByTagTrades} />
-            </Suspense>
-          </div>
-        </div>
-        
-        {/* Simple Stats Display - reorganized into two rows of 4 KPIs */}
-        <div className="mb-6">
-          <Suspense fallback={<div className="h-20 bg-black/10 rounded-lg animate-pulse" />}>
-            <SimpleStatsDisplay trades={filteredByTagTrades} />
-          </Suspense>
-        </div>
-        
-        {/* Analysis Cards */}
-        <div className="mb-6">
-          <Suspense fallback={<div className="h-48 bg-black/10 rounded-lg animate-pulse" />}>
-            <RAnalysisCard trades={filteredByTagTrades} />
-          </Suspense>
-        </div>
-        
-        {/* Trading KPIs */}
-        <div className="mb-6">
-          <Suspense fallback={<div className="h-96 bg-black/10 rounded-lg animate-pulse" />}>
-            <TradingKPIs trades={filteredByTagTrades} />
-          </Suspense>
-        </div>
-        
-        {/* Trade Activity Heatmap */}
-        <div className="mb-6">
-          <Suspense fallback={<div className="h-64 bg-black/10 rounded-lg animate-pulse" />}>
-            <TradeActivityHeatmap trades={filteredByTagTrades} />
-          </Suspense>
-        </div>
-        
-        {/* Stochastic Volatility Model */}
-        <div className="mb-6">
-          <Suspense fallback={<div className="h-64 bg-black/10 rounded-lg animate-pulse" />}>
-            <StochasticVolatilityModel trades={filteredByTagTrades} />
-          </Suspense>
-        </div>
-        
-        {/* Trade Table - Full Width */}
-        <div className="mb-6">
-          <TradeTable hideExportButton={true} trades={filteredByTagTrades} />
-        </div>
+        {/* Dynamic Section Content */}
+        {activeSection === 'overview' && (
+          <StrategyOverviewSection trades={filteredByTagTrades} />
+        )}
+
+        {activeSection === 'analysis' && (
+          <StrategyAnalysisSection trades={filteredByTagTrades} />
+        )}
+
+        {activeSection === 'performance' && (
+          <StrategyPerformanceSection trades={filteredByTagTrades} />
+        )}
+
+        {activeSection === 'activity' && (
+          <StrategyActivitySection trades={filteredByTagTrades} />
+        )}
+
+        {activeSection === 'models' && (
+          <StrategyModelsSection trades={filteredByTagTrades} />
+        )}
+
+        {activeSection === 'trades' && (
+          <StrategyTradesSection trades={filteredByTagTrades} />
+        )}
         
         {/* Trade Details Modal */}
         {selectedTrade && (

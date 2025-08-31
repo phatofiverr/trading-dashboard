@@ -73,7 +73,6 @@ const HoverCardTrigger = React.forwardRef<
         if (typeof ref === 'function') ref(node)
         else if (ref) ref.current = node
       }}
-      data-slot="hover-card-trigger"
       {...props}
     >
       {children}
@@ -98,7 +97,6 @@ const HoverCardContent = React.forwardRef<
   const content = (
     <div
       ref={ref}
-      data-slot="hover-card-content"
       className={cn(
         "z-50 w-64 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none animate-in fade-in-0 zoom-in-95",
         "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",

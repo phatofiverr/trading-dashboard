@@ -160,7 +160,7 @@ const TradingCalendar: React.FC<TradingCalendarProps> = ({ account, currency = '
   const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   
   return (
-    <Card className="bg-black/20 backdrop-blur-md border-none shadow-lg h-full">
+    <Card className="bg-black/20 backdrop-blur-md border-none shadow-lg">
       {/* Calendar Header */}
       <div className="flex flex-row items-center justify-between p-6 pb-2">
         <div className="flex items-center">

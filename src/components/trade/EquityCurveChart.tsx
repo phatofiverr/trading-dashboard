@@ -1,35 +1,57 @@
 import React, { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
-  ResponsiveContainer,
   LineChart,
   Line,
   XAxis,
   YAxis,
-  Tooltip,
   ReferenceLine,
   Legend
 } from 'recharts';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useTradeStore } from '@/hooks/useTradeStore';
-import { useThemeStore } from '@/hooks/useThemeStore';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Download, LineChart as LineChartIcon, TrendingUp } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { calculateSharpeRatio } from '@/lib/tradeCalculations';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
+  type ChartConfig
+} from '@/components/ui/chart';
 
 const EquityCurveChart: React.FC = () => {
   const { strategyId } = useParams<{ strategyId: string }>();
   const { filteredTrades: trades } = useTradeStore();
-  const { getThemeColorsForStrategy } = useThemeStore();
-  const colors = getThemeColorsForStrategy(strategyId);
   const [fixedRValue, setFixedRValue] = useState<number>(1); // Default fixed R value
   const [curveType, setCurveType] = useState<'stepAfter' | 'monotone' | 'linear'>('stepAfter');
   const [showByPair, setShowByPair] = useState<boolean>(true); // New state to toggle pair lines
   const [showProjections, setShowProjections] = useState<boolean>(false); // New state for projections
+
+  // Chart configuration for shadcn theming
+  const chartConfig = {
+    cumulativeR: {
+      label: "Cumulative R",
+      color: "hsl(var(--chart-2))",
+    },
+    fixedR: {
+      label: "Fixed R",
+      color: "hsl(var(--chart-1))",
+    },
+    bestCaseCumulativeR: {
+      label: "Best Case",
+      color: "hsl(var(--chart-2))",
+    },
+    worstCaseCumulativeR: {
+      label: "Worst Case",
+      color: "hsl(var(--chart-3))",
+    },
+  } satisfies ChartConfig;
   
   // Format data for chart
   const chartData = useMemo(() => {
@@ -456,7 +478,7 @@ const EquityCurveChart: React.FC = () => {
             <span className="text-xs text-muted-foreground whitespace-nowrap">Projections:</span>
             <Switch
               checked={showProjections}
-              onChange={toggleProjections}
+              onCheckedChange={toggleProjections}
               className="data-[state=checked]:bg-muted/50"
             />
           </div>
@@ -468,60 +490,47 @@ const EquityCurveChart: React.FC = () => {
       </CardHeader>
       <CardContent className="flex-1 px-4 pb-2 pt-2">
         <div className="h-full w-full">
-          <ResponsiveContainer width="100%" height="100%">
+          <ChartContainer config={chartConfig} className="h-full w-full">
             <LineChart
               data={combinedData}
               margin={{ top: 20, right: 30, left: 10, bottom: 5 }}
             >
               <XAxis 
                 dataKey="index" 
-                stroke="rgba(255, 255, 255, 0.12)" 
-                tick={{ fill: 'rgba(255, 255, 255, 0.6)', fontSize: 10, fontFamily: 'Inter, sans-serif' }}
                 axisLine={false}
                 tickLine={false}
-                label={null}
+                tick={{ fontSize: 10 }}
                 minTickGap={40}
                 domain={calculateXDomain()}
                 tickFormatter={formatXAxisTick}
                 ticks={axisProps.ticks}
                 scale={axisProps.scale as any}
-                interval={showProjections ? undefined : "preserveEnd"} // Use valid AxisInterval values
+                interval={showProjections ? undefined : "preserveEnd"}
                 padding={{ left: 5, right: 5 }}
               />
               <YAxis 
-                stroke="transparent" 
-                tick={false} 
                 axisLine={false} 
                 tickLine={false}
                 width={0}
                 domain={[0, 'auto']}
               />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'rgba(26, 26, 26, 0.95)', 
-                  borderColor: 'rgba(64, 64, 64, 0.2)',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-                  color: '#F9FAFB',
-                  padding: '8px 12px',
-                  fontFamily: 'Inter, sans-serif',
-                  fontSize: '12px'
-                }}
-                itemStyle={{ color: '#F9FAFB', fontSize: '12px' }}
-                labelStyle={{ color: '#F9FAFB', marginBottom: '4px', fontSize: '11px' }}
-                cursor={{ stroke: 'rgba(255, 255, 255, 0.1)', strokeDasharray: '3 3', strokeWidth: 1 }}
-                formatter={(value, name, props) => {
-                  // Enhanced tooltip to include projection information
-                  if (props?.payload?.isProjection) {
-                    if (name === 'bestCaseCumulativeR') return [value, 'Best Case (Projection)'];
-                    if (name === 'worstCaseCumulativeR') return [value, 'Worst Case (Projection)'];
-                  } else {
-                    if (name === 'bestCaseCumulativeR') return [value, 'Best Case'];
-                    if (name === 'worstCaseCumulativeR') return [value, 'Worst Case'];
-                  }
-                  if (name === 'index') return [`Trade #${value}`, 'Index'];
-                  return [value, name];
-                }}
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    formatter={(value, name, props) => {
+                      // Enhanced tooltip to include projection information
+                      if (props?.payload?.isProjection) {
+                        if (name === 'bestCaseCumulativeR') return [value, 'Best Case (Projection)'];
+                        if (name === 'worstCaseCumulativeR') return [value, 'Worst Case (Projection)'];
+                      } else {
+                        if (name === 'bestCaseCumulativeR') return [value, 'Best Case'];
+                        if (name === 'worstCaseCumulativeR') return [value, 'Worst Case'];
+                      }
+                      if (name === 'index') return [`Trade #${value}`, 'Index'];
+                      return [value, name];
+                    }}
+                  />
+                }
               />
               
               {/* Add persistent horizontal reference line at R=0 */}
@@ -553,9 +562,9 @@ const EquityCurveChart: React.FC = () => {
                 type={curveType}
                 dataKey="cumulativeR" 
                 name="Cumulative R" 
-                stroke={colors.winColor} 
+                stroke="hsl(var(--chart-2))" 
                 dot={false}
-                activeDot={{ r: 4, stroke: colors.winColor, strokeWidth: 1 }}
+                activeDot={{ r: 4, stroke: "hsl(var(--chart-2))", strokeWidth: 1 }}
                 strokeWidth={1.5}
                 connectNulls={true}
               />
@@ -565,9 +574,9 @@ const EquityCurveChart: React.FC = () => {
                 type={curveType}
                 dataKey="fixedR" 
                 name="Fixed R" 
-                stroke="#403E43" 
+                stroke="hsl(var(--chart-1))" 
                 dot={false}
-                activeDot={{ r: 4, stroke: "#403E43", strokeWidth: 1 }}
+                activeDot={{ r: 4, stroke: "hsl(var(--chart-1))", strokeWidth: 1 }}
                 strokeWidth={1.5}
                 strokeDasharray="4 2"
                 connectNulls={true}
@@ -581,12 +590,12 @@ const EquityCurveChart: React.FC = () => {
                     type={curveType}
                     dataKey="bestCaseCumulativeR"
                     name="Best Case"
-                    stroke="#F2FCE2" // Soft green
+                    stroke="hsl(var(--chart-2))"
                     strokeWidth={1.5}
                     strokeDasharray="4 3"
-                    strokeOpacity={0.5} // Slightly increased for better visibility
+                    strokeOpacity={0.5}
                     dot={false}
-                    activeDot={{ r: 4, stroke: "#F2FCE2", strokeWidth: 1, opacity: 0.7 }}
+                    activeDot={{ r: 4, stroke: "hsl(var(--chart-2))", strokeWidth: 1, opacity: 0.7 }}
                     connectNulls={true}
                   />
                   
@@ -595,12 +604,12 @@ const EquityCurveChart: React.FC = () => {
                     type={curveType}
                     dataKey="worstCaseCumulativeR"
                     name="Worst Case"
-                    stroke="#ea384c" // Red
+                    stroke="hsl(var(--chart-3))"
                     strokeWidth={1.5}
                     strokeDasharray="4 3"
-                    strokeOpacity={0.5} // Slightly increased for better visibility
+                    strokeOpacity={0.5}
                     dot={false}
-                    activeDot={{ r: 4, stroke: "#ea384c", strokeWidth: 1, opacity: 0.7 }}
+                    activeDot={{ r: 4, stroke: "hsl(var(--chart-3))", strokeWidth: 1, opacity: 0.7 }}
                     connectNulls={true}
                   />
                 </>
@@ -643,20 +652,13 @@ const EquityCurveChart: React.FC = () => {
               
               
               {showByPair && tradedPairs.length > 0 && (
-                <Legend 
+                <ChartLegend 
+                  content={<ChartLegendContent />}
                   verticalAlign="bottom"
-                  height={36}
-                  iconType="circle"
-                  iconSize={8}
-                  wrapperStyle={{
-                    fontSize: "10px",
-                    color: "rgba(255, 255, 255, 0.7)",
-                    paddingTop: "10px"
-                  }}
                 />
               )}
             </LineChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         </div>
       </CardContent>
     </Card>

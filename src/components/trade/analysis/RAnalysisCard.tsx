@@ -139,9 +139,9 @@ const RAnalysisCard: React.FC = () => {
           {/* Take Profit Analysis Section - Minimal Design */}
           <div className="bg-black/10 p-4 rounded-lg h-full flex flex-col">
             <div className="flex items-center mb-4">
-              <Target className="h-4 w-4 mr-2 text-positive opacity-80" />
+              {/* <Target className="h-4 w-4 mr-2 text-positive opacity-80" /> */}
               <p className="text-sm font-medium">Take Profit Analysis</p>
-              <InfoTooltip content="Performance metrics for trades that hit take profit levels" />
+              {/* <InfoTooltip content="Performance metrics for trades that hit take profit levels" /> */}
             </div>
             
             <div className="grid grid-cols-2 gap-3 flex-grow">
@@ -167,9 +167,9 @@ const RAnalysisCard: React.FC = () => {
           {/* Break Even Analysis Section - Minimal Design */}
           <div className="bg-black/10 p-4 rounded-lg h-full flex flex-col">
             <div className="flex items-center mb-4">
-              <CircleSlash className="h-4 w-4 mr-2 text-primary opacity-80" />
+              {/* <CircleSlash className="h-4 w-4 mr-2 text-primary opacity-80" /> */}
               <p className="text-sm font-medium">Break Even Analysis</p>
-              <InfoTooltip content="Performance metrics for trades after reaching break even" />
+              {/* <InfoTooltip content="Performance metrics for trades after reaching break even" /> */}
             </div>
             
             <div className="grid grid-cols-2 gap-3 flex-grow">

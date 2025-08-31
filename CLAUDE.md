@@ -33,8 +33,8 @@ This is a React 18 trading dashboard with Firebase integration, built using Vite
 - AuthContext handles user state and provides `syncData()` function
 
 ### Key Technologies
-- **UI**: Origin UI (all components should be imported from Origin UI, no Radix/shadcn)
-- **Styling**: Tailwind CSS with Origin UI's design tokens + custom trading theme overrides
+- **UI**: shadcn/ui components built on Radix UI primitives
+- **Styling**: Tailwind CSS with shadcn/ui design tokens + custom trading theme overrides
 - **Forms**: React Hook Form + Zod validation
 - **Charts**: Recharts for trading visualizations
 - **Routing**: React Router v6 with lazy loading
@@ -170,7 +170,7 @@ When introducing a new data type to the application, follow this systematic appr
 - Create or update form components
 - Add display components for the new data type
 - Include proper error handling and loading states
-- Follow Origin UI design patterns
+- Follow shadcn/ui design patterns and Radix UI accessibility standards
 
 #### 7. Update Database Schema (Firestore)
 - Add new collections or fields to Firestore
@@ -179,9 +179,9 @@ When introducing a new data type to the application, follow this systematic appr
 - Add proper indexing for queries
 
 
-## UI Style Guidelines (Origin UI)
+## UI Style Guidelines (shadcn/ui)
 
-**CRITICAL: All components and pages MUST follow Origin UI's design tokens, variants, and spacing system. No Radix/shadcn imports are allowed.**
+**CRITICAL: All components and pages MUST use shadcn/ui components built on Radix UI primitives. Follow shadcn/ui design patterns and conventions.**
 
 ### Page Layout Structure
 All pages should follow this exact pattern:

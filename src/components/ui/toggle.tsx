@@ -44,7 +44,6 @@ const Toggle = React.forwardRef<HTMLButtonElement, ToggleProps>(
     return (
       <button
         ref={ref}
-        data-slot="base"
         data-pressed={pressed}
         aria-pressed={pressed}
         className={cn(toggleVariants({ variant, size, className }))}

@@ -1,12 +1,10 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import {
-  ResponsiveContainer,
   LineChart,
   Line,
   XAxis,
   YAxis,
-  Tooltip,
   ReferenceLine,
 } from 'recharts';
 import { Card, CardContent } from '@/components/ui/card';
@@ -14,6 +12,12 @@ import { useTradeStore } from '@/hooks/useTradeStore';
 import { useAccountsStore } from '@/hooks/useAccountsStore';
 import { useAccountCalculations } from '@/hooks/useAccountCalculations';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig
+} from '@/components/ui/chart';
 
 interface BalancePoint {
   date: string;
@@ -29,6 +33,14 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
   const { trades, filteredTrades, stats: tradeStats, currentAccountId } = useTradeStore();
   const { accounts } = useAccountsStore();
   const { getTradeProfit, formatCurrency } = useAccountCalculations();
+  
+  // Chart configuration for shadcn theming
+  const chartConfig = {
+    balance: {
+      label: "Balance",
+      color: "hsl(var(--chart-1))",
+    },
+  } satisfies ChartConfig;
   
   // Initialize chart type from localStorage or default to 'stepAfter'
   const [chartType, setChartType] = useState<'stepAfter' | 'monotone' | 'linear'>(() => {
@@ -111,7 +123,7 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
 
     
     return points;
-  }, [trades, filteredTrades, accounts, currentAccount, accountOnly, currentAccountId]);
+  }, [trades, filteredTrades, accounts, currentAccount, accountOnly, currentAccountId, getTradeProfit]);
   
   // Format currency using centralized formatter
   const formatCurrencyValue = (value: number) => {
@@ -140,7 +152,7 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
 
   // Calculate Y-axis domain to start from initial balance or lowest point
   const yAxisDomain = useMemo(() => {
-    if (balanceData.length <= 1) return [0, 'auto'];
+    if (balanceData.length <= 1) return ['dataMin', 'dataMax'];
     
     const initialBalance = balanceData[0].balance;
     
@@ -151,25 +163,10 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
     const minDomain = lowestBalance < initialBalance 
       ? Math.floor(lowestBalance / 100) * 100
       : initialBalance;
-      
-    return [minDomain, 'auto'];
+    
+    return [minDomain, 'dataMax'];
   }, [balanceData]);
 
-  // Custom tooltip for the chart
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-black/80 backdrop-blur-md border border-white/10 p-2 rounded-lg shadow-lg">
-          <p className="text-white text-xs">{`Date: ${payload[0].payload.date}`}</p>
-          <p className="text-white text-xs">{`Balance: ${formatCurrencyValue(payload[0].value)}`}</p>
-          <p className={`text-xs ${payload[0].payload.profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {`Profit: ${payload[0].payload.profit >= 0 ? '+' : ''}${formatCurrencyValue(payload[0].payload.profit)}`}
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
 
   if (balanceData.length <= 1) {
     return (
@@ -235,39 +232,56 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
           </div>
         </div>
         <div className="flex-1 w-full">
-          <ResponsiveContainer width="100%" height="100%">
+          <ChartContainer config={chartConfig} className="h-full w-full">
             <LineChart data={balanceData} margin={{ top: 20, right: 15, left: 0, bottom: 10 }}>
               <XAxis 
                 dataKey="date" 
-                stroke="rgba(255, 255, 255, 0.12)" 
-                tick={{ fill: 'rgba(255, 255, 255, 0.6)', fontSize: 10, fontFamily: 'Inter, sans-serif' }}
                 axisLine={false}
                 tickLine={false}
+                tick={{ fontSize: 10 }}
                 minTickGap={30}
                 padding={{ left: 10, right: 10 }}
               />
               <YAxis 
-                domain={yAxisDomain as any}
-                stroke="transparent"
-                tick={{ fill: '#999', fontSize: 10, fontFamily: 'Inter, sans-serif' }}
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={value => formatCurrencyValue(value)}
                 width={70}
+                tick={{ fontSize: 10 }}
                 padding={{ top: 10, bottom: 10 }}
               />
-              <Tooltip content={<CustomTooltip />} />
-              <ReferenceLine y={balanceData[0].balance} stroke="#444" strokeDasharray="3 3" strokeOpacity={0.3} />
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    formatter={(value, name) => {
+                      if (name === 'balance') {
+                        return [formatCurrencyValue(Number(value)), 'Balance'];
+                      }
+                      return [value, name];
+                    }}
+                  />
+                }
+              />
+              {balanceData.length > 0 && (
+                <ReferenceLine 
+                  y={balanceData[0].balance} 
+                  stroke="hsl(var(--muted-foreground))" 
+                  strokeDasharray="3 3" 
+                  strokeOpacity={0.3} 
+                />
+              )}
               <Line
                 type={chartType}
                 dataKey="balance"
-                stroke="#FFF"
-                strokeWidth={1.5}
+                name="Balance"
+                stroke="#8B5CF6"
+                strokeWidth={2}
                 dot={false}
-                activeDot={{ r: 4, stroke: '#FFF', strokeWidth: 1, fill: '#000' }}
+                activeDot={{ r: 4, stroke: "#FFF", strokeWidth: 1, fill: "#8B5CF6" }}
+                connectNulls={false}
               />
             </LineChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         </div>
       </CardContent>
     </Card>

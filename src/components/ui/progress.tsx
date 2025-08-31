@@ -15,7 +15,6 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
     return (
       <div
         ref={ref}
-        data-slot="progress"
         className={cn(
           "relative h-4 w-full overflow-hidden rounded-full bg-secondary",
           className
@@ -27,7 +26,6 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
         {...props}
       >
         <div
-          data-slot="progress-indicator"
           className="h-full bg-primary transition-all duration-300 ease-out"
           style={{
             width: `${percentage}%`

@@ -116,7 +116,7 @@ const SessionPerformanceChart: React.FC<SessionPerformanceProps> = ({ sessionSta
             </UITooltip>
           </TooltipProvider>
         </div>
-        <div className="flex-1" style={{ minHeight: "350px", maxHeight: "350px" }}>
+        <div className="flex-1 min-h-[200px] max-h-[300px]">
           {!isEmpty ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart 

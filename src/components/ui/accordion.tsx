@@ -29,7 +29,7 @@ function Accordion({
 } & React.HTMLAttributes<HTMLDivElement>) {
   return (
     <AccordionContext.Provider value={{ type, value, onValueChange, collapsible }}>
-      <div data-slot="accordion" className={className} {...props}>
+      <div className={className} {...props}>
         {children}
       </div>
     </AccordionContext.Provider>
@@ -67,7 +67,6 @@ const AccordionItem = React.forwardRef<
   return (
     <div
       ref={ref}
-      data-slot="accordion-item"
       data-state={isOpen ? "open" : "closed"}
       className={cn("border-b", className)}
       {...props}
@@ -93,7 +92,6 @@ const AccordionTrigger = React.forwardRef<
   <div className="flex">
     <button
       ref={ref}
-      data-slot="accordion-trigger"
       data-state={isOpen ? "open" : "closed"}
       className={cn(
         "flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline",
@@ -118,7 +116,6 @@ const AccordionContent = React.forwardRef<
 >(({ className, children, isOpen, ...props }, ref) => (
   <div
     ref={ref}
-    data-slot="accordion-content"
     data-state={isOpen ? "open" : "closed"}
     className={cn(
       "overflow-hidden text-sm transition-all duration-200",

@@ -144,7 +144,7 @@ const AccountDetail: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <SidebarTrigger className="lg:hidden" />
                   <h1 className="text-2xl font-medium text-foreground">
-                    {account.name} <span className="text-sm font-normal text-muted-foreground ml-1">-BETA</span>
+                    {account.name} <span className="text-sm font-normal text-muted-foreground ml-1"></span>
                   </h1>
                 </div>
                 

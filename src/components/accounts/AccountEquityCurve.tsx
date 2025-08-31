@@ -1,21 +1,24 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import {
-  ResponsiveContainer,
   LineChart,
   Line,
   XAxis,
   YAxis,
-  Tooltip,
   ReferenceLine
 } from 'recharts';
 import { Card, CardContent } from '@/components/ui/card';
-import { useThemeStore } from '@/hooks/useThemeStore';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { useTradeStore } from '@/hooks/useTradeStore';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig
+} from '@/components/ui/chart';
 
 interface AccountEquityCurveProps {
   account: {
@@ -49,11 +52,25 @@ interface ProjectionDataPoint {
 type ChartDataPoint = EquityDataPoint | ProjectionDataPoint;
 
 const AccountEquityCurve: React.FC<AccountEquityCurveProps> = ({ account }) => {
-  const { getThemeColors } = useThemeStore();
   const { trades, setAccountFilter } = useTradeStore();
-  const colors = getThemeColors();
   const [curveType, setCurveType] = useState<'stepAfter' | 'monotone' | 'linear'>('stepAfter');
   const [showProjections, setShowProjections] = useState<boolean>(false);
+
+  // Chart configuration for shadcn theming
+  const chartConfig = {
+    balance: {
+      label: "Balance",
+      color: "hsl(var(--chart-1))",
+    },
+    bestCaseBalance: {
+      label: "Best Case",
+      color: "hsl(var(--chart-2))",
+    },
+    worstCaseBalance: {
+      label: "Worst Case", 
+      color: "hsl(var(--chart-3))",
+    },
+  } satisfies ChartConfig;
 
   // Apply account filter when component mounts or account changes
   useEffect(() => {
@@ -208,7 +225,7 @@ const AccountEquityCurve: React.FC<AccountEquityCurveProps> = ({ account }) => {
   };
   
   const isProfit = account.balance >= account.initialBalance;
-  const lineColor = isProfit ? colors.positiveColor : colors.negativeColor;
+  const lineColor = isProfit ? "hsl(var(--chart-2))" : "hsl(var(--chart-3))";
   
   // Combine chart data with projections if enabled
   const combinedData: ChartDataPoint[] = showProjections && projectionData.length > 0
@@ -268,7 +285,7 @@ const AccountEquityCurve: React.FC<AccountEquityCurveProps> = ({ account }) => {
             <span className="text-xs text-muted-foreground whitespace-nowrap">Projections:</span>
             <Switch
               checked={showProjections}
-              onChange={toggleProjections}
+              onCheckedChange={toggleProjections}
               className="data-[state=checked]:bg-muted/50"
             />
           </div>
@@ -280,7 +297,7 @@ const AccountEquityCurve: React.FC<AccountEquityCurveProps> = ({ account }) => {
       </div>
       <CardContent className="flex-1 px-4 pb-2 pt-2">
         <div className="h-full w-full" style={{ minHeight: "280px" }}>
-          <ResponsiveContainer width="100%" height="100%">
+          <ChartContainer config={chartConfig} className="h-full w-full">
             <LineChart
               data={combinedData}
               margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
@@ -288,29 +305,28 @@ const AccountEquityCurve: React.FC<AccountEquityCurveProps> = ({ account }) => {
               <XAxis 
                 dataKey="date" 
                 tickFormatter={formatDateTick}
-                stroke="rgba(255,255,255,0.0)" // Hide axis line
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.5)' }}
+                tick={{ fontSize: 10 }}
               />
               <YAxis 
                 tickFormatter={formatCurrency} 
-                stroke="rgba(255,255,255,0.0)" // Hide axis line
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.5)' }}
+                tick={{ fontSize: 10 }}
                 width={80}
                 domain={yDomain}
               />
-              <Tooltip 
-                formatter={(value) => [formatCurrency(Number(value)), 'Balance']}
-                labelFormatter={(label) => `Date: ${new Date(label).toLocaleDateString()}`}
-                contentStyle={{
-                  backgroundColor: 'rgba(0,0,0,0.8)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '4px',
-                  padding: '8px',
-                }}
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    formatter={(value, name) => [
+                      formatCurrency(Number(value)), 
+                      name
+                    ]}
+                    labelFormatter={(label) => `Date: ${new Date(label).toLocaleDateString()}`}
+                  />
+                }
               />
               
               {/* Add reference line at initial balance */}
@@ -347,12 +363,12 @@ const AccountEquityCurve: React.FC<AccountEquityCurveProps> = ({ account }) => {
                     type={curveType}
                     dataKey="bestCaseBalance"
                     name="Best Case"
-                    stroke="#F2FCE2" // Soft green
+                    stroke="hsl(var(--chart-2))"
                     strokeWidth={1.5}
                     strokeDasharray="4 3"
                     strokeOpacity={0.5}
                     dot={false}
-                    activeDot={{ r: 4, stroke: "#F2FCE2", strokeWidth: 1, opacity: 0.7 }}
+                    activeDot={{ r: 4, stroke: "hsl(var(--chart-2))", strokeWidth: 1, opacity: 0.7 }}
                     connectNulls={true}
                   />
                   
@@ -361,12 +377,12 @@ const AccountEquityCurve: React.FC<AccountEquityCurveProps> = ({ account }) => {
                     type={curveType}
                     dataKey="worstCaseBalance"
                     name="Worst Case"
-                    stroke="#ea384c" // Red
+                    stroke="hsl(var(--chart-3))"
                     strokeWidth={1.5}
                     strokeDasharray="4 3"
                     strokeOpacity={0.5}
                     dot={false}
-                    activeDot={{ r: 4, stroke: "#ea384c", strokeWidth: 1, opacity: 0.7 }}
+                    activeDot={{ r: 4, stroke: "hsl(var(--chart-3))", strokeWidth: 1, opacity: 0.7 }}
                     connectNulls={true}
                   />
                 </>
@@ -387,7 +403,7 @@ const AccountEquityCurve: React.FC<AccountEquityCurveProps> = ({ account }) => {
                 />
               )}
             </LineChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         </div>
       </CardContent>
     </Card>

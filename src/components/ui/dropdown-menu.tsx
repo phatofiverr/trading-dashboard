@@ -58,7 +58,7 @@ function DropdownMenu({
 
   return (
     <DropdownMenuContext.Provider value={{ open, setOpen, triggerRef }}>
-      <div data-slot="dropdown-menu">
+      <div>
         {children}
       </div>
     </DropdownMenuContext.Provider>
@@ -67,7 +67,7 @@ function DropdownMenu({
 
 // Portal is just a pass-through for compatibility
 function DropdownMenuPortal({ children }: { children: React.ReactNode }) {
-  return <div data-slot="dropdown-menu-portal">{children}</div>
+  return <div>{children}</div>
 }
 
 interface DropdownMenuTriggerProps {
@@ -96,7 +96,6 @@ const DropdownMenuTrigger = React.forwardRef<HTMLButtonElement, DropdownMenuTrig
         },
         onClick: handleClick,
         'aria-expanded': context.open,
-        'data-slot': 'dropdown-menu-trigger',
         className: cn(className, children.props.className),
         ...props,
       })
@@ -109,7 +108,6 @@ const DropdownMenuTrigger = React.forwardRef<HTMLButtonElement, DropdownMenuTrig
           if (typeof ref === 'function') ref(node)
           else if (ref) ref.current = node
         }}
-        data-slot="dropdown-menu-trigger"
         onClick={handleClick}
         aria-expanded={context.open}
         className={className}
@@ -244,7 +242,6 @@ const DropdownMenuContent = React.forwardRef<HTMLDivElement, DropdownMenuContent
           if (typeof ref === 'function') ref(node)
           else if (ref) ref.current = node
         }}
-        data-slot="dropdown-menu-content"
         data-side={side}
         data-align={align}
         className={cn(
@@ -281,7 +278,7 @@ function DropdownMenuGroup({
   ...props 
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div data-slot="dropdown-menu-group" className={className} {...props}>
+    <div className={className} {...props}>
       {children}
     </div>
   )
@@ -316,7 +313,6 @@ const DropdownMenuItem = React.forwardRef<HTMLDivElement, DropdownMenuItemProps>
     return (
       <div
         ref={ref}
-        data-slot="dropdown-menu-item"
         data-inset={inset}
         data-variant={variant}
         data-disabled={disabled}
@@ -364,7 +360,6 @@ const DropdownMenuCheckboxItem = React.forwardRef<HTMLDivElement, DropdownMenuCh
     return (
       <div
         ref={ref}
-        data-slot="dropdown-menu-checkbox-item"
         role="menuitemcheckbox"
         aria-checked={checked}
         tabIndex={disabled ? -1 : 0}
@@ -409,7 +404,7 @@ function DropdownMenuRadioGroup({
 }: DropdownMenuRadioGroupProps & React.HTMLAttributes<HTMLDivElement>) {
   return (
     <DropdownMenuRadioGroupContext.Provider value={{ value, onValueChange }}>
-      <div data-slot="dropdown-menu-radio-group" className={className} role="group" {...props}>
+      <div className={className} role="group" {...props}>
         {children}
       </div>
     </DropdownMenuRadioGroupContext.Provider>
@@ -437,7 +432,6 @@ const DropdownMenuRadioItem = React.forwardRef<HTMLDivElement, DropdownMenuRadio
     return (
       <div
         ref={ref}
-        data-slot="dropdown-menu-radio-item"
         role="menuitemradio"
         aria-checked={checked}
         tabIndex={disabled ? -1 : 0}
@@ -470,7 +464,6 @@ const DropdownMenuLabel = React.forwardRef<HTMLDivElement, DropdownMenuLabelProp
     return (
       <div
         ref={ref}
-        data-slot="dropdown-menu-label"
         data-inset={inset}
         className={cn(
           "px-2 py-1.5 text-xs font-medium text-muted-foreground",
@@ -489,7 +482,6 @@ const DropdownMenuSeparator = React.forwardRef<HTMLDivElement, React.HTMLAttribu
     return (
       <div
         ref={ref}
-        data-slot="dropdown-menu-separator"
         role="separator"
         className={cn("-mx-1 my-1 h-px bg-border", className)}
         {...props}
@@ -504,7 +496,6 @@ const DropdownMenuShortcut = React.forwardRef<HTMLElement, React.HTMLAttributes<
     return (
       <kbd
         ref={ref}
-        data-slot="dropdown-menu-shortcut"
         className={cn(
           "ms-auto -me-1 inline-flex h-5 max-h-full items-center rounded border px-1 font-[inherit] text-[0.625rem] font-medium",
           "bg-background text-muted-foreground/70",
@@ -542,7 +533,7 @@ function DropdownMenuSub({ children, open: controlledOpen, onOpenChange }: Dropd
 
   return (
     <DropdownMenuSubContext.Provider value={{ open, setOpen }}>
-      <div data-slot="dropdown-menu-sub">
+      <div>
         {children}
       </div>
     </DropdownMenuSubContext.Provider>
@@ -561,7 +552,6 @@ const DropdownMenuSubTrigger = React.forwardRef<HTMLDivElement, DropdownMenuSubT
     return (
       <div
         ref={ref}
-        data-slot="dropdown-menu-sub-trigger"
         data-inset={inset}
         role="menuitem"
         aria-haspopup="menu"
@@ -599,7 +589,6 @@ const DropdownMenuSubContent = React.forwardRef<HTMLDivElement, DropdownMenuSubC
     const content = (
       <div
         ref={ref}
-        data-slot="dropdown-menu-sub-content"
         className={cn(
           "z-50 min-w-40 overflow-hidden rounded-md border p-1 shadow-lg",
           "bg-popover text-popover-foreground",

@@ -98,7 +98,6 @@ const TooltipTrigger = React.forwardRef<
         if (typeof ref === 'function') ref(node as HTMLDivElement)
         else if (ref) ref.current = node as HTMLDivElement
       }}
-      data-slot="tooltip-trigger"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onFocus={handleFocus}
@@ -126,7 +125,6 @@ const TooltipContent = React.forwardRef<
   const content = (
     <div
       ref={ref}
-      data-slot="tooltip-content"
       className={cn(
         "z-50 overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95",
         "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",

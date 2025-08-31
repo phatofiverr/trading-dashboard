@@ -70,7 +70,6 @@ const AlertDialogTrigger = React.forwardRef<
   return (
     <button
       ref={ref}
-      data-slot="alert-dialog-trigger"
       onClick={handleClick}
       {...props}
     />
@@ -88,7 +87,6 @@ const AlertDialogOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    data-slot="alert-dialog-overlay"
     className={cn(
       "fixed inset-0 z-50 bg-black/80 animate-in fade-in-0",
       className
@@ -119,7 +117,6 @@ const AlertDialogContent = React.forwardRef<
         <AlertDialogOverlay />
         <div
           ref={ref}
-          data-slot="alert-dialog-content"
           className={cn(
             "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 animate-in fade-in-0 zoom-in-95 slide-in-from-left-1/2 slide-in-from-top-[48%] sm:rounded-lg",
             className
@@ -142,7 +139,6 @@ const AlertDialogHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    data-slot="alert-dialog-header"
     className={cn("flex flex-col space-y-2 text-left", className)}
     {...props}
   />
@@ -155,7 +151,6 @@ const AlertDialogFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    data-slot="alert-dialog-footer"
     className={cn(
       "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
       className
@@ -171,7 +166,6 @@ const AlertDialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h2
     ref={ref}
-    data-slot="alert-dialog-title"
     className={cn("text-lg font-semibold", className)}
     {...props}
   />
@@ -184,7 +178,6 @@ const AlertDialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    data-slot="alert-dialog-description"
     className={cn("text-sm text-muted-foreground", className)}
     {...props}
   />
@@ -205,7 +198,6 @@ const AlertDialogAction = React.forwardRef<
   return (
     <button
       ref={ref}
-      data-slot="alert-dialog-action"
       className={cn(buttonVariants(), className)}
       onClick={handleClick}
       {...props}
@@ -228,7 +220,6 @@ const AlertDialogCancel = React.forwardRef<
   return (
     <button
       ref={ref}
-      data-slot="alert-dialog-cancel"
       className={cn(
         buttonVariants({ variant: "outline" }),
         "mt-2 sm:mt-0",

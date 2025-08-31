@@ -33,7 +33,7 @@ function Collapsible({
 
   return (
     <CollapsibleContext.Provider value={{ open, onOpenChange: handleOpenChange }}>
-      <div data-slot="collapsible" data-state={open ? "open" : "closed"} {...props}>
+      <div data-state={open ? "open" : "closed"} {...props}>
         {children}
       </div>
     </CollapsibleContext.Provider>
@@ -57,7 +57,6 @@ const CollapsibleTrigger = React.forwardRef<
   return (
     <Comp
       ref={ref}
-      data-slot="collapsible-trigger"
       data-state={context.open ? "open" : "closed"}
       aria-expanded={context.open}
       onClick={handleClick}
@@ -77,7 +76,6 @@ const CollapsibleContent = React.forwardRef<
   return (
     <div
       ref={ref}
-      data-slot="collapsible-content"
       data-state={context.open ? "open" : "closed"}
       className={cn(
         "overflow-hidden transition-all duration-200",

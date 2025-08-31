@@ -65,7 +65,6 @@ function Tabs({
   return (
     <TabsContext.Provider value={contextValue}>
       <div
-        data-slot="tabs"
         className={cn("flex flex-col gap-2", className)}
         {...props}
       >
@@ -121,7 +120,6 @@ function TabsList({
   return (
     <div
       ref={listRef}
-      data-slot="tabs-list"
       role="tablist"
       className={cn(
         "flex items-center bg-transparent w-fit p-0.5",
@@ -153,7 +151,6 @@ function TabsTrigger({
 
   return (
     <button
-      data-slot="tabs-trigger"
       role="tab"
       aria-selected={isSelected}
       aria-controls={`tabs-content-${triggerValue}`}
@@ -185,7 +182,6 @@ function TabsContent({
 
   return (
     <div
-      data-slot="tabs-content"
       role="tabpanel"
       id={`tabs-content-${contentValue}`}
       aria-labelledby={`tabs-trigger-${contentValue}`}

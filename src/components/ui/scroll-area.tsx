@@ -14,11 +14,10 @@ const ScrollArea = React.forwardRef<HTMLDivElement, ScrollAreaProps>(
   ({ className, children, ...props }, ref) => (
     <div
       ref={ref}
-      data-slot="base"
       className={cn("relative overflow-auto", className)}
       {...props}
     >
-      <div data-slot="viewport" className="h-full w-full rounded-[inherit]">
+      <div className="h-full w-full rounded-[inherit]">
         {children}
       </div>
     </div>
@@ -31,7 +30,6 @@ const ScrollBar = React.forwardRef<HTMLDivElement, ScrollBarProps>(
   ({ className, orientation = "vertical", ...props }, ref) => (
     <div
       ref={ref}
-      data-slot="scrollbar"
       data-orientation={orientation}
       className={cn(
         "flex touch-none select-none transition-colors",
@@ -44,7 +42,6 @@ const ScrollBar = React.forwardRef<HTMLDivElement, ScrollBarProps>(
       {...props}
     >
       <div
-        data-slot="thumb"
         className="relative flex-1 rounded-full bg-border"
       />
     </div>

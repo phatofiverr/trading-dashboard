@@ -283,6 +283,7 @@ const ProfileEditPage: React.FC = () => {
                                     </CardFooter>
                 </Card>
                 </div>
+        </div>
       </main>
     </SingleSidebarLayout>
   );

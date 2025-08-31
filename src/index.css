@@ -206,16 +206,15 @@
     @apply bg-trading-accent1/10 text-trading-accent1 border-0 shadow-sm px-2 py-1 rounded-md transition-all text-xs hover:bg-trading-accent1/20;
   }
 
-  /* Dialog background override */
-  [data-slot="dialog-content"] {
+  /* Component background overrides - shadcn/ui specific */
+  .dialog-content {
     background-color: #0A0A0B !important;
   }
 
-  /* Dropdown menu background override */
-  [data-slot="dropdown-menu-content"] {
+  .dropdown-menu-content {
     background-color: #0A0A0B !important;
   }
-  [data-slot="popover"] {
+  .popover-content {
     background-color: #0A0A0B !important;
   }
 }

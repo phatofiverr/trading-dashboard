@@ -21,7 +21,7 @@ function ContextMenu({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (open) {
-        const contextMenuContent = document.querySelector('[data-slot="context-menu-content"]')
+        const contextMenuContent = document.querySelector('[data-context-menu-content]')
         if (contextMenuContent && !contextMenuContent.contains(event.target as Node)) {
           setOpen(false)
         }
@@ -61,7 +61,6 @@ const ContextMenuTrigger = React.forwardRef<
         if (typeof ref === 'function') ref(node)
         else if (ref) ref.current = node
       }}
-      data-slot="context-menu-trigger"
       {...props}
     >
       {children}
@@ -82,7 +81,7 @@ const ContextMenuContent = React.forwardRef<
   const content = (
     <div
       ref={ref}
-      data-slot="context-menu-content"
+      data-context-menu-content
       className={cn(
         "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md animate-in fade-in-80 zoom-in-95",
         className
@@ -122,7 +121,6 @@ const ContextMenuItem = React.forwardRef<
   return (
     <div
       ref={ref}
-      data-slot="context-menu-item"
       className={cn(
         "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
         inset && "pl-8",
@@ -142,7 +140,6 @@ const ContextMenuSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <hr
     ref={ref}
-    data-slot="context-menu-separator"
     className={cn("-mx-1 my-1 h-px bg-border border-none", className)}
     {...props}
   />
@@ -157,7 +154,6 @@ const ContextMenuLabel = React.forwardRef<
 >(({ className, inset, ...props }, ref) => (
   <div
     ref={ref}
-    data-slot="context-menu-label"
     className={cn(
       "px-2 py-1.5 text-sm font-semibold text-foreground",
       inset && "pl-8",
@@ -174,7 +170,6 @@ const ContextMenuShortcut = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <span
     ref={ref}
-    data-slot="context-menu-shortcut"
     className={cn(
       "ml-auto text-xs tracking-widest text-muted-foreground",
       className
@@ -186,7 +181,7 @@ ContextMenuShortcut.displayName = "ContextMenuShortcut"
 
 // Simplified versions of complex components
 const ContextMenuGroup = ({ children }: { children: React.ReactNode }) => (
-  <div data-slot="context-menu-group">{children}</div>
+  <div>{children}</div>
 )
 
 const ContextMenuCheckboxItem = ContextMenuItem

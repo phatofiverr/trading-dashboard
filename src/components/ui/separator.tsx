@@ -1,15 +1,17 @@
 import * as React from "react"
+import * as SeparatorPrimitive from "@radix-ui/react-separator"
 
 import { cn } from "@/lib/utils"
 
 // Enhanced Separator with Divider functionality for backward compatibility
-interface SeparatorProps extends React.HTMLAttributes<HTMLHRElement> {
-  orientation?: "horizontal" | "vertical"
-  decorative?: boolean
+interface SeparatorProps extends React.ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root> {
   children?: React.ReactNode
 }
 
-const Separator = React.forwardRef<HTMLHRElement, SeparatorProps>(
+const Separator = React.forwardRef<
+  React.ElementRef<typeof SeparatorPrimitive.Root>,
+  SeparatorProps
+>(
   (
     { className, orientation = "horizontal", decorative = true, children, ...props },
     ref
@@ -18,53 +20,27 @@ const Separator = React.forwardRef<HTMLHRElement, SeparatorProps>(
     if (children) {
       return (
         <div
-          ref={ref as any}
-          data-slot="separator"
           className={cn(
-            // base
-            "mx-auto my-6 flex w-full items-center justify-between gap-3 text-sm",
-            // text color
-            "text-gray-500",
+            "mx-auto my-6 flex w-full items-center justify-between gap-3 text-sm text-muted-foreground",
             className,
           )}
-          {...(props as any)}
         >
-          <div
-            className={cn(
-              // base
-              "h-[1px] w-full",
-              // background color
-              "bg-linear-to-r from-transparent to-gray-200",
-            )}
-          />
+          <div className="h-[1px] w-full bg-gradient-to-r from-transparent to-border" />
           <div className="whitespace-nowrap text-inherit">{children}</div>
-          <div
-            className={cn(
-              // base
-              "h-[1px] w-full",
-              // background color
-              "bg-linear-to-l from-transparent to-gray-200",
-            )}
-          />
+          <div className="h-[1px] w-full bg-gradient-to-l from-transparent to-border" />
         </div>
       )
     }
 
-    // Standard separator
-    const Component = orientation === "horizontal" ? "hr" : "div"
-
+    // Standard separator using Radix primitive
     return (
-      <Component
-        ref={ref as any}
-        data-slot="separator"
-        data-orientation={orientation}
-        role={decorative ? "none" : "separator"}
-        aria-orientation={orientation}
+      <SeparatorPrimitive.Root
+        ref={ref}
+        decorative={decorative}
+        orientation={orientation}
         className={cn(
-          "shrink-0 bg-border border-none",
-          orientation === "horizontal"
-            ? "h-[1px] w-full bg-linear-to-l from-transparent via-gray-200 to-transparent"
-            : "h-full w-[1px]",
+          "shrink-0 bg-border",
+          orientation === "horizontal" ? "h-[1px] w-full" : "h-full w-[1px]",
           className
         )}
         {...props}
@@ -73,7 +49,7 @@ const Separator = React.forwardRef<HTMLHRElement, SeparatorProps>(
   }
 )
 
-Separator.displayName = "Separator"
+Separator.displayName = SeparatorPrimitive.Root.displayName
 
 // Divider alias for backward compatibility
 const Divider = Separator

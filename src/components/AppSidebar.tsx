@@ -58,7 +58,7 @@ const createNavData = (accounts: any[], strategies: string[]) => ({
       {
         title: "Demon Hunter", 
         url: "/demon-finder",
-        description: "Advanced trading signal detection",
+        description: "Conquer your behavioural demons",
       },
     ],
     Accounts: accounts.map(account => ({
@@ -183,7 +183,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar
       collapsible="icon"
-      className="overflow-hidden [&>[data-sidebar=sidebar]]:flex-row"
+      className="overflow-hidden [&>[data-sidebar=sidebar]]:flex-row bg-[#0A0A0B]"
       {...props}
     >
       {/* This is the first sidebar */}
@@ -191,7 +191,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {/* This will make the sidebar appear as icons. */}
       <Sidebar
         collapsible="none"
-        className="!w-[calc(var(--sidebar-width-icon)_+_1px)] !min-w-[calc(var(--sidebar-width-icon)_+_1px)] !max-w-[calc(var(--sidebar-width-icon)_+_1px)] border-r"
+        className="!w-[calc(var(--sidebar-width-icon)_+_1px)] !min-w-[calc(var(--sidebar-width-icon)_+_1px)] !max-w-[calc(var(--sidebar-width-icon)_+_1px)] border-r bg-[#0A0A0B]"
       >
         <SidebarHeader>
           <SidebarMenu>
@@ -267,7 +267,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       {/* This is the second sidebar */}
       {/* We disable collapsible and set responsive fixed width */}
-      <Sidebar collapsible="none" className="hidden md:flex md:w-[280px] lg:w-[300px] md:min-w-[280px] lg:min-w-[300px] md:max-w-[280px] lg:max-w-[300px]">
+      <Sidebar collapsible="none" className="hidden md:flex md:w-[280px] lg:w-[300px] md:min-w-[280px] lg:min-w-[300px] md:max-w-[280px] lg:max-w-[300px] bg-[#0A0A0B]">
         <SidebarHeader className="gap-3.5 border-b p-4">
           <div className="flex w-full items-center justify-between">
             <div className="text-foreground text-base font-medium">
