@@ -170,7 +170,7 @@ const StrategyNavigation: React.FC<StrategyNavigationProps> = memo(({
 
   return (
     <NavigationMenu className={cn(
-      "relative flex items-center justify-start w-full bg-trading-bg border-b border-white/10 max-w-none",
+      "relative flex items-center justify-start w-full border-b border-white/10 max-w-none",
       className
     )}>
       <div

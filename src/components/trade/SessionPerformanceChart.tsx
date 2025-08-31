@@ -105,16 +105,6 @@ const SessionPerformanceChart: React.FC<SessionPerformanceProps> = ({ sessionSta
       <CardContent className="p-6 h-full flex flex-col">
         <div className="flex items-center gap-1 mb-4">
           <p className="text-sm text-muted-foreground">Session Performance</p>
-          <TooltipProvider>
-            <UITooltip>
-              <TooltipTrigger asChild>
-                <Info className="h-4 w-4 text-muted-foreground cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p>{metricDescriptions.sessionPerformance}</p>
-              </TooltipContent>
-            </UITooltip>
-          </TooltipProvider>
         </div>
         <div className="flex-1 min-h-[200px] max-h-[300px]">
           {!isEmpty ? (

@@ -104,7 +104,8 @@ const StrategyPage: React.FC = () => {
 
   return (
     <SingleSidebarLayout>
-      <div className="h-full space-y-6">
+      <main className="flex-1 overflow-auto p-4 md:p-6">
+        <div className="h-full space-y-6 max-w-[1250px] mx-auto">
         {/* Header with Strategy Title and Action Buttons */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <h1 className="text-2xl font-medium text-foreground">
@@ -218,7 +219,8 @@ const StrategyPage: React.FC = () => {
             </DialogContent>
           </Dialog>
         )}
-      </div>
+        </div>
+      </main>
     </SingleSidebarLayout>
   );
 };

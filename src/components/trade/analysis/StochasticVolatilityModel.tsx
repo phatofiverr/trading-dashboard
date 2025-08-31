@@ -239,9 +239,7 @@ const StochasticVolatilityModel: React.FC = () => {
         <CardTitle className="text-lg font-medium flex items-center justify-between">
           <span>Stochastic Volatility Model</span>
         </CardTitle>
-        <p className="text-xs text-muted-foreground">
-          Analyzing return volatility clustering and mean reversion patterns
-        </p>
+
       </CardHeader>
       <Separator className="bg-white/5" />
       <CardContent className="pt-6">
@@ -326,15 +324,6 @@ const StochasticVolatilityModel: React.FC = () => {
         )}
         
         <div className="mt-4 text-xs text-muted-foreground">
-          <p>
-            The Stochastic Volatility Model reveals how volatility evolves over time, helping identify periods of risk clustering.
-            Observe how volatility tends to revert to its long-term mean while displaying persistence during market events.
-          </p>
-          <ul className="list-disc list-inside mt-2 space-y-1">
-            <li>Volatility clustering indicates periods where high volatility trades tend to group together</li>
-            <li>Mean reversion shows how volatility eventually returns to normal levels</li>
-            <li>Correlation between returns and volatility changes reveals risk-return dynamics</li>
-          </ul>
         </div>
       </CardContent>
     </Card>
