@@ -20,7 +20,7 @@ import { useTradeStore } from '@/hooks/useTradeStore';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from "sonner";
 
-// Navigation data structureas
+// Navigation data structure
 const createNavData = (accounts: any[], strategies: string[]) => ({
   navMain: [
     {
