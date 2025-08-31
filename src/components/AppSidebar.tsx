@@ -1,8 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { Home, Users, TrendingUp, LogOut, User, BarChart3, Search } from "lucide-react"
-import { Link, useNavigate } from "react-router-dom"
+import { Home, Users, TrendingUp, LogOut, User, BarChart3, Search, Wallet } from "lucide-react"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import {
   Sidebar,
   SidebarContent,
@@ -20,22 +20,31 @@ import { useTradeStore } from '@/hooks/useTradeStore';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from "sonner";
 
+// Custom Strategies Icon
+const StrategiesIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+    <path d="M3 9h18"></path>
+    <path d="M9 21V9"></path>
+  </svg>
+);
+
 // Navigation data structure
 const createNavData = (accounts: any[], strategies: string[]) => ({
   navMain: [
     {
       title: "Dashboard",
-      icon: Home,
+      icon: BarChart3,
       isActive: true,
     },
     {
-      title: "Accounts", 
-      icon: Users,
+      title: "Accounts",
+      icon: Wallet,
       isActive: false,
     },
     {
       title: "Strategies",
-      icon: TrendingUp,
+      icon: StrategiesIcon,
       isActive: false,
     },
   ],
@@ -70,6 +79,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { getUniqueStrategies } = useTradeStore();
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   
   // Get unique strategies from both live and backtest
   const strategies = React.useMemo(() => [...new Set([
@@ -79,10 +89,78 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const data = React.useMemo(() => createNavData(accounts, strategies), [accounts, strategies]);
   
-  // Note: Using state to show active item.
-  const [activeItem, setActiveItem] = React.useState(data.navMain[0])
-  const [content, setContent] = React.useState(data.content.Dashboard)
-  const { setOpen } = useSidebar()
+  // Helper function to determine active item based on current route
+  const getActiveItemFromPath = React.useCallback((path: string) => {
+    console.log('🔍 AppSidebar: Determining active item for path:', path);
+    
+    // Safety check - ensure data.navMain exists and has items
+    if (!data.navMain || data.navMain.length === 0) {
+      console.log('  🔍 No navMain items available, returning null');
+      return null;
+    }
+    
+    if (path.startsWith('/accounts')) {
+      const accountsItem = data.navMain.find(item => item.title === 'Accounts');
+      console.log('  🔍 Found Accounts section');
+      return accountsItem || data.navMain[0];
+    } else if (path.startsWith('/strategies')) {
+      const strategiesItem = data.navMain.find(item => item.title === 'Strategies');
+      console.log('  🔍 Found Strategies section');
+      return strategiesItem || data.navMain[0];
+    } else if (path === '/summary' || path === '/demon-finder') {
+      const dashboardItem = data.navMain.find(item => item.title === 'Dashboard');
+      console.log('  🔍 Found Dashboard section');
+      return dashboardItem || data.navMain[0];
+    } else {
+      console.log('  🔍 Defaulting to first item');
+      return data.navMain[0];
+    }
+  }, [data.navMain]);
+  
+  // Initialize active item based on current route
+  const [activeItem, setActiveItem] = React.useState(() => getActiveItemFromPath(location.pathname) || data.navMain[0])
+  const [content, setContent] = React.useState(() => {
+    const initialActiveItem = getActiveItemFromPath(location.pathname) || data.navMain[0];
+    return data.content[initialActiveItem?.title as keyof typeof data.content] || data.content.Dashboard;
+  })
+  const { setOpen, open: sidebarOpen } = useSidebar()
+
+  // Track sidebar open/close state
+  React.useEffect(() => {
+    console.log('🎛️ AppSidebar: Sidebar state changed - open:', sidebarOpen);
+  }, [sidebarOpen]);
+
+  // Debug logging for sidebar state changes
+  React.useEffect(() => {
+    console.log('🔄 AppSidebar: activeItem changed to:', activeItem?.title);
+  }, [activeItem]);
+
+  React.useEffect(() => {
+    console.log('📄 AppSidebar: content updated with', content.length, 'items for section:', activeItem?.title);
+    content.forEach((item, index) => {
+      console.log(`  📄 Content[${index}]:`, item.title, '→', item.url);
+    });
+  }, [content, activeItem]);
+
+  // Update sidebar state when route changes (but not when manually clicking sidebar)
+  React.useEffect(() => {
+    console.log('🌐 AppSidebar: Route changed to:', location.pathname);
+    console.log('  🌐 Current activeItem:', activeItem?.title);
+    
+    const newActiveItem = getActiveItemFromPath(location.pathname);
+    if (newActiveItem && newActiveItem.title !== activeItem?.title) {
+      console.log('  🌐 Updating activeItem from', activeItem?.title, 'to', newActiveItem.title);
+      setActiveItem(newActiveItem);
+      const newContent = data.content[newActiveItem.title as keyof typeof data.content] || [];
+      console.log('  🌐 Updating content with', newContent.length, 'items');
+      setContent(newContent);
+    } else if (!newActiveItem && data.navMain.length > 0) {
+      // Fallback to first item if no match found
+      console.log('  🌐 No matching section found, falling back to:', data.navMain[0]?.title);
+      setActiveItem(data.navMain[0]);
+      setContent(data.content[data.navMain[0]?.title as keyof typeof data.content] || []);
+    }
+  }, [location.pathname, getActiveItemFromPath, data.content, data.navMain]); // Removed activeItem from deps to prevent interference
 
   React.useEffect(() => {
     // Update content when data changes
@@ -146,9 +224,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <div className="relative w-fit">
                       <SidebarMenuButton
                         onClick={() => {
+                          console.log('🎯 AppSidebar: First sidebar clicked -', item.title);
+                          console.log('  🎯 Previous activeItem:', activeItem?.title);
+                          console.log('  🎯 Setting activeItem to:', item.title);
                           setActiveItem(item)
                           const newContent = data.content[item.title as keyof typeof data.content] || []
+                          console.log('  🎯 New content items:', newContent.length);
                           setContent(newContent)
+                          console.log('  🎯 Calling setOpen(true)...');
                           setOpen(true)
                         }}
                         isActive={activeItem?.title === item.title}
@@ -200,6 +283,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   to={item.url}
                   key={item.url}
                   className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight last:border-b-0"
+                  onClick={(e) => {
+                    console.log('🖱️ AppSidebar: Second sidebar link clicked -', item.title);
+                    console.log('  🖱️ Navigating to:', item.url);
+                    console.log('  🖱️ Current activeItem:', activeItem?.title);
+                  }}
                 >
                   <div className="flex w-full items-center gap-2">
                     <span className="font-medium">{item.title}</span>

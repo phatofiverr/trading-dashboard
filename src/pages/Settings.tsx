@@ -1,6 +1,5 @@
 import React from "react";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import AppSidebar from "@/components/AppSidebar";
+import SingleSidebarLayout from "@/components/SingleSidebarLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -37,13 +36,10 @@ const Settings: React.FC = () => {
   ];
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen bg-trading-bg flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <main className="flex-1 overflow-auto p-4 md:p-6">
-            <ScrollArea className="h-full">
-              <div className="max-w-[1250px] mx-auto space-y-6">
+    <SingleSidebarLayout>
+      <main className="flex-1 overflow-auto p-6">
+        <ScrollArea className="h-full">
+          <div className="space-y-6">
                 <h1 className="text-2xl font-medium">Settings</h1>
                 
                 <Card className="glass-effect border-white/5">
@@ -226,12 +222,10 @@ const Settings: React.FC = () => {
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-            </ScrollArea>
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+          </div>
+        </ScrollArea>
+      </main>
+    </SingleSidebarLayout>
   );
 };
 

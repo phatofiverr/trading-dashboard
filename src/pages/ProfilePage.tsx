@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import SingleSidebarLayout from "@/components/SingleSidebarLayout";
 import { useTradeStore } from "@/hooks/useTradeStore";
 import { toast } from "sonner";
-import AppSidebar from "@/components/AppSidebar";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileBio from "@/components/profile/ProfileBio";
 import ProfileGallery from "@/components/profile/ProfileGallery";
@@ -164,14 +163,9 @@ const ProfilePage: React.FC = () => {
   // If profile not loaded yet
   if (loading) {
     return (
-      <SidebarProvider>
-        <div className="min-h-screen bg-trading-bg flex w-full">
-          <AppSidebar />
-          
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <main className="flex-1 overflow-auto">
-              <div className="main-content">
-                <div className="bg-black/5">
+      <SingleSidebarLayout>
+        <main className="flex-1 overflow-auto p-6">
+          <div className="space-y-6">
                   {/* Profile Header Skeleton */}
                   <div className="relative h-48 bg-gradient-to-r from-white/5 to-white/10 animate-pulse">
                     <div className="absolute bottom-4 left-4 flex items-end space-x-4">
@@ -252,12 +246,9 @@ const ProfilePage: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            </main>
           </div>
-        </div>
-      </SidebarProvider>
+        </main>
+      </SingleSidebarLayout>
     );
   }
   
@@ -279,14 +270,9 @@ const ProfilePage: React.FC = () => {
   }
   
   return (
-    <SidebarProvider>
-      <div className="min-h-screen bg-trading-bg flex w-full">
-        <AppSidebar />
-        
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <main className="flex-1 overflow-auto">
-            <div className="main-content">
-              <div className="bg-black/5">
+    <SingleSidebarLayout>
+      <main className="flex-1 overflow-auto p-6">
+        <div className="space-y-6">
                 <ProfileHeader 
                   user={profileUser} 
                   onAddFriend={handleAddFriend} 
@@ -331,12 +317,9 @@ const ProfilePage: React.FC = () => {
                     />
                   </div>
                 </div>
-              </div>
-            </div>
-          </main>
         </div>
-      </div>
-    </SidebarProvider>
+      </main>
+    </SingleSidebarLayout>
   );
 };
 

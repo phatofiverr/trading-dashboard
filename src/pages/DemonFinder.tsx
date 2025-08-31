@@ -214,7 +214,7 @@ improvementScore: (() => {
                 <div className="flex items-center justify-between">
                   <div>
                     <h1 className="text-2 xl font-bold flex items-center space-x-3">
-                      <Ghost className="h-8 w-8" />
+                      {/* <Ghost className="h-8 w-8" /> */}
                       <span>Demon Hunter</span>
                     </h1>
                     <p className="text-muted-foreground">
@@ -316,7 +316,6 @@ improvementScore: (() => {
                 <Card className="glass-effect bg-black/5 border-0">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-                      <Target className="h-4 w-4 mr-2" />
                       Total Demons
                     </CardTitle>
                   </CardHeader>
@@ -334,7 +333,6 @@ improvementScore: (() => {
                 <Card className="glass-effect bg-black/5 border-0">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-                      <AlertTriangle className="h-4 w-4 mr-2" />
                       Unique Demons
                     </CardTitle>
                   </CardHeader>
@@ -351,7 +349,6 @@ improvementScore: (() => {
                 <Card className="glass-effect bg-black/5 border-0">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-                      <Award className="h-4 w-4 mr-2" />
                       Improvement Score
                     </CardTitle>
                   </CardHeader>
@@ -368,7 +365,6 @@ improvementScore: (() => {
                 <Card className="glass-effect bg-black/5 border-0">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-                      <Calendar className="h-4 w-4 mr-2" />
                       This Month
                     </CardTitle>
                   </CardHeader>
@@ -416,7 +412,6 @@ improvementScore: (() => {
               <Card className="glass-effect bg-black/5 border-0">
                 <CardHeader>
                   <CardTitle className="text-xl font-bold flex items-center">
-                    <Brain className="h-6 w-6 mr-2" />
                     Your Trading Demons
                   </CardTitle>
                 </CardHeader>

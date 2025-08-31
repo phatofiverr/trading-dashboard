@@ -4,8 +4,7 @@ import { useParams, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Download, Filter, PlusCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { SidebarProvider } from '@/components/ui/sidebar';
-import AppSidebar from '@/components/AppSidebar';
+import SingleSidebarLayout from '@/components/SingleSidebarLayout';
 import TradeEntryButton from '@/components/trade/TradeEntryButton';
 import EquityCurveChart from '@/components/trade/EquityCurveChart';
 import TradeTable from '@/components/trade/TradeTable';
@@ -104,12 +103,9 @@ const BacktestStrategyPage: React.FC = () => {
   const hasActiveTrades = activeTrades.length > 0;
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen bg-trading-bg flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <main className="flex-1 overflow-auto p-4 md:p-6">
-            <div className="h-full space-y-6 max-w-[1250px] mx-auto">
+    <SingleSidebarLayout>
+      <main className="flex-1 overflow-auto p-6">
+        <div className="space-y-6">
               
               {/* Header with Strategy Title and Action Buttons */}
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -213,11 +209,9 @@ const BacktestStrategyPage: React.FC = () => {
                   </DialogContent>
                 </Dialog>
               )}
-            </div>
-          </main>
         </div>
-      </div>
-    </SidebarProvider>
+      </main>
+    </SingleSidebarLayout>
   );
 };
 

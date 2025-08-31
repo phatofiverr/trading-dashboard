@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import SingleSidebarLayout from "@/components/SingleSidebarLayout";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import AppSidebar from "@/components/AppSidebar";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -152,14 +151,9 @@ const ProfileEditPage: React.FC = () => {
   }
   
   return (
-    <SidebarProvider>
-      <div className="min-h-screen bg-trading-bg flex w-full">
-        <AppSidebar />
-        
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <main className="flex-1 overflow-auto">
-            <div className="container mx-auto">
-              <div className="p-4">
+    <SingleSidebarLayout>
+      <main className="flex-1 overflow-auto p-6">
+        <div className="space-y-6">
                 <Button 
                   variant="outline" 
                   onClick={goBack}
@@ -169,7 +163,8 @@ const ProfileEditPage: React.FC = () => {
                   Back to Profile
                 </Button>
                 
-                <Card className="glass-effect border-white/5 max-w-3xl mx-auto">
+                <div className="max-w-[1250px] mx-auto">
+                  <Card className="glass-effect border-white/5">
                   <CardHeader>
                     <CardTitle>Edit Profile</CardTitle>
                   </CardHeader>
@@ -285,14 +280,11 @@ const ProfileEditPage: React.FC = () => {
                         </>
                       )}
                     </Button>
-                  </CardFooter>
+                                    </CardFooter>
                 </Card>
-              </div>
-            </div>
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+                </div>
+      </main>
+    </SingleSidebarLayout>
   );
 };
 

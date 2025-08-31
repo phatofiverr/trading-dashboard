@@ -24,7 +24,12 @@ const SidebarContent: React.FC<{ children: React.ReactNode }> = ({ children }) =
   const params = useParams();
   const { accounts } = useAccountsStore();
   const { getUniqueStrategies } = useTradeStore();
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, open: sidebarOpen } = useSidebar();
+  
+  // Track sidebar state changes in layout
+  React.useEffect(() => {
+    console.log('🏗️ SingleSidebarLayout: Sidebar state changed - open:', sidebarOpen);
+  }, [sidebarOpen]);
   const strategies = React.useMemo(() => [...new Set([
     ...getUniqueStrategies('live'),
     ...getUniqueStrategies('backtest')
