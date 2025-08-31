@@ -137,7 +137,7 @@ const AccountDetail: React.FC = () => {
   return (
     <SingleSidebarLayout>
       <main className="flex-1 overflow-auto p-4 md:p-6">
-        <div className="h-full space-y-6 max-w-7xl mx-auto">
+        <div className="h-full space-y-6 max-w-[1250px] mx-auto">
               
               {/* Header with Account Title and Action Buttons */}
               <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">

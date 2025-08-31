@@ -40,7 +40,7 @@ const Summary: React.FC = () => {
   return (
     <SingleSidebarLayout>
       <main className="flex-1 overflow-auto p-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-[1250px] mx-auto">
               <div className="mb-6">
                 {/* Header */}
                   <div className="flex items-center justify-between">

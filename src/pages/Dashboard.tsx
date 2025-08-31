@@ -161,7 +161,7 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8">
+    <div className="p-6 max-w-[1250px] mx-auto space-y-8">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-medium">Trading Dashboard</h1>
         

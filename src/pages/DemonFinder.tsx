@@ -1,8 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useTradeStore } from '@/hooks/useTradeStore';
 import { BEHAVIORAL_TAGS, BehavioralTagDefinition, getBehavioralTagById } from '@/constants/behavioralTags';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import AppSidebar from '@/components/AppSidebar';
+import SingleSidebarLayout from '@/components/SingleSidebarLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -207,12 +206,9 @@ improvementScore: (() => {
   const isWarningLevel = criticalDemons.length > 0;
   
   return (
-    <SidebarProvider>
-      <div className="min-h-screen bg-trading-bg flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <main className="flex-1 overflow-auto p-6">
-            <div className="max-w-6xl mx-auto">
+    <SingleSidebarLayout>
+      <main className="flex-1 overflow-auto p-6">
+        <div className="space-y-6">
               {/* Header */}
               <div className="mb-8">
                 <div className="flex items-center justify-between">
@@ -521,11 +517,9 @@ improvementScore: (() => {
               </Card>
                 </>
               )}
-            </div>
-          </main>
         </div>
-      </div>
-    </SidebarProvider>
+      </main>
+    </SingleSidebarLayout>
   );
 };
 

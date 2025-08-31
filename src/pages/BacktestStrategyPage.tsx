@@ -109,7 +109,7 @@ const BacktestStrategyPage: React.FC = () => {
         <AppSidebar />
         <div className="flex-1 flex flex-col overflow-hidden">
           <main className="flex-1 overflow-auto p-4 md:p-6">
-            <div className="h-full space-y-6 max-w-7xl mx-auto">
+            <div className="h-full space-y-6 max-w-[1250px] mx-auto">
               
               {/* Header with Strategy Title and Action Buttons */}
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">

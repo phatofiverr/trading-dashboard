@@ -17,9 +17,9 @@ const SingleSidebarLayout: React.FC<SingleSidebarLayoutProps> = ({
 
         {/* Main Content Area */}
         <SidebarInset className="flex-1">
-          <div className="flex h-full">
+          <div className="flex h-full justify-center">
             {/* Main Content */}
-            <div className="flex-1">
+            <div className="w-full max-w-[1250px] px-4">
               {children}
             </div>
           </div>

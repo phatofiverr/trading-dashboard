@@ -201,7 +201,7 @@ const BacktestStrategies: React.FC = () => {
         <AppSidebar />
         <div className="flex-1 flex flex-col overflow-hidden">
           <main className="flex-1 overflow-auto p-6">
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-[1250px] mx-auto">
               <div className="mb-6">
                 <div className="flex justify-between items-center mb-4">
                   <h1 className="text-2xl font-bold">Backtest Strategies</h1>

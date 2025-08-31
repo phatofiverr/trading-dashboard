@@ -160,8 +160,8 @@ const SidebarContent: React.FC<{ children: React.ReactNode }> = ({ children }) =
         </header>
 
         {/* Main Content Area */}
-        <div className="flex h-full">
-          <div className="flex-1">
+        <div className="flex h-full justify-center">
+          <div className="w-full max-w-[1250px] px-4">
             {children}
           </div>
         </div>

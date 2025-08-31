@@ -113,51 +113,53 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {/* This will make the sidebar appear as icons. */}
       <Sidebar
         collapsible="none"
-        className="w-[calc(var(--sidebar-width-icon)_+_1px)]! border-r"
+        className="!w-[calc(var(--sidebar-width-icon)_+_1px)] !min-w-[calc(var(--sidebar-width-icon)_+_1px)] !max-w-[calc(var(--sidebar-width-icon)_+_1px)] border-r"
       >
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton
-                size="lg"
-                asChild
-                className="md:h-8 md:p-0"
-                tooltip={{
-                  children: "Trading Dashboard",
-                  hidden: false,
-                }}
-              >
-                <Link to="/summary">
-                  <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                    <Home className="size-4" />
-                  </div>
-                </Link>
-              </SidebarMenuButton>
+              <div className="relative w-fit">
+                <SidebarMenuButton
+                  size="lg"
+                  asChild
+                  className="md:h-8 md:p-0 peer"
+                >
+                  <Link to="/profile">
+                    <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                      <User className="size-4" />
+                    </div>
+                  </Link>
+                </SidebarMenuButton>
+                <div className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-sm rounded opacity-0 peer-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[9999] top-1/2 -translate-y-1/2">
+                  Profile
+                </div>
+              </div>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupContent className="px-1.5 md:px-0">
-              <SidebarMenu>
+        <SidebarContent className="overflow-visible">
+          <SidebarGroup className="overflow-visible">
+            <SidebarGroupContent className="px-1.5 md:px-0 overflow-visible">
+              <SidebarMenu className="overflow-visible">
                 {data.navMain.map((item) => (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      tooltip={{
-                        children: item.title,
-                        hidden: false,
-                      }}
-                      onClick={() => {
-                        setActiveItem(item)
-                        const newContent = data.content[item.title as keyof typeof data.content] || []
-                        setContent(newContent)
-                        setOpen(true)
-                      }}
-                      isActive={activeItem?.title === item.title}
-                      className="px-2.5 md:px-2"
-                    >
-                      <item.icon />
-                    </SidebarMenuButton>
+                    <div className="relative w-fit">
+                      <SidebarMenuButton
+                        onClick={() => {
+                          setActiveItem(item)
+                          const newContent = data.content[item.title as keyof typeof data.content] || []
+                          setContent(newContent)
+                          setOpen(true)
+                        }}
+                        isActive={activeItem?.title === item.title}
+                        className="px-2.5 md:px-2 peer"
+                      >
+                        <item.icon />
+                      </SidebarMenuButton>
+                      <div className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-sm rounded opacity-0 peer-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[9999] top-1/2 -translate-y-1/2">
+                        {item.title}
+                      </div>
+                    </div>
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
@@ -167,15 +169,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton
-                tooltip={{
-                  children: "Log Out",
-                  hidden: false,
-                }}
-                onClick={handleLogout}
-              >
-                <LogOut className="size-4" />
-              </SidebarMenuButton>
+              <div className="relative w-fit">
+                <SidebarMenuButton onClick={handleLogout} className="peer">
+                  <LogOut className="size-4" />
+                </SidebarMenuButton>
+                <div className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-sm rounded opacity-0 peer-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[9999] top-1/2 -translate-y-1/2">
+                  Log Out
+                </div>
+              </div>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarFooter>
