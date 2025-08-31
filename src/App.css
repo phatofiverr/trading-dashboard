@@ -1,13 +1,9 @@
-/* Import Geist font */
-@import url("https://fonts.googleapis.com/css2?family=Geist:wght@100;200;300;400;500;600;700;800;900&display=swap");
-
 #root {
   margin: 0 auto;
   padding: 0;
   text-align: left;
   width: 100%;
   max-width: 100%;
-  font-family: 'Geist', sans-serif;
 }
 
 .logo {

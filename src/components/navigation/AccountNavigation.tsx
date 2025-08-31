@@ -209,7 +209,7 @@ const AccountNavigation: React.FC<AccountNavigationProps> = memo(({
 
         {/* Animated background rectangle - smoothly transitions between positions */}
         <motion.div
-          className="absolute top-2 bottom-2 bg-white/10 rounded-lg pointer-events-none"
+          className="absolute top-2 bottom-2 bg-white/10 rounded-md pointer-events-none"
           style={{
             x: backgroundX,
             width: backgroundWidth,
@@ -239,7 +239,7 @@ const AccountNavigation: React.FC<AccountNavigationProps> = memo(({
         {/* Animated underline indicator */}
         <motion.div
           key={`underline-${activeSection}`}
-          className="absolute bottom-0 h-0.5 bg-white rounded-full"
+          className="absolute bottom-0 h-0.5 bg-white"
           style={{
             x: underlineX,
             width: underlineWidth,
