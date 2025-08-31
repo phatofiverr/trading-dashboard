@@ -5,6 +5,7 @@ import { Toaster } from 'sonner';
 import { AuthProvider } from './contexts/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 import { useAuth } from './contexts/AuthContext';
+import NavigationLoader from './components/NavigationLoader';
 
 // Lazy load page components
 const LiveTradingStrategies = lazy(() => import('./pages/LiveTradingStrategies'));
@@ -31,74 +32,88 @@ const HomeRoute = () => {
   return currentUser ? <Navigate to="/accounts" replace /> : <Landing />;
 };
 
+// AppContent component that uses navigation hook
+const AppContent = () => {
+  return (
+    <>
+      <NavigationLoader />
+      <Suspense fallback={
+        <div className="min-h-screen bg-trading-bg flex items-center justify-center">
+          <div className="text-white">Loading...</div>
+        </div>
+      }>
+        <Routes>
+          {/* Auth Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/reset-password" element={<PasswordReset />} />
+          <Route path="/verify-email" element={<EmailVerification />} />
+
+          {/* Legal Pages */}
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
+
+          {/* Default Route - Conditional Redirect */}
+          <Route path="/" element={<HomeRoute />} />
+
+          {/* Protected Routes */}
+          <Route path="/strategies" element={
+            <PrivateRoute>
+              <LiveTradingStrategies />
+            </PrivateRoute>
+          } />
+          <Route path="/strategies/:strategyId" element={
+            <PrivateRoute>
+              <StrategyPage />
+            </PrivateRoute>
+          } />
+          <Route path="/profile" element={
+            <PrivateRoute>
+              <ProfilePage />
+            </PrivateRoute>
+          } />
+          <Route path="/profile/edit" element={
+            <PrivateRoute>
+              <ProfileEditPage />
+            </PrivateRoute>
+          } />
+          <Route path="/summary" element={
+            <PrivateRoute>
+              <Summary />
+            </PrivateRoute>
+          } />
+          <Route path="/accounts" element={
+            <PrivateRoute>
+              <Accounts />
+            </PrivateRoute>
+          } />
+          <Route path="/accounts/:accountId" element={
+            <PrivateRoute>
+              <AccountDetail />
+            </PrivateRoute>
+          } />
+          <Route path="/settings" element={
+            <PrivateRoute>
+              <Settings />
+            </PrivateRoute>
+          } />
+          <Route path="/demon-finder" element={
+            <PrivateRoute>
+              <DemonFinder />
+            </PrivateRoute>
+          } />
+        </Routes>
+      </Suspense>
+      <Toaster position="bottom-right" richColors closeButton />
+    </>
+  );
+};
+
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <Suspense fallback={<div className="min-h-screen bg-trading-bg flex items-center justify-center">Loading...</div>}>
-          <Routes>
-            {/* Auth Routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/reset-password" element={<PasswordReset />} />
-            <Route path="/verify-email" element={<EmailVerification />} />
-            
-            {/* Legal Pages */}
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<TermsOfService />} />
-            
-            {/* Default Route - Conditional Redirect */}
-            <Route path="/" element={<HomeRoute />} />
-            
-            {/* Protected Routes */}
-            <Route path="/strategies" element={
-              <PrivateRoute>
-                <LiveTradingStrategies />
-              </PrivateRoute>
-            } />
-            <Route path="/strategies/:strategyId" element={
-              <PrivateRoute>
-                <StrategyPage />
-              </PrivateRoute>
-            } />
-            <Route path="/profile" element={
-              <PrivateRoute>
-                <ProfilePage />
-              </PrivateRoute>
-            } />
-            <Route path="/profile/edit" element={
-              <PrivateRoute>
-                <ProfileEditPage />
-              </PrivateRoute>
-            } />
-            <Route path="/summary" element={
-              <PrivateRoute>
-                <Summary />
-              </PrivateRoute>
-            } />
-            <Route path="/accounts" element={
-              <PrivateRoute>
-                <Accounts />
-              </PrivateRoute>
-            } />
-            <Route path="/accounts/:accountId" element={
-              <PrivateRoute>
-                <AccountDetail />
-              </PrivateRoute>
-            } />
-            <Route path="/settings" element={
-              <PrivateRoute>
-                <Settings />
-              </PrivateRoute>
-            } />
-            <Route path="/demon-finder" element={
-              <PrivateRoute>
-                <DemonFinder />
-              </PrivateRoute>
-            } />
-          </Routes>
-        </Suspense>
-        <Toaster position="bottom-right" richColors closeButton />
+        <AppContent />
       </Router>
     </AuthProvider>
   );

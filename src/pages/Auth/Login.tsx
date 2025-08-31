@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import GoogleButton from "@/components/ui/GoogleButton";
-import Divider from "@/components/ui/Divider";
+import { Divider } from "@/components/ui/separator";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();

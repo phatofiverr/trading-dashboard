@@ -9,28 +9,21 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import AppSidebar from '@/components/AppSidebar';
+import { SidebarTrigger } from '@/components/ui/sidebar';
+import SingleSidebarLayout from '@/components/SingleSidebarLayout';
 import TradeEntryButton from '@/components/trade/TradeEntryButton';
-import TradeTable from '@/components/trade/TradeTable';
 import FilterPanel from '@/components/trade/FilterPanel';
 import TradeDetailView from '@/components/trade/TradeDetailView';
+import AccountNavigation from '@/components/navigation/AccountNavigation';
+import AccountOverviewSection from '@/components/account/sections/AccountOverviewSection';
+import AccountAnalysisSection from '@/components/account/sections/AccountAnalysisSection';
+import AccountPerformanceSection from '@/components/account/sections/AccountPerformanceSection';
+import AccountModelsSection from '@/components/account/sections/AccountModelsSection';
+import AccountTradesSection from '@/components/account/sections/AccountTradesSection';
 import { toast } from 'sonner';
 
 // Lazy load heavy components
-const EquityCurveChart = lazy(() => import('@/components/trade/EquityCurveChart'));
-const TradingKPIs = lazy(() => import('@/components/trade/TradingKPIs'));
-const RAnalysisCard = lazy(() => import('@/components/trade/analysis/RAnalysisCard'));
-const MostTradedPairsCard = lazy(() => import('@/components/trade/MostTradedPairsCard'));
-const TradeActivityHeatmap = lazy(() => import('@/components/trade/TradeActivityHeatmap'));
 const ThemeEditor = lazy(() => import('@/components/trade/ThemeEditor'));
-const StochasticVolatilityModel = lazy(() => import('@/components/trade/analysis/StochasticVolatilityModel'));
-const BreakEvenOutcomeCard = lazy(() => import('@/components/trade/analysis/BreakEvenOutcomeCard').then(module => ({ default: module.BreakEvenOutcomeCard })));
-const EquityBalanceHistory = lazy(() => import('@/components/trade/EquityBalanceHistory'));
-const TradingCalendar = lazy(() => import('@/components/trade/TradingCalendar'));
-const SimpleStatsDisplay = lazy(() => import('@/components/trade/SimpleStatsDisplay'));
-const RiskAdjustedMetrics = lazy(() => import('@/components/trade/kpi/RiskAdjustedMetrics'));
-import DailyStats from '@/components/accounts/DailyStats';
 
 const COMPONENT_OPTIONS = [
   { id: 'tradedPairs', label: 'Most Traded Pairs', defaultVisible: true },
@@ -49,6 +42,7 @@ const AccountDetail: React.FC = () => {
   const [showFilterPanel, setShowFilterPanel] = useState<boolean>(false);
   const [showComponentPopoverMobile, setShowComponentPopoverMobile] = useState<boolean>(false);
   const [showComponentPopoverDesktop, setShowComponentPopoverDesktop] = useState<boolean>(false);
+  const [activeSection, setActiveSection] = useState<string>('overview');
   
 
   
@@ -141,12 +135,9 @@ const AccountDetail: React.FC = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen bg-trading-bg flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <main className="flex-1 overflow-auto p-4 md:p-6">
-            <div className="h-full space-y-6 max-w-7xl mx-auto">
+    <SingleSidebarLayout>
+      <main className="flex-1 overflow-auto p-4 md:p-6">
+        <div className="h-full space-y-6 max-w-7xl mx-auto">
               
               {/* Header with Account Title and Action Buttons */}
               <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
@@ -333,105 +324,57 @@ const AccountDetail: React.FC = () => {
                   </Button>
                 </div>
               </div>
-              
+
+              {/* Navigation Bar */}
+              <div className="mb-6">
+                <AccountNavigation
+                  activeSection={activeSection}
+                  onSectionChange={setActiveSection}
+                />
+              </div>
+
               {/* Filter Panel (Collapsible) */}
               {showFilterPanel && (
                 <div className="animate-fade-in mb-6">
                   <FilterPanel />
                 </div>
               )}
-              
-              {/* First row: Equity Balance History and Risk Adjusted Metrics side by side */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 items-stretch min-h-[500px]">
-                <div className="lg:col-span-2">
-                  <Suspense fallback={<div className="h-48 bg-black/10 rounded-lg animate-pulse" />}>
-                    <EquityBalanceHistory accountOnly={true} />
-                  </Suspense>
-                </div>
-                <div className="lg:col-span-1">
-                  <Suspense fallback={<div className="h-48 bg-black/10 rounded-lg animate-pulse" />}>
-                    <RiskAdjustedMetrics trades={filteredTrades} />
-                  </Suspense>
-                </div>
-              </div>
-              
-              {/* Second row: Trading Statistics and Calendar side by side */}
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
-                <div className="lg:col-span-2 flex flex-col h-full space-y-6">
-                  <Suspense fallback={<div className="w-full py-4 h-20 bg-black/10 rounded-lg animate-pulse" />}>
-                    <SimpleStatsDisplay currency={account.currency} className="w-full py-4" style={{ height: 'fit-content' }} />
-                  </Suspense>
-                  
-                  {/* Analysis Cards Container - Make it fill the available space */}
-                  <div className="flex flex-col space-y-6">
-                    {/* Take Profit Analysis - Always on top */}
-                    {visibleComponents.rAnalysis && (
-                      <Suspense fallback={<div className="h-48 bg-black/10 rounded-lg animate-pulse" />}>
-                        <RAnalysisCard />
-                      </Suspense>
-                    )}
-                    
-                    {/* Break Even Analysis - Always below Take Profit Analysis */}
-                    {visibleComponents.breakEvenAnalysis && (
-                      <Card className="glass-effect">
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-xl font-normal">Break Even Analysis</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <Suspense fallback={<div className="h-32 bg-black/10 rounded-lg animate-pulse" />}>
-                            <BreakEvenOutcomeCard />
-                          </Suspense>
-                        </CardContent>
-                      </Card>
-                    )}
-                    
-                    {/* Most Traded Pairs - Moved from bottom to this container */}
-                    {visibleComponents.tradedPairs && (
-                      <Suspense fallback={<div className="h-48 bg-black/10 rounded-lg animate-pulse" />}>
-                        <MostTradedPairsCard trades={filteredTrades} />
-                      </Suspense>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="lg:col-span-3 h-full">
-                  <Suspense fallback={<div className="h-96 bg-black/10 rounded-lg animate-pulse" />}>
-                    <TradingCalendar account={account} />
-                  </Suspense>
-                </div>
-              </div>
-              
-              {/* Trading KPIs */}
-              {visibleComponents.tradingKPIs && (
-                <div className="mb-6">
-                  <Suspense fallback={<div className="h-96 bg-black/10 rounded-lg animate-pulse" />}>
-                    <TradingKPIs accountId={accountId} />
-                  </Suspense>
-                </div>
+
+              {/* Dynamic Section Content */}
+              {activeSection === 'overview' && (
+                <AccountOverviewSection
+                  accountId={accountId}
+                  filteredTrades={filteredTrades}
+                />
               )}
-              
-              {/* Trade Activity Heatmap */}
-              {visibleComponents.activityHeatmap && (
-                <div className="mb-6">
-                  <Suspense fallback={<div className="h-64 bg-black/10 rounded-lg animate-pulse" />}>
-                    <TradeActivityHeatmap />
-                  </Suspense>
-                </div>
+
+              {activeSection === 'analysis' && (
+                <AccountAnalysisSection
+                  account={account}
+                  filteredTrades={filteredTrades}
+                  visibleComponents={visibleComponents}
+                />
               )}
-              
-              {/* Stochastic Volatility Model */}
-              {visibleComponents.volatilityModel && (
-                <div className="mb-6">
-                  <Suspense fallback={<div className="h-64 bg-black/10 rounded-lg animate-pulse" />}>
-                    <StochasticVolatilityModel />
-                  </Suspense>
-                </div>
+
+              {activeSection === 'models' && (
+                <AccountModelsSection
+                  accountId={accountId}
+                  visibleComponents={visibleComponents}
+                />
               )}
-              
-              {/* Trade Table - Full Width */}
-              <div className="mb-6">
-                <TradeTable hideExportButton={true} trades={filteredTrades} />
-              </div>
+
+              {activeSection === 'performance' && (
+                <AccountPerformanceSection
+                  accountId={accountId}
+                  visibleComponents={visibleComponents}
+                />
+              )}
+
+              {activeSection === 'trades' && (
+                <AccountTradesSection
+                  filteredTrades={filteredTrades}
+                />
+              )}
               
               {/* Trade Details Modal */}
               {selectedTrade && (
@@ -445,10 +388,8 @@ const AccountDetail: React.FC = () => {
                 </Dialog>
               )}
             </div>
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+      </main>
+    </SingleSidebarLayout>
   );
 };
 

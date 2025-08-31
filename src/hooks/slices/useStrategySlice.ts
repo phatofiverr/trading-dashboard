@@ -182,7 +182,11 @@ export const createStrategySlice: StateCreator<
   loadStrategiesFromFirebase: async () => {
     try {
       const strategies = await firebaseService.fetchStrategies();
-      set({ strategies });
+      // Filter out unwanted strategies like "Multi-Account"
+      const filteredStrategies = strategies.filter(strategy =>
+        strategy.name !== "Multi-Account"
+      );
+      set({ strategies: filteredStrategies });
     } catch (error) {
       console.error('Failed to load strategies from Firebase:', error);
     }

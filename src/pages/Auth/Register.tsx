@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Eye, EyeOff, Lock, Mail, User, CheckCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import GoogleButton from "@/components/ui/GoogleButton";
-import Divider from "@/components/ui/Divider";
+import { Divider } from "@/components/ui/separator";
 
 const Register: React.FC = () => {
   const navigate = useNavigate();

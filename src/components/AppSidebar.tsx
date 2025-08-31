@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, User, Wallet, Edit, MoreVertical, Ghost, ChevronDown, BarChart3 } from 'lucide-react';
+import { LogOut, User, Wallet, Edit, MoreVertical, Ghost, ChevronDown, BarChart3, Settings } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Sidebar,
@@ -44,17 +44,17 @@ const AppSidebar: React.FC = () => {
   const { currentUser: authUser, logout } = useAuth();
   const [strategies, setStrategies] = useState<string[]>([]);
   const [isHovering, setIsHovering] = useState<boolean>(false);
-  
+
   // Rename dialog state
   const [showRenameDialog, setShowRenameDialog] = useState<boolean>(false);
   const [renameType, setRenameType] = useState<'account' | 'strategy'>('account');
   const [itemToRename, setItemToRename] = useState<{id: string, currentName: string} | null>(null);
   const [newName, setNewName] = useState<string>("");
-  
+
   // Delete confirmation dialog state
   const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false);
   const [accountToDelete, setAccountToDelete] = useState<TradingAccount | null>(null);
-  
+
   const location = useLocation();
   const navigate = useNavigate();
   const { state, setOpen } = useSidebar();
@@ -232,32 +232,32 @@ const AppSidebar: React.FC = () => {
   };
 
   return (
-    <div 
+    <div
       className="relative"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       {/* Adding a larger hoverable area on the edge of the screen for smaller screens */}
       {window.innerWidth <= 1080 && state === "collapsed" && !isHovering && (
-        <div 
-          className="fixed left-0 top-0 w-6 h-full z-40 bg-transparent" 
+        <div
+          className="fixed left-0 top-0 w-6 h-full z-40 bg-transparent"
           onMouseEnter={handleMouseEnter}
         />
       )}
-      
+
       <Sidebar variant="inset" className="border-0 bg-black/5">
         <SidebarHeader className="bg-black/10 backdrop-blur-md p-0">
           <MiniProfile user={currentUser} className="mb-0" />
         </SidebarHeader>
-        
+
         <SidebarContent className="bg-black/5 backdrop-blur-md py-2 px-1">
           <SidebarGroup>
             <SidebarGroupLabel className="text-white/50 px-1 pt-2 pb-1 text-xs">Navigation</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="space-y-0.5">
                 <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    tooltip="Summary" 
+                  <SidebarMenuButton
+                    tooltip="Summary"
                     isActive={location.pathname === '/summary'}
                     className={location.pathname === '/summary' ? "" : "text-white/40 hover:text-white/60"}
                     asChild
@@ -270,10 +270,10 @@ const AppSidebar: React.FC = () => {
                 </SidebarMenuItem>
 
                 <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    tooltip="Summary" 
-                    //isActive={location.pathname === '/strategies' || location.pathname.startsWith('/strategies/')}
-                    className={location.pathname === '/strategies' ? "" : "text-white/40 hover:text-white/60"}
+                  <SidebarMenuButton
+                    tooltip="Strategies"
+                    isActive={location.pathname === '/strategies' || location.pathname.startsWith('/strategies/')}
+                    className={(location.pathname === '/strategies' || location.pathname.startsWith('/strategies/')) ? "" : "text-white/40 hover:text-white/60"}
                     asChild
                   >
                     <Link to="/strategies">
@@ -288,10 +288,10 @@ const AppSidebar: React.FC = () => {
                 </SidebarMenuItem>
 
                 <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    tooltip="Accounts" 
-                    //isActive={location.pathname === '/accounts' || location.pathname.startsWith('/accounts/')}
-                    className={location.pathname === '/accounts' ? "" : "text-white/40 hover:text-white/60"}
+                  <SidebarMenuButton
+                    tooltip="Accounts"
+                    isActive={location.pathname === '/accounts' || location.pathname.startsWith('/accounts/')}
+                    className={(location.pathname === '/accounts' || location.pathname.startsWith('/accounts/')) ? "" : "text-white/40 hover:text-white/60"}
                     asChild
                   >
                     <Link to="/accounts">
@@ -302,8 +302,8 @@ const AppSidebar: React.FC = () => {
                 </SidebarMenuItem>
 
                 <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    tooltip="Demon Hunter" 
+                  <SidebarMenuButton
+                    tooltip="Demon Hunter"
                     isActive={location.pathname === '/demon-finder'}
                     className={location.pathname === '/demon-finder' ? "" : "text-white/40 hover:text-white/60"}
                     asChild
@@ -317,7 +317,7 @@ const AppSidebar: React.FC = () => {
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
-          
+
           {/* Accounts Section */}
           <Collapsible open={accountsOpen} onOpenChange={setAccountsOpen} className="mt-2">
             <CollapsibleTrigger asChild>
@@ -333,7 +333,7 @@ const AppSidebar: React.FC = () => {
               <SidebarMenu className="space-y-0.5 ml-1 border-l border-white/10 pl-1">
                 {accounts.map((account) => (
                   <SidebarMenuItem key={account.id}>
-                    <SidebarMenuButton 
+                    <SidebarMenuButton
                       isActive={location.pathname === `/accounts/${account.id}`}
                       className={location.pathname === `/accounts/${account.id}` ? "" : "text-white/40 hover:text-white/60"}
                       asChild
@@ -379,7 +379,7 @@ const AppSidebar: React.FC = () => {
                     </DropdownMenu>
                   </SidebarMenuItem>
                 ))}
-                
+
                 {/* Add Account Dialog */}
                 <SidebarMenuItem>
                   <AddAccountDialog />
@@ -387,7 +387,7 @@ const AppSidebar: React.FC = () => {
               </SidebarMenu>
             </CollapsibleContent>
           </Collapsible>
-          
+
           {/* Strategies Section */}
           <Collapsible open={strategiesOpen} onOpenChange={setStrategiesOpen} className="mt-2">
             <CollapsibleTrigger asChild>
@@ -407,7 +407,7 @@ const AppSidebar: React.FC = () => {
               <SidebarMenu className="space-y-0.5 ml-2 border-l border-white/10 pl-2">
                 {strategies.map((strategy) => (
                   <SidebarMenuItem key={strategy}>
-                    <SidebarMenuButton 
+                    <SidebarMenuButton
                       isActive={location.pathname === `/strategies/${encodeURIComponent(strategy)}`}
                       className={location.pathname === `/strategies/${encodeURIComponent(strategy)}` ? "" : "text-white/40 hover:text-white/60"}
                       asChild
@@ -457,7 +457,7 @@ const AppSidebar: React.FC = () => {
                     </DropdownMenu>
                   </SidebarMenuItem>
                 ))}
-                
+
                 {/* Add Strategy Button */}
                 <SidebarMenuItem>
                   <AddStrategyDialog />
@@ -466,10 +466,10 @@ const AppSidebar: React.FC = () => {
             </CollapsibleContent>
           </Collapsible>
         </SidebarContent>
-        
+
         <SidebarFooter className="border-t border-white/5 bg-black/10 backdrop-blur-md p-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full flex items-center justify-start gap-2 text-red-500 border-red-500/20 hover:bg-red-500/10"
             onClick={handleLogout}
           >

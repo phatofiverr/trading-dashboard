@@ -4,7 +4,7 @@ import { RiCloseFill, RiMenuFill } from "@remixicon/react"
 import React from "react"
 import { useNavigate } from "react-router-dom"
 // import { SolarLogo } from "../../../public/SolarLogo"
-import { Button } from "../Button"
+import { Button } from "./button"
 
 export function NavBar() {
   const [open, setOpen] = React.useState(false)

@@ -15,8 +15,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { toast } from "sonner";
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import AppSidebar from '@/components/AppSidebar';
+import { SidebarTrigger } from '@/components/ui/sidebar';
+import SingleSidebarLayout from '@/components/SingleSidebarLayout';
 import { StrategyPerformance } from '@/types/Trade';
 
 const StrategyCard = ({ 
@@ -196,12 +196,9 @@ const LiveTradingStrategies: React.FC = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen bg-trading-bg flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <main className="flex-1 overflow-auto p-6">
-            <div className="max-w-7xl mx-auto">
+    <SingleSidebarLayout>
+      <main className="flex-1 overflow-auto p-6">
+        <div className="max-w-7xl mx-auto">
               
               
               <div className="mb-6">
@@ -261,10 +258,8 @@ const LiveTradingStrategies: React.FC = () => {
               </div>
             </div>
             
-          </main>
-        </div>
-      </div>
-      
+      </main>
+
       {/* Duplicate Strategy Dialog */}
       <Dialog open={showDuplicateDialog} onOpenChange={setShowDuplicateDialog}>
         <DialogContent className="bg-black/80 backdrop-blur-md border-white/5 max-w-md w-full">
@@ -289,7 +284,7 @@ const LiveTradingStrategies: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </SidebarProvider>
+    </SingleSidebarLayout>
   );
 };
 

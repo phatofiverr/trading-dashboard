@@ -1,14 +1,17 @@
 import React from 'react';
-import { BarChart3, TrendingUp, TrendingDown, Calendar, Target, Users } from 'lucide-react';
-import { SidebarProvider } from "@/components/ui/sidebar";
-import AppSidebar from "@/components/AppSidebar";
+import { BarChart3, TrendingUp, TrendingDown, Calendar, Target, Users, Plus } from 'lucide-react';
+import SingleSidebarLayout from "@/components/SingleSidebarLayout";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useTradeStore } from '@/hooks/useTradeStore';
 import { useAccountsStore } from '@/hooks/useAccountsStore';
+import MultiAccountTradeEntryForm from '@/components/trade/MultiAccountTradeEntryForm';
 
 const Summary: React.FC = () => {
   const { trades } = useTradeStore();
   const { accounts } = useAccountsStore();
+
+  const [showNewTradeDialog, setShowNewTradeDialog] = React.useState(false);
 
   // Calculate summary statistics
   const totalTrades = trades.length;
@@ -35,13 +38,9 @@ const Summary: React.FC = () => {
   const totalBalance = accounts.reduce((sum, account) => sum + account.balance, 0);
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen bg-trading-bg flex w-full">
-        <AppSidebar />
-        
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <main className="flex-1 overflow-auto p-6">
-            <div className="max-w-7xl mx-auto">
+    <SingleSidebarLayout>
+      <main className="flex-1 overflow-auto p-6">
+        <div className="max-w-7xl mx-auto">
               <div className="mb-6">
                 {/* Header */}
                   <div className="flex items-center justify-between">
@@ -49,6 +48,14 @@ const Summary: React.FC = () => {
                       <h1 className="text-2xl font-bold">Trading Summary</h1>
                       <p className="text-muted-foreground mt-1">Your comprehensive trading overview</p>
                     </div>
+                    <Button
+                      variant="glass"
+                      className="flex items-center gap-2"
+                      onClick={() => setShowNewTradeDialog(true)}
+                    >
+                      <Plus className="h-4 w-4" />
+                      New Trade
+                    </Button>
                   </div>
 
                   {/* Key Metrics Grid */}
@@ -167,10 +174,14 @@ const Summary: React.FC = () => {
                 </div>
               </div>
             </div>
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+      </main>
+
+      {/* Multi-Account Trade Entry Form */}
+      <MultiAccountTradeEntryForm
+        isOpen={showNewTradeDialog}
+        onClose={() => setShowNewTradeDialog(false)}
+      />
+    </SingleSidebarLayout>
   );
 };
 

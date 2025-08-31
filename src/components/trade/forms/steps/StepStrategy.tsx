@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useFormContext } from "react-hook-form";
 import { TradeFormValues } from "../../schemas/tradeFormSchema";
 import { Input } from "@/components/ui/input";
@@ -14,74 +14,120 @@ import { useParams } from "react-router-dom";
 import { calculateSetupQuality, TradeConfluenceCheck } from "@/utils/confluenceUtils";
 
 export default function StepLevels() {
-  const { getUniqueStrategies, getStrategyById, strategies } = useTradeStore();
+  const { getUniqueStrategies, getStrategyById, strategies, deleteStrategy } = useTradeStore();
   const form = useFormContext<TradeFormValues>();
   const { strategyId } = useParams<{ strategyId: string }>();
-  
+
+  // Use a ref to track if we've initialized confluence checks for the current strategy
+  const initializedStrategyRef = useRef<string | null>(null);
+
+  // Clean up any existing "Multi-Account" strategy on component mount
+  useEffect(() => {
+    const cleanupMultiAccount = async () => {
+      console.log('StepStrategy cleanup effect running...');
+      console.log('Current strategies:', strategies);
+      const multiAccountStrategy = strategies.find(s => s.name === "Multi-Account");
+      console.log('Multi-Account strategy found:', multiAccountStrategy);
+
+      if (multiAccountStrategy) {
+        console.log('Found existing "Multi-Account" strategy, cleaning up from local and Firebase...');
+
+        // Delete from local state
+        const localDeleteResult = deleteStrategy("Multi-Account");
+        console.log('Local delete result:', localDeleteResult);
+
+        // Also delete from Firebase directly
+        try {
+          // Import firebaseService dynamically to avoid circular imports
+          const firebaseService = await import('@/services/firebaseService');
+          await firebaseService.deleteStrategy(multiAccountStrategy.id);
+          console.log('Firebase delete completed for Multi-Account strategy');
+        } catch (error) {
+          console.error('Failed to delete Multi-Account strategy from Firebase:', error);
+        }
+      } else {
+        console.log('No Multi-Account strategy found to clean up');
+      }
+    };
+
+    cleanupMultiAccount();
+  }, [strategies, deleteStrategy]); // Include dependencies to re-run when strategies change
+
   // Default to 'live' strategy type if not specified
   const strategyType = 'live';
-  const userStrategies = getUniqueStrategies(strategyType);
-  const watchedValues = form.watch();
-  
-  // Get selected strategy for confluences
-  const selectedStrategyId = watchedValues.strategyId || strategyId;
-  const selectedStrategy = selectedStrategyId ? 
-    getStrategyById(selectedStrategyId) || // First try by ID
-    strategies.find(s => s.name === selectedStrategyId) // Then try by name
-    : undefined;
-  
-  // Initialize confluence checks when strategy changes
-  useEffect(() => {
-    if (selectedStrategy?.confluences?.length) {
-      // Get existing checks from form or initialize new ones
-      const existingChecks = form.getValues('confluenceChecks') || [];
-      const strategyConfluenceIds = selectedStrategy.confluences.map(c => c.id);
-      
-      // Filter out checks for confluences that don't belong to this strategy
-      const relevantChecks = existingChecks.filter(check => 
-        strategyConfluenceIds.includes(check.confluenceId)
-      );
-      
-      // Add any missing confluences with default false state
-      const missingConfluences = selectedStrategy.confluences.filter(confluence => 
-        !relevantChecks.some(check => check.confluenceId === confluence.id)
-      );
-      
-      const newChecks = missingConfluences.map(confluence => ({
-        confluenceId: confluence.id,
-        isPresent: false
-      }));
-      
-      const allChecks = [...relevantChecks, ...newChecks];
-      form.setValue('confluenceChecks', allChecks);
-    } else {
-      form.setValue('confluenceChecks', []);
-    }
-  }, [selectedStrategy?.id, form]);
-  
-  // Get confluence checks from form
+  const userStrategies = useMemo(() => getUniqueStrategies(strategyType), [getUniqueStrategies, strategyType]);
+
+  // Watch only the strategyId field to avoid unnecessary re-renders
+  const selectedStrategyId = form.watch('strategyId') || strategyId;
+
+  // Memoize selected strategy to prevent unnecessary recalculations
+  const selectedStrategy = useMemo(() => {
+    if (!selectedStrategyId) return undefined;
+
+    return getStrategyById(selectedStrategyId) || // First try by ID
+           strategies.find(s => s.name === selectedStrategyId); // Then try by name
+  }, [selectedStrategyId, getStrategyById, strategies]);
+
+  // Watch confluence checks specifically
   const confluenceChecks = form.watch('confluenceChecks') || [];
-  
-  // Calculate setup quality
-  const setupQuality = selectedStrategy?.confluences 
-    ? calculateSetupQuality(selectedStrategy.confluences, confluenceChecks as TradeConfluenceCheck[])
-    : 0;
-  
+
+  // Calculate setup quality - memoize to prevent unnecessary recalculations
+  const setupQuality = useMemo(() => {
+    return selectedStrategy?.confluences
+      ? calculateSetupQuality(selectedStrategy.confluences, confluenceChecks as TradeConfluenceCheck[])
+      : 0;
+  }, [selectedStrategy?.confluences, confluenceChecks]);
+
+  // Initialize confluence checks when strategy changes - use ref to prevent infinite loops
+  useEffect(() => {
+    // Only initialize if strategy changed and we haven't initialized for this strategy yet
+    if (selectedStrategy?.id && selectedStrategy.id !== initializedStrategyRef.current) {
+      if (selectedStrategy.confluences?.length) {
+        // Get existing checks from form or initialize new ones
+        const existingChecks = form.getValues('confluenceChecks') || [];
+        const strategyConfluenceIds = selectedStrategy.confluences.map(c => c.id);
+
+        // Filter out checks for confluences that don't belong to this strategy
+        const relevantChecks = existingChecks.filter(check =>
+          strategyConfluenceIds.includes(check.confluenceId)
+        );
+
+        // Add any missing confluences with default false state
+        const missingConfluences = selectedStrategy.confluences.filter(confluence =>
+          !relevantChecks.some(check => check.confluenceId === confluence.id)
+        );
+
+        const newChecks = missingConfluences.map(confluence => ({
+          confluenceId: confluence.id,
+          isPresent: false
+        }));
+
+        const allChecks = [...relevantChecks, ...newChecks];
+        form.setValue('confluenceChecks', allChecks);
+      } else {
+        form.setValue('confluenceChecks', []);
+      }
+
+      // Mark this strategy as initialized
+      initializedStrategyRef.current = selectedStrategy.id;
+    }
+  }, [selectedStrategy?.id]); // Only depend on strategy ID
+
   // Update form with calculated setup quality
   useEffect(() => {
     form.setValue('setupQuality', setupQuality);
-  }, [setupQuality, form]);
-  
-  // Handle confluence check change
-  const handleConfluenceCheck = (confluenceId: string, checked: boolean) => {
+  }, [setupQuality]);
+
+  // Handle confluence check change - use ref to access form methods
+  const handleConfluenceCheck = useCallback((confluenceId: string, checked: boolean) => {
     const currentChecks = form.getValues('confluenceChecks') || [];
-    const updatedChecks = currentChecks.map(check => 
-      check.confluenceId === confluenceId 
+    const updatedChecks = currentChecks.map(check =>
+      check.confluenceId === confluenceId
         ? { ...check, isPresent: checked }
         : check
     );
     form.setValue('confluenceChecks', updatedChecks);
-  };
+  }, []); // Remove form from dependencies to prevent infinite loops
 
   return (
     <div className="h-[60vh] overflow-y-auto space-y-6 pr-2">
@@ -100,30 +146,33 @@ export default function StepLevels() {
               </FormControl>
               <SelectContent>
                 {/* If in strategy context, show current strategy */}
-                {strategyId && (
+                {strategyId && strategyId !== "Multi-Account" && (
                   <SelectItem value={strategyId} className="bg-blue-500/20 text-blue-400">
                     🎯 {strategyId} (Current)
                   </SelectItem>
                 )}
                 
                 {/* Show user's created strategies */}
-                {userStrategies.length > 0 ? (
-                  userStrategies
+                {(() => {
+                  const filteredStrategies = userStrategies
                     .filter(strategy => strategy !== strategyId) // Don't duplicate current strategy
-                    .map((strategy) => (
-                      <SelectItem key={strategy} value={strategy}>
-                        {strategy}
-                      </SelectItem>
-                    ))
-                ) : (
-                  !strategyId && (
-                    <SelectItem value="none" disabled>
-                      <div className="flex items-center space-x-2 text-white/60">
-                        <Plus className="h-4 w-4" />
-                        <span>No strategies created yet</span>
-                      </div>
+                    .filter(strategy => strategy !== "Multi-Account"); // Filter out multi-account pseudo-strategy
+
+                  return filteredStrategies.map((strategy) => (
+                    <SelectItem key={strategy} value={strategy}>
+                      {strategy}
                     </SelectItem>
-                  )
+                  ));
+                })()}
+
+                {/* Show "no strategies" message only if no strategies and not in strategy context */}
+                {!strategyId && userStrategies.length === 0 && (
+                  <SelectItem value="none" disabled>
+                    <div className="flex items-center space-x-2 text-white/60">
+                      <Plus className="h-4 w-4" />
+                      <span>No strategies created yet</span>
+                    </div>
+                  </SelectItem>
                 )}
                 
                 {/* Option for no strategy (account context) */}

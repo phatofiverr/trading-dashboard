@@ -123,11 +123,12 @@ export const createTradeActions = (set: Function, get: () => GlobalState) => ({
       };
       
       // If using a strategy that doesn't exist yet, create it
-      if (newTradeData.strategyId && 
-          !strategies.some(s => s.name === newTradeData.strategyId) && 
-          strategies.length > 0 && 
-          newTradeData.strategyId !== "none") {
-        // Only create strategy if it's not "none" and doesn't exist yet
+      if (newTradeData.strategyId &&
+          !strategies.some(s => s.name === newTradeData.strategyId) &&
+          strategies.length > 0 &&
+          newTradeData.strategyId !== "none" &&
+          newTradeData.strategyId !== "Multi-Account") {
+        // Only create strategy if it's not "none", "Multi-Account", and doesn't exist yet
         await get().createStrategy(newTradeData.strategyId, 'live');
       }
       

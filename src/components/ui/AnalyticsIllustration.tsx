@@ -7,7 +7,7 @@ import {
   TableHeaderCell,
   TableRoot,
   TableRow,
-} from "../Table"
+} from "./table"
 
 const summary = [
   {

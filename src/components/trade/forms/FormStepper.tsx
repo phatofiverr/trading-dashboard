@@ -6,7 +6,7 @@ const steps = [
   { name: "Context" },
   { name: "Levels" },
   { name: "Strategy" },
-  { name: "Demon" },
+  { name: "Demons" },
   { name: "Review" },
 ];
 

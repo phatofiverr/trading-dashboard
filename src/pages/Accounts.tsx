@@ -6,8 +6,8 @@ import { useAccountCalculations } from '@/hooks/useAccountCalculations';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import AppSidebar from '@/components/AppSidebar';
+import { SidebarTrigger } from '@/components/ui/sidebar';
+import SingleSidebarLayout from '@/components/SingleSidebarLayout';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -121,12 +121,9 @@ const Accounts: React.FC = () => {
   const currencies = ["USD", "EUR", "GBP", "JPY", "AUD", "CAD", "CHF", "CNY", "INR", "BTC", "ETH"];
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen bg-trading-bg flex w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <main className="flex-1 overflow-auto p-6">
-            <div className="max-w-7xl mx-auto">
+    <SingleSidebarLayout>
+      <main className="flex-1 overflow-auto p-6">
+        <div className="max-w-7xl mx-auto">
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-3">
                   <SidebarTrigger className="lg:hidden" />
@@ -204,10 +201,8 @@ const Accounts: React.FC = () => {
                 </div>
               )}
             </div>
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+      </main>
+    </SingleSidebarLayout>
   );
 };
 

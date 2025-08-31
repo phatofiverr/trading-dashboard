@@ -1,6 +1,7 @@
 
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
+import { RiLoader2Fill } from "@remixicon/react"
 
 import { cn } from "@/lib/utils"
 
@@ -12,8 +13,8 @@ interface SlotProps extends React.HTMLAttributes<HTMLElement> {
 const Slot = React.forwardRef<HTMLElement, SlotProps>(
   ({ children, ...props }, ref) => {
     if (React.isValidElement(children)) {
-      return React.cloneElement(children, { 
-        ...props, 
+      return React.cloneElement(children, {
+        ...props,
         ref,
         ...children.props
       })
@@ -31,14 +32,18 @@ const buttonVariants = cva(
       variant: {
         default:
           "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90",
-        destructive:
-          "bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
-        outline:
-          "border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground",
+        primary:
+          "bg-orange-500 text-white shadow-xs hover:bg-orange-600 disabled:bg-orange-300 disabled:text-white",
         secondary:
           "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
+        light:
+          "shadow-none bg-gray-200 text-gray-900 hover:bg-gray-300/70 disabled:bg-gray-100 disabled:text-gray-400",
+        outline:
+          "border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        destructive:
+          "bg-red-600 text-white shadow-xs hover:bg-red-700 disabled:bg-red-300 disabled:text-white",
         modern: "bg-black/20 text-white border border-white/10 backdrop-filter backdrop-blur-sm hover:bg-black/30 transition-all shadow-sm",
         minimal: "bg-black/15 border-none hover:bg-black/25 text-white/90 hover:text-white transition-colors",
         glass: "bg-white/5 backdrop-filter backdrop-blur-md border border-white/10 text-white/90 hover:bg-white/10 hover:text-white shadow-sm transition-all",
@@ -59,24 +64,54 @@ const buttonVariants = cva(
   }
 )
 
-const Button = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentProps<"button"> &
-    VariantProps<typeof buttonVariants> & {
-      asChild?: boolean
-    }
->(({ className, variant, size, asChild = false, ...props }, ref) => {
-  const Comp = asChild ? Slot : "button"
+interface ButtonProps
+  extends React.ComponentPropsWithoutRef<"button">,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean
+  isLoading?: boolean
+  loadingText?: string
+}
 
-  return (
-    <Comp
-      ref={ref}
-      data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    />
-  )
-})
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({
+    className,
+    variant,
+    size,
+    asChild = false,
+    isLoading = false,
+    loadingText,
+    disabled,
+    children,
+    ...props
+  }, ref) => {
+    const Comp = asChild ? Slot : "button"
+
+    return (
+      <Comp
+        ref={ref}
+        data-slot="button"
+        className={cn(buttonVariants({ variant, size, className }))}
+        disabled={disabled || isLoading}
+        {...props}
+      >
+        {isLoading ? (
+          <span className="pointer-events-none flex shrink-0 items-center justify-center gap-1.5">
+            <RiLoader2Fill
+              className="size-4 shrink-0 animate-spin"
+              aria-hidden="true"
+            />
+            <span className="sr-only">
+              {loadingText ? loadingText : "Loading"}
+            </span>
+            {loadingText ? loadingText : children}
+          </span>
+        ) : (
+          children
+        )}
+      </Comp>
+    )
+  }
+)
 
 Button.displayName = "Button"
 
