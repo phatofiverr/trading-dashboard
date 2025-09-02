@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useTradeStore } from '@/hooks/useTradeStore';
 import { useAccountsStore } from '@/hooks/useAccountsStore';
 import { useAccountCalculations } from '@/hooks/useAccountCalculations';
+import { useColors } from '@/hooks/useColors';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   ChartContainer,
@@ -33,6 +34,7 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
   const { trades, filteredTrades, stats: tradeStats, currentAccountId } = useTradeStore();
   const { accounts } = useAccountsStore();
   const { getTradeProfit, formatCurrency } = useAccountCalculations();
+  const colors = useColors();
   
   // Chart configuration for shadcn theming
   const chartConfig = {
@@ -219,13 +221,19 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
             </div>
             <div className="text-right">
               <p className="text-xs text-muted-foreground">Total P/L</p>
-              <p className={`text-sm font-medium ${balanceStats.totalProfit >= 0 ? 'text-positive' : 'text-negative'}`}>
+              <p 
+                className="text-sm font-medium"
+                style={{ color: colors.utils.getProfitColor(balanceStats.totalProfit) }}
+              >
                 {balanceStats.totalProfit >= 0 ? '+' : ''}{formatCurrencyValue(balanceStats.totalProfit)}
               </p>
             </div>
             <div className="text-right">
               <p className="text-xs text-muted-foreground">Change</p>
-              <p className={`text-sm font-medium ${balanceStats.percentageChange >= 0 ? 'text-positive' : 'text-negative'}`}>
+              <p 
+                className="text-sm font-medium"
+                style={{ color: colors.utils.getProfitColor(balanceStats.percentageChange) }}
+              >
                 {balanceStats.percentageChange >= 0 ? '+' : ''}{balanceStats.percentageChange.toFixed(2)}%
               </p>
             </div>
@@ -274,10 +282,10 @@ const EquityBalanceHistory: React.FC<EquityBalanceHistoryProps> = ({ accountOnly
                 type={chartType}
                 dataKey="balance"
                 name="Balance"
-                stroke="#8B5CF6"
+                stroke={colors.status.positive.primary}
                 strokeWidth={2}
                 dot={false}
-                activeDot={{ r: 4, stroke: "#FFF", strokeWidth: 1, fill: "#8B5CF6" }}
+                activeDot={{ r: 4, stroke: "#FFF", strokeWidth: 1, fill: colors.status.positive.primary }}
                 connectNulls={false}
               />
             </LineChart>

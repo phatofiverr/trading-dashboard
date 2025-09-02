@@ -258,7 +258,7 @@ const AccountDetail: React.FC = () => {
                     <PopoverTrigger asChild>
                       <Button 
                         variant="minimal" 
-                        className="flex items-center gap-2 bg-black/20 hover:bg-black/30 text-foreground "
+                        className="flex items-center gap-2 bg-black/20 hover:bg-black/30 text-foreground border-white/5"
                       >
                         <Settings className="h-4 w-4" />
                         Components

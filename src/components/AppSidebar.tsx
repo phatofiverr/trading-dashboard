@@ -56,6 +56,16 @@ const createNavData = (accounts: any[], strategies: string[], getStrategyStats: 
         description: "Your comprehensive trading overview",
       },
       {
+        title: "Accounts",
+        url: "/accounts",
+        description: "Manage your trading accounts",
+      },
+      {
+        title: "Strategies",
+        url: "/strategies",
+        description: "View and manage all trading strategies",
+      },
+      {
         title: "Demon Hunter", 
         url: "/demon-finder",
         description: "Conquer your behavioural demons",

@@ -11,6 +11,7 @@ import SingleSidebarLayout from '@/components/SingleSidebarLayout';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { colorUtils } from '@/lib/colorPalette';
 
 const AccountCard = ({ account }: { account: any }) => {
   const { getAccountSummary, formatCurrency } = useAccountCalculations();
@@ -41,7 +42,7 @@ const AccountCard = ({ account }: { account: any }) => {
         <div className="flex flex-col h-full">
           <div className="flex justify-between items-start mb-2">
             <h3 className="font-medium">{account.name}</h3>
-            <span className={totalProfit >= 0 ? "text-green-500" : "text-red-500"}>
+            <span style={{ color: colorUtils.getProfitColor(totalProfit) }}>
               {totalProfit >= 0 ? "+" : ""}{formatCurrency(totalProfit, account.currency)}
             </span>
           </div>
@@ -53,7 +54,7 @@ const AccountCard = ({ account }: { account: any }) => {
             
             <div className="text-xs text-muted-foreground mt-2 flex items-center">
               <span className="mr-1">Change:</span>
-              <span className={totalProfit >= 0 ? "text-green-500" : "text-red-500"}>
+              <span style={{ color: colorUtils.getProfitColor(totalProfit) }}>
                 {profitPercentage >= 0 ? "+" : ""}{profitPercentage.toFixed(2)}%
               </span>
             </div>

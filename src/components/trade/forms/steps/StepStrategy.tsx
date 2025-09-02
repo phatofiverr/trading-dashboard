@@ -202,7 +202,7 @@ export default function StepLevels() {
       />
       
       {/* Strategy Selection Message */}
-      {(!selectedStrategyId || selectedStrategyId === "none") && (
+      {/* {(!selectedStrategyId || selectedStrategyId === "none") && (
         <div 
           className="rounded-lg border p-4"
           style={{
@@ -216,7 +216,7 @@ export default function StepLevels() {
             </span>
           </div>
         </div>
-      )}
+      )} */}
       
       {/* Setup Quality Assessment */}
       {selectedStrategy?.confluences?.length > 0 && (

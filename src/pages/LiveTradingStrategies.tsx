@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import SingleSidebarLayout from '@/components/SingleSidebarLayout';
 import { StrategyPerformance } from '@/types/Trade';
+import { colorUtils, colorPalette } from '@/lib/colorPalette';
 
 const StrategyCard = ({ 
   strategy, 
@@ -31,7 +32,7 @@ const StrategyCard = ({
       <div className="flex flex-col h-full">
         <div className="flex justify-between items-start mb-2">
           <h3 className="font-medium">{strategy.name}</h3>
-          <span className={strategy.profit >= 0 ? "text-green-500" : "text-red-500"}>
+          <span style={{ color: colorUtils.getProfitColor(strategy.profit) }}>
             {strategy.profit >= 0 ? "+" : ""}{strategy.profit.toFixed(2)}R
           </span>
         </div>
@@ -44,7 +45,7 @@ const StrategyCard = ({
           {/* Win rate info */}
           <div className="text-xs text-muted-foreground mt-2 flex items-center">
             <span className="mr-1">Win rate:</span>
-            <span className={strategy.winRate >= 50 ? "text-green-500" : "text-yellow-500"}>
+            <span style={{ color: strategy.winRate >= 50 ? colorUtils.getProfitColor(1) : colorPalette.status.warning.primary }}>
               {strategy.winRate.toFixed(2)}%
             </span>
           </div>
