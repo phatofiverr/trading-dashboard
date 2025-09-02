@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { AlertTriangle, TrendingDown, TrendingUp, Calendar, Target, Award, Ghost, Zap, Brain } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, subMonths, isWithinInterval } from 'date-fns';
+import { useColors } from '@/hooks/useColors';
 
 interface DemonStats {
   tagId: string;
@@ -28,6 +29,7 @@ interface PeriodStats {
 const DemonFinder: React.FC = () => {
   const { trades, isLoading, initialLoadComplete, fetchTrades } = useTradeStore();
   const [selectedPeriod, setSelectedPeriod] = useState<'current' | 'last' | 'all'>('current');
+  const colors = useColors();
   
   // Fetch trades on component mount
   useEffect(() => {
@@ -173,8 +175,8 @@ improvementScore: (() => {
   
   const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
     switch (trend) {
-      case 'up': return <TrendingUp className="h-4 w-4 text-red-400" />;
-      case 'down': return <TrendingDown className="h-4 w-4 text-green-400" />;
+      case 'up': return <TrendingUp className="h-4 w-4" style={{ color: colors.status.negative.primary }} />;
+      case 'down': return <TrendingDown className="h-4 w-4" style={{ color: colors.status.positive.primary }} />;
       default: return <div className="h-4 w-4" />;
     }
   };
@@ -272,18 +274,25 @@ improvementScore: (() => {
               
               {/* Warning Alert */}
               {isWarningLevel && (
-                <Card className="glass-effect bg-red-500/10 border-red-500/20 mb-6">
+                <Card 
+                  className="glass-effect mb-6"
+                  style={{
+                    backgroundColor: colors.status.negative.background,
+                    borderColor: colors.status.negative.border,
+                    borderWidth: '1px'
+                  }}
+                >
                   <CardContent className="p-6">
                     <div className="flex items-center space-x-4">
-                      <AlertTriangle className="h-8 w-8 text-red-400 flex-shrink-0" />
+                      <AlertTriangle className="h-8 w-8 flex-shrink-0" style={{ color: colors.status.negative.primary }} />
                       <div>
-                        <h3 className="text-xl font-bold text-red-400 mb-2">
+                        <h3 className="text-xl font-bold mb-2" style={{ color: colors.status.negative.primary }}>
                           STOP TRADING WARNING
                         </h3>
-                        <p className="text-red-300 mb-2">
+                        <p className="mb-2" style={{ color: colors.status.negative.secondary }}>
                           The following demon{criticalDemons.length > 1 ? 's have' : ' has'} reached <strong>10 occurrences</strong> this month:
                         </p>
-                        <ul className="text-red-300 mb-2 list-disc list-inside">
+                        <ul className="mb-2 list-disc list-inside" style={{ color: colors.status.negative.secondary }}>
                           {criticalDemons.map(demon => {
                             const tagInfo = getBehavioralTagById(demon.tagId as any);
                             
@@ -302,7 +311,7 @@ improvementScore: (() => {
                             );
                           })}
                         </ul>
-                        <p className="text-red-200 text-sm">
+                        <p className="text-sm" style={{ color: colors.text.secondary }}>
                           Take a break, review your trading plan, and work on this specific behavioral issue before continuing.
                         </p>
                       </div>
@@ -390,7 +399,10 @@ improvementScore: (() => {
                       
                       return (
                         <>
-                          <div className={`text-2xl font-bold ${isWarningLevel ? 'text-red-400' : ''}`}>
+                          <div 
+                            className="text-2xl font-bold"
+                            style={{ color: isWarningLevel ? colors.status.negative.primary : colors.text.primary }}
+                          >
                             {highestDemon.count}
                           </div>
                           <p className="text-xs text-muted-foreground">
@@ -418,7 +430,7 @@ improvementScore: (() => {
                 <CardContent>
                   {demonStats.stats.length === 0 ? (
                     <div className="text-center py-12">
-                      <Award className="h-16 w-16 mx-auto mb-4 text-green-500" />
+                      <Award className="h-16 w-16 mx-auto mb-4" style={{ color: colors.status.positive.primary }} />
                       <h3 className="text-xl font-semibold mb-2">No Demons Found!</h3>
                       <p className="text-muted-foreground">
                         {selectedPeriod === 'all' 
@@ -439,7 +451,7 @@ improvementScore: (() => {
                             className="flex items-center justify-between p-4 glass-effect bg-black/5 rounded-lg border-0 transition-all hover:bg-black/10"
                           >
                             <div className="flex items-center space-x-4 flex-1">
-                              <Zap className="h-6 w-6 text-orange-500" />
+                              <Zap className="h-6 w-6" style={{ color: colors.status.warning.primary }} />
                               
                               <div className="flex-1">
                                 <div className="flex items-center space-x-2 mb-1">

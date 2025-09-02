@@ -6,6 +6,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { useTradeStore } from "@/hooks/useTradeStore";
 import { useAccountCalculations } from "@/hooks/useAccountCalculations";
 import { Trade } from "@/types/Trade";
+import { colorPalette } from "@/lib/colorPalette";
 
 interface TradeRowProps {
   trade: Trade;
@@ -33,7 +34,11 @@ const TradeRow: React.FC<TradeRowProps> = ({ trade }) => {
       <TableCell>{trade.instrument || trade.pair}</TableCell>
       <TableCell>
         <Badge 
-          className={`${trade.direction === "long" ? "bg-positive/20 text-positive border-0" : "bg-negative/20 text-negative border-0"}`}
+          style={{
+            backgroundColor: trade.direction === "long" ? colorPalette.trading.long.background : colorPalette.trading.short.background,
+            color: trade.direction === "long" ? colorPalette.trading.long.primary : colorPalette.trading.short.primary,
+            border: 'none'
+          }}
         >
           {trade.direction === "long" ? "Long" : "Short"}
         </Badge>
@@ -43,7 +48,11 @@ const TradeRow: React.FC<TradeRowProps> = ({ trade }) => {
       <TableCell>{trade.exitPrice}</TableCell>
       <TableCell>
         <Badge 
-          className={`${trade.rMultiple > 0 ? "bg-positive/20 text-positive border-0" : "bg-negative/20 text-negative border-0"}`}
+          style={{
+            backgroundColor: trade.rMultiple > 0 ? colorPalette.status.positive.background : colorPalette.status.negative.background,
+            color: trade.rMultiple > 0 ? colorPalette.status.positive.primary : colorPalette.status.negative.primary,
+            border: 'none'
+          }}
         >
           {trade.rMultiple.toFixed(2)}
         </Badge>
@@ -53,17 +62,22 @@ const TradeRow: React.FC<TradeRowProps> = ({ trade }) => {
       <TableCell>
         {trade.setupQuality !== undefined ? (
           <Badge 
-            className={`${
-              trade.setupQuality >= 80 ? "bg-green-500/20 text-green-400 border-0" :
-              trade.setupQuality >= 60 ? "bg-yellow-500/20 text-yellow-400 border-0" :
-              trade.setupQuality >= 40 ? "bg-orange-500/20 text-orange-400 border-0" :
-              "bg-red-500/20 text-red-400 border-0"
-            }`}
+            style={{
+              backgroundColor: trade.setupQuality >= 80 ? colorPalette.status.positive.background :
+                              trade.setupQuality >= 60 ? colorPalette.status.warning.background :
+                              trade.setupQuality >= 40 ? colorPalette.status.warning.background :
+                              colorPalette.status.negative.background,
+              color: trade.setupQuality >= 80 ? colorPalette.status.positive.primary :
+                    trade.setupQuality >= 60 ? colorPalette.status.warning.primary :
+                    trade.setupQuality >= 40 ? colorPalette.status.warning.secondary :
+                    colorPalette.status.negative.primary,
+              border: 'none'
+            }}
           >
             {trade.setupQuality}%
           </Badge>
         ) : (
-          <span className="text-white/50">N/A</span>
+          <span style={{ color: colorPalette.text.secondary }}>N/A</span>
         )}
       </TableCell>
       <TableCell>{trade.entryTimeframe || trade.timeframe}</TableCell>

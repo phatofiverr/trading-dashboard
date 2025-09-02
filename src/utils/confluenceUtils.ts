@@ -51,7 +51,6 @@ export const createDefaultConfluence = (): Confluence => ({
   id: crypto.randomUUID(),
   name: 'Setup Confluence',
   weight: 100,
-  description: 'Primary setup confirmation'
 });
 
 /**

@@ -3,6 +3,7 @@
 import { useFormContext } from "react-hook-form";
 import { TradeFormValues } from "../../schemas/tradeFormSchema";
 import { FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form";
+import { useColors } from "@/hooks/useColors";
 import { 
   Clock, 
   Timer, 
@@ -67,6 +68,7 @@ const DEMON_OPTIONS = [
 
 export default function StepDemon() {
   const form = useFormContext<TradeFormValues>();
+  const colors = useColors();
   const watchedDemonTags = form.watch("demonTags") || [];
 
   const handleDemonSelection = (value: string) => {
@@ -86,7 +88,7 @@ export default function StepDemon() {
     <div className="h-[60vh] overflow-y-auto space-y-3 pr-2">
       
       {/* Description */}
-      <p className="text-white/60 text-sm">
+      <p className="text-sm" style={{ color: colors.text.secondary }}>
         Select any trading demons that affected this trade
       </p>
       
@@ -104,34 +106,43 @@ export default function StepDemon() {
                   return (
                     <div 
                       key={option.value}
-                      className={`
-                        relative cursor-pointer rounded-lg border-2 p-4 transition-all
-                        ${isSelected
-                          ? "border-red-500 bg-red-500/20" 
-                          : "border-white/20 hover:border-white/40 bg-black/20"
-                        }
-                      `}
+                      className="relative cursor-pointer rounded-lg border-2 p-4 transition-all"
+                      style={isSelected
+                        ? {
+                            borderColor: colors.status.negative.primary,
+                            backgroundColor: colors.status.negative.background
+                          }
+                        : {
+                            borderColor: colors.border.muted,
+                            backgroundColor: colors.background.glass
+                          }
+                      }
                       onClick={() => handleDemonSelection(option.value)}
                     >
                       <div className="flex items-start space-x-3">
-                        <div className={`
-                          mt-1 w-4 h-4 rounded-full border-2 flex-shrink-0 transition-all
-                          ${isSelected 
-                            ? "border-red-500 bg-red-500" 
-                            : "border-white/40"
+                        <div 
+                          className="mt-1 w-4 h-4 rounded-full border-2 flex-shrink-0 transition-all"
+                          style={isSelected
+                            ? {
+                                borderColor: colors.status.negative.primary,
+                                backgroundColor: colors.status.negative.primary
+                              }
+                            : {
+                                borderColor: colors.border.input
+                              }
                           }
-                        `}>
+                        >
                           {isSelected && (
                             <div className="w-full h-full rounded-full bg-white transform scale-50" />
                           )}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <option.icon className="h-4 w-4 text-white/80 flex-shrink-0" />
-                            <div className="text-white font-medium text-base">
+                            <option.icon className="h-4 w-4 flex-shrink-0" style={{ color: colors.text.secondary }} />
+                            <div className="font-medium text-base" style={{ color: colors.text.primary }}>
                               {option.label}
                             </div>
-                            <div className="text-white/60 text-sm">
+                            <div className="text-sm" style={{ color: colors.text.secondary }}>
                               {option.description}
                             </div>
                           </div>
@@ -149,15 +160,25 @@ export default function StepDemon() {
       
       {/* Selected demons summary */}
       {watchedDemonTags.length > 0 && (
-        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
-          <h4 className="text-white font-medium mb-2">Selected Demons ({watchedDemonTags.length}):</h4>
+        <div 
+          className="rounded-lg border p-4"
+          style={{ 
+            backgroundColor: colors.status.negative.background,
+            borderColor: colors.status.negative.border 
+          }}
+        >
+          <h4 className="font-medium mb-2" style={{ color: colors.text.primary }}>Selected Demons ({watchedDemonTags.length}):</h4>
           <div className="flex flex-wrap gap-2">
             {watchedDemonTags.map((tag) => {
               const option = DEMON_OPTIONS.find(opt => opt.value === tag);
               return (
                 <span
                   key={tag}
-                  className="px-3 py-1 bg-red-500/20 text-red-300 rounded-full text-sm"
+                  className="px-3 py-1 rounded-full text-sm"
+                  style={{
+                    backgroundColor: colors.status.negative.background,
+                    color: colors.status.negative.primary
+                  }}
                 >
                   {option?.label || tag}
                 </span>

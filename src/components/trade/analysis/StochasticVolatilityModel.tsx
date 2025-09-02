@@ -4,15 +4,14 @@ import { useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useThemeStore } from '@/hooks/useThemeStore';
 import { useTradeStore } from '@/hooks/useTradeStore';
+import { useColors } from '@/hooks/useColors';
 import { Separator } from '@/components/ui/separator';
 import { 
   LineChart, 
   Line, 
   XAxis, 
   YAxis, 
-  Tooltip, 
   Legend,
-  ResponsiveContainer 
 } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 
@@ -34,7 +33,8 @@ const StochasticVolatilityModel: React.FC = () => {
   const { strategyId } = useParams<{ strategyId: string }>();
   const { filteredTrades } = useTradeStore();
   const { getThemeColorsForStrategy } = useThemeStore();
-  const colors = getThemeColorsForStrategy(strategyId);
+  const colors = useColors();
+  const themeColors = getThemeColorsForStrategy(strategyId);
 
   // Generate Stochastic Volatility Model data from trades
   const { svmData, volatilityMetrics } = useMemo(() => {
@@ -200,9 +200,9 @@ const StochasticVolatilityModel: React.FC = () => {
   }, [filteredTrades]);
 
   const chartConfig = {
-    volatility: { label: "Volatility", color: colors.positiveColor },
-    return: { label: "Return", color: colors.negativeColor },
-    longTermMean: { label: "Long-term Mean", color: "#888888" }
+    volatility: { label: "Volatility", color: colors.status.positive.primary },
+    return: { label: "Return", color: colors.status.negative.primary },
+    longTermMean: { label: "Long-term Mean", color: colors.text.secondary }
   };
 
   const hasData = svmData.length > 0;
@@ -215,9 +215,7 @@ const StochasticVolatilityModel: React.FC = () => {
         {metric.info && (
           <div className="tooltip" data-tip={metric.info}>
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground cursor-help">
-              <circle cx="12" cy="12" r="10"></circle>
-              <path d="M12 16v-4"></path>
-              <path d="M12 8h.01"></path>
+              // (tooltip removed)
             </svg>
           </div>
         )}
@@ -225,7 +223,14 @@ const StochasticVolatilityModel: React.FC = () => {
       <div className="flex items-center gap-2">
         <span className="text-sm font-medium">{metric.value}</span>
         {metric.change !== undefined && (
-          <span className={`text-xs ${metric.change > 0 ? 'text-green-500' : metric.change < 0 ? 'text-red-500' : 'text-muted-foreground'}`}>
+          <span 
+            className="text-xs"
+            style={{
+              color: metric.change > 0 ? colors.status.positive.primary : 
+                     metric.change < 0 ? colors.status.negative.primary : 
+                     colors.text.secondary
+            }}
+          >
             {metric.change > 0 ? '+' : ''}{metric.change.toFixed(1)}%
           </span>
         )}
@@ -290,7 +295,7 @@ const StochasticVolatilityModel: React.FC = () => {
                     type="monotone"
                     dataKey="volatility"
                     name="Volatility"
-                    stroke={colors.positiveColor}
+                    stroke={colors.status.positive.primary}
                     activeDot={{ r: 8 }}
                     dot={false}
                   />
@@ -299,7 +304,7 @@ const StochasticVolatilityModel: React.FC = () => {
                     type="monotone"
                     dataKey="longTermMean"
                     name="Long-term Mean"
-                    stroke="#888888"
+                    stroke={colors.text.secondary}
                     strokeDasharray="5 5"
                     dot={false}
                   />
@@ -308,8 +313,8 @@ const StochasticVolatilityModel: React.FC = () => {
                     type="monotone"
                     dataKey="return"
                     name="Return"
-                    stroke={colors.negativeColor}
-                    dot={{ stroke: colors.negativeColor, strokeWidth: 1, r: 2 }}
+                    stroke={colors.status.negative.primary}
+                    dot={{ stroke: colors.status.negative.primary, strokeWidth: 1, r: 2 }}
                   />
                 </LineChart>
               </ChartContainer>

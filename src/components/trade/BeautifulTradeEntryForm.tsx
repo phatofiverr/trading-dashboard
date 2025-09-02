@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTradeStore } from '@/hooks/useTradeStore';
+import { useColors } from '@/hooks/useColors';
 import { tradeFormSchema, TradeFormValues } from './schemas/tradeFormSchema';
 import { transformFormToTradeData, prepareTradeSave, transformTradeToFormValues } from './utils/tradeDataTransformer';
 import { useParams } from 'react-router-dom';
@@ -38,6 +39,7 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
   onClose
 }) => {
   const { addTrade, updateTrade, filters } = useTradeStore();
+  const colors = useColors();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { strategyId } = useParams<{ strategyId: string }>();
@@ -300,10 +302,26 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-0 sm:p-2">
-      <div className="bg-[#0A0A0A] border border-gray-600/30 rounded-none sm:rounded-lg w-full h-full sm:h-auto sm:max-w-2xl sm:max-h-[90vh] flex flex-col backdrop-blur-sm">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-2"
+      style={{ backgroundColor: colors.background.modal }}
+    >
+      <div 
+        className="rounded-none sm:rounded-lg w-full h-full sm:h-auto sm:max-w-2xl sm:max-h-[90vh] flex flex-col backdrop-blur-sm"
+        style={{ 
+          backgroundColor: colors.background.card,
+          borderColor: colors.border.primary,
+          borderWidth: '1px'
+        }}
+      >
         {/* Header with Stepper */}
-        <div className="p-4 sm:p-3 border-b border-gray-600/20 shrink-0 bg-[#0A0A0A]">
+        <div 
+          className="p-4 sm:p-3 border-b shrink-0"
+          style={{ 
+            borderBottomColor: colors.border.muted,
+            backgroundColor: colors.background.card 
+          }}
+        >
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <FormStepper currentStep={currentStep} setCurrentStep={setCurrentStep} />
@@ -312,7 +330,12 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="text-gray-300 hover:text-white hover:bg-gray-700/50 ml-4"
+              className="ml-4"
+              style={{ 
+                color: colors.text.secondary,
+                '--hover-text-color': colors.text.primary,
+                '--hover-bg-color': colors.background.glass
+              }}
             >
               <X className="h-5 w-5" />
             </Button>
@@ -331,7 +354,13 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
               </div>
               
               {/* Footer with buttons */}
-              <div className="p-4 sm:p-3 sm:pt-2 border-t border-gray-600/20 shrink-0 bg-[#0A0A0A] safe-area-padding-bottom">
+              <div 
+                className="p-4 sm:p-3 sm:pt-2 border-t shrink-0 safe-area-padding-bottom"
+                style={{ 
+                  borderTopColor: colors.border.muted,
+                  backgroundColor: colors.background.card 
+                }}
+              >
                 <FormButtons
                   currentStep={currentStep}
                   totalSteps={totalSteps}

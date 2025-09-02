@@ -5,11 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useTradeStore } from '@/hooks/useTradeStore';
 import { useAccountsStore } from '@/hooks/useAccountsStore';
+import { useColors } from '@/hooks/useColors';
 import MultiAccountTradeEntryForm from '@/components/trade/MultiAccountTradeEntryForm';
 
 const Summary: React.FC = () => {
   const { trades } = useTradeStore();
   const { accounts } = useAccountsStore();
+  const colors = useColors();
 
   const [showNewTradeDialog, setShowNewTradeDialog] = React.useState(false);
 
@@ -87,7 +89,10 @@ const Summary: React.FC = () => {
                         <CardTitle className="text-sm font-medium text-muted-foreground">Total P&L</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className={`text-xl font-bold ${totalProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        <div 
+                          className="text-xl font-bold" 
+                          style={{ color: colors.utils.getProfitColor(totalProfit) }}
+                        >
                           ${totalProfit.toFixed(2)}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">Cumulative</p>
@@ -139,14 +144,20 @@ const Summary: React.FC = () => {
                           {trades.slice(0, 5).map((trade, index) => (
                             <div key={index} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
                               <div className="flex items-center space-x-3">
-                                <div className={`w-2 h-2 rounded-full ${(trade.profit ?? 0) >= 0 ? 'bg-green-500' : 'bg-red-500'}`} />
+                                <div 
+                                  className="w-2 h-2 rounded-full" 
+                                  style={{ backgroundColor: colors.utils.getProfitColor(trade.profit ?? 0) }}
+                                />
                                 <div>
                                   <p className="font-medium text-sm">{trade.instrument || trade.pair}</p>
                                   <p className="text-xs text-muted-foreground">{trade.strategyId || 'Manual'}</p>
                                 </div>
                               </div>
                               <div className="text-right">
-                                <p className={`font-medium text-sm ${(trade.profit ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                <p 
+                                  className="font-medium text-sm"
+                                  style={{ color: colors.utils.getProfitColor(trade.profit ?? 0) }}
+                                >
                                   ${trade.profit?.toFixed(2) || '0.00'}
                                 </p>
                                 <p className="text-xs text-muted-foreground">

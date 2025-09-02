@@ -161,7 +161,7 @@ export default function StepLevels() {
         name="entryPrice"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-white font-medium">Entry Price</FormLabel>
+            <FormLabel style={{ color: colors.text.primary }} className="font-medium">Entry Price</FormLabel>
             <FormControl>
               <Input
                 type="number"
@@ -169,7 +169,7 @@ export default function StepLevels() {
                 min="0"
                 placeholder="Enter entry price"
                 {...field}
-                className="bg-[#0A0A0A] border-gray-600/40"
+                style={{ backgroundColor: colors.background.input, borderColor: colors.border.input }}
               />
             </FormControl>
             <FormMessage />
@@ -188,11 +188,11 @@ export default function StepLevels() {
               const stopLossInPipsMode = form.watch('stopLossInPips');
               return (
                 <div className="flex items-center justify-between">
-                  <FormLabel className="text-white font-medium">
+                  <FormLabel style={{ color: colors.text.primary }} className="font-medium">
                     Stop Loss {stopLossInPipsMode ? '(pips)' : '(price)'}
                   </FormLabel>
                   <div className="flex items-center space-x-2">
-                    <span className="text-xs text-white/60">Pips</span>
+                    <span className="text-xs" style={{ color: colors.text.secondary }}>Pips</span>
                     <Switch
                       checked={field.value}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -205,7 +205,6 @@ export default function StepLevels() {
                         field.onChange(checked);
                         handleStopLossModeChange(checked);
                       }}
-                      className="data-[state=checked]:bg-white data-[state=unchecked]:bg-white/20"
                     />
                   </div>
                 </div>
@@ -225,7 +224,10 @@ export default function StepLevels() {
                       step={isInPips ? "1" : "0.00001"}
                       min="0"
                       {...field}
-                      className="bg-[#0A0A0A] border-red-500/30 focus:border-red-500/50"
+                      style={{ 
+                        backgroundColor: colors.background.input, 
+                        borderColor: colors.status.negative.border
+                      }}
                       placeholder={isInPips ? "Enter in pips" : "Enter in price"}
                     />
                   </FormControl>
@@ -245,11 +247,11 @@ export default function StepLevels() {
               const takeProfitInPipsMode = form.watch('takeProfitInPips');
               return (
                 <div className="flex items-center justify-between">
-                  <FormLabel className="text-white font-medium">
+                  <FormLabel style={{ color: colors.text.primary }} className="font-medium">
                     Take Profit {takeProfitInPipsMode ? '(pips)' : '(price)'}
                   </FormLabel>
                   <div className="flex items-center space-x-2">
-                    <span className="text-xs text-white/60">Pips</span>
+                    <span className="text-xs" style={{ color: colors.text.secondary }}>Pips</span>
                     <Switch
                       checked={field.value}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -262,7 +264,6 @@ export default function StepLevels() {
                         field.onChange(checked);
                         handleTakeProfitModeChange(checked);
                       }}
-                      className="data-[state=checked]:bg-white data-[state=unchecked]:bg-white/20"
                     />
                   </div>
                 </div>
@@ -282,7 +283,10 @@ export default function StepLevels() {
                       step={isInPips ? "1" : "0.00001"}
                       min="0"
                       {...field}
-                      className="bg-[#0A0A0A] border-green-500/30 focus:border-green-500/50"
+                      style={{ 
+                        backgroundColor: colors.background.input, 
+                        borderColor: colors.status.positive.border
+                      }}
                       placeholder={isInPips ? "Enter in pips" : "Enter in price"}
                     />
                   </FormControl>
@@ -303,7 +307,7 @@ export default function StepLevels() {
           name="riskAmount"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-white font-medium flex items-center">
+              <FormLabel style={{ color: colors.text.primary }} className="font-medium flex items-center">
                 Dollar Risk ($)
               </FormLabel>
               <FormControl>
@@ -312,7 +316,7 @@ export default function StepLevels() {
                   min="0"
                   {...field}
                   placeholder="Enter dollar risk "
-                  className="bg-[#0A0A0A] border-gray-600/40"
+                  style={{ backgroundColor: colors.background.input, borderColor: colors.border.input }}
                 />
               </FormControl>
               <FormMessage />
@@ -326,7 +330,7 @@ export default function StepLevels() {
           name="positionSize"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-white font-medium flex items-center">
+              <FormLabel style={{ color: colors.text.primary }} className="font-medium flex items-center">
                 Lot Size
               </FormLabel>
               <FormControl>
@@ -337,7 +341,10 @@ export default function StepLevels() {
                   {...field}
                   value={field.value !== undefined && field.value !== null ? field.value : (positionSize > 0 ? positionSize.toFixed(4) : "")}
                   placeholder="Enter lot size"
-                  className="bg-[#0A0A0A] border-gray-600/40 focus:border-green-500/50"
+                  style={{ 
+                    backgroundColor: colors.background.input, 
+                    borderColor: colors.border.input
+                  }}
                 />
               </FormControl>
               <FormMessage />
@@ -347,17 +354,26 @@ export default function StepLevels() {
       </div>
 
       {/* Risk-Reward Ratio Card with Animation */}
-      <div className="bg-[#0A0A0A] rounded-lg border border-gray-600/30 p-4">
+      <div 
+        className="rounded-lg border p-4"
+        style={{ 
+          backgroundColor: colors.background.card, 
+          borderColor: colors.border.primary 
+        }}
+      >
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-medium text-white flex items-center">
+            <h3 className="text-sm font-medium flex items-center" style={{ color: colors.text.primary }}>
               Risk-Reward Ratio
             </h3>
-            <p className="text-2xl font-bold mt-1 text-white">
+            <p className="text-2xl font-bold mt-1" style={{ color: colors.text.primary }}>
               1:{riskRewardRatio > 0 ? riskRewardRatio.toFixed(2) : "0.00"}
             </p>
           </div>
-          <div className="w-40 h-8 bg-gray-600/20 rounded-full overflow-hidden">
+          <div 
+            className="w-40 h-8 rounded-full overflow-hidden"
+            style={{ backgroundColor: colors.background.muted }}
+          >
             <div 
               className="h-full"
               style={{ 

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useColors } from "@/hooks/useColors";
 import { CheckCircle, ArrowLeft, ArrowRight } from "lucide-react";
 
 interface FormButtonsProps {
@@ -24,6 +25,7 @@ export default function FormButtons({
   isSubmitting = false,
   isEditing = false 
 }: FormButtonsProps) {
+  const colors = useColors();
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === totalSteps - 1;
   
@@ -37,7 +39,13 @@ export default function FormButtons({
             type="button"
             variant="outline"
             onClick={onPrevStep}
-            className="w-full sm:w-auto bg-black/20 border-white/20 text-white/80 hover:bg-white/10"
+            className="w-full sm:w-auto"
+            style={{
+              backgroundColor: colors.background.glass,
+              borderColor: colors.border.muted,
+              color: colors.text.secondary,
+              '--hover-bg-color': colors.background.muted
+            }}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             <span className="hidden sm:inline">Back</span>
@@ -55,11 +63,18 @@ export default function FormButtons({
               onNextStep();
             }}
             disabled={!isStepValid}
-            className={`w-full sm:w-auto transition-all duration-300 ${
-              isStepValid
-                ? "bg-trading-accent1 hover:bg-trading-accent1/90 text-white"
-                : "bg-trading-accent1/50 text-white/70"
-            }`}
+            className="w-full sm:w-auto transition-all duration-300"
+            style={isStepValid
+              ? {
+                  backgroundColor: colors.accent.primary,
+                  color: colors.text.primary,
+                  '--hover-bg-color': colors.accent.secondary
+                }
+              : {
+                  backgroundColor: colors.accent.muted,
+                  color: colors.text.disabled
+                }
+            }
           >
             <span className="hidden sm:inline">Next</span>
             <span className="sm:hidden">Next</span>
@@ -79,7 +94,13 @@ export default function FormButtons({
               console.log("onComplete called successfully");
             }}
             disabled={!isStepValid || isSubmitting}
-            className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"
+            className="w-full sm:w-auto"
+            style={{
+              backgroundColor: colors.status.positive.primary,
+              color: colors.text.primary,
+              '--hover-bg-color': colors.status.positive.secondary,
+              opacity: (!isStepValid || isSubmitting) ? 0.6 : 1
+            }}
           >
             <span className="hidden sm:inline">{isSubmitting ? "Saving..." : (isEditing ? "Update Trade" : "Complete Trade")}</span>
             <span className="sm:hidden">{isSubmitting ? "Saving..." : (isEditing ? "Update" : "Complete")}</span>

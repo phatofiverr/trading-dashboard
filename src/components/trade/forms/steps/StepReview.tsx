@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useColors } from "@/hooks/useColors";
 import { Plus, X, Image as ImageIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -18,6 +19,7 @@ interface ChartEntry {
 
 export default function StepReview() {
   const form = useFormContext<TradeFormValues>();
+  const colors = useColors();
   const watchedValues = form.watch();
   const [imageLoadingStates, setImageLoadingStates] = useState<Record<string, boolean>>({});
   const [imageErrorStates, setImageErrorStates] = useState<Record<string, boolean>>({});
@@ -114,21 +116,33 @@ export default function StepReview() {
     const hasError = imageErrorStates[entry.id];
 
     return (
-      <div className="relative bg-black/20 border-2 border-dashed border-white/20 rounded-lg min-h-[200px]">
+      <div 
+        className="relative border-2 border-dashed rounded-lg min-h-[200px]"
+        style={{
+          backgroundColor: colors.background.glass,
+          borderColor: colors.border.muted
+        }}
+      >
         {/* Chart Image Area or Placeholder */}
         <div className="p-4 pb-16"> {/* Extra padding bottom for URL input */}
           {!entry.imageUrl ? (
             <div className="h-32 flex flex-col items-center justify-center">
-              <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center mb-3">
-                <ImageIcon className="w-6 h-6 text-white/60" />
+              <div 
+                className="w-12 h-12 rounded-lg flex items-center justify-center mb-3"
+                style={{ backgroundColor: colors.background.muted }}
+              >
+                <ImageIcon className="w-6 h-6" style={{ color: colors.text.secondary }} />
               </div>
-              <p className="text-white/60 text-sm text-center">Upload chart image</p>
+              <p className="text-sm text-center" style={{ color: colors.text.secondary }}>Upload chart image</p>
             </div>
           ) : (
             <div className="relative min-h-[120px] flex items-center justify-center">
               {isLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                  <div className="text-white/60 text-sm">Loading chart...</div>
+                <div 
+                  className="absolute inset-0 flex items-center justify-center"
+                  style={{ backgroundColor: colors.background.modal }}
+                >
+                  <div className="text-sm" style={{ color: colors.text.secondary }}>Loading chart...</div>
                 </div>
               )}
               <img
@@ -140,11 +154,17 @@ export default function StepReview() {
                 onLoadStart={() => handleImageLoadStart(entry.id)}
               />
               {hasError && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70">
-                  <div className="w-12 h-12 bg-red-500/20 rounded-lg flex items-center justify-center mb-2">
-                    <X className="w-6 h-6 text-red-400" />
+                <div 
+                  className="absolute inset-0 flex flex-col items-center justify-center"
+                  style={{ backgroundColor: colors.background.modal }}
+                >
+                  <div 
+                    className="w-12 h-12 rounded-lg flex items-center justify-center mb-2"
+                    style={{ backgroundColor: colors.status.negative.background }}
+                  >
+                    <X className="w-6 h-6" style={{ color: colors.status.negative.primary }} />
                   </div>
-                  <p className="text-red-400 text-sm text-center">Failed to load image</p>
+                  <p className="text-sm text-center" style={{ color: colors.status.negative.primary }}>Failed to load image</p>
                 </div>
               )}
             </div>
@@ -158,7 +178,13 @@ export default function StepReview() {
               placeholder="Paste your TradingView chart link here (e.g., https://www.tradingview.com/x/abcd1234/)"
               value={entry.imageUrl}
               onChange={(e) => handleImageUrlChange(entry.id, e.target.value)}
-              className="flex-1 bg-black/20 border-white/10 text-white placeholder:text-white/40 text-sm"
+              className="flex-1 text-sm"
+              style={{
+                backgroundColor: colors.background.input,
+                borderColor: colors.border.input,
+                color: colors.text.primary,
+                '--placeholder-color': colors.text.disabled
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
@@ -175,7 +201,7 @@ export default function StepReview() {
 
   return (
     <div className="h-[60vh] overflow-y-auto space-y-6 pr-2">
-      <h3 className="text-xl font-medium text-white">Chart Analysis</h3>
+      <h3 className="text-xl font-medium" style={{ color: colors.text.primary }}>Chart Analysis</h3>
       
       <FormField
         control={form.control}
@@ -185,7 +211,14 @@ export default function StepReview() {
             <FormControl>
               <div className="space-y-6">
                 {chartAnalysis.map((entry: ChartEntry) => (
-                  <div key={entry.id} className="relative bg-black/5 border border-white/10 rounded-lg p-4">
+                  <div 
+                    key={entry.id} 
+                    className="relative rounded-lg border p-4"
+                    style={{
+                      backgroundColor: colors.background.glass,
+                      borderColor: colors.border.muted
+                    }}
+                  >
                     {/* Cancel button on top-right */}
                     {chartAnalysis.length > 1 && (
                       <Button
@@ -193,7 +226,13 @@ export default function StepReview() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleRemoveChartEntry(entry.id)}
-                        className="absolute top-2 right-2 h-8 w-8 p-0 bg-black/40 hover:bg-red-500/40 border-white/20 hover:border-red-500/40 z-10"
+                        className="absolute top-2 right-2 h-8 w-8 p-0 z-10"
+                        style={{
+                          backgroundColor: colors.background.glass,
+                          borderColor: colors.border.muted,
+                          '--hover-bg-color': colors.status.negative.background,
+                          '--hover-border-color': colors.status.negative.border
+                        }}
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -204,7 +243,7 @@ export default function StepReview() {
                       {/* Chart Container */}
                       <div className="order-2 lg:order-1">
                         <div className="mb-2">
-                          <h4 className="text-sm font-medium text-white">Chart Screenshot</h4>
+                          <h4 className="text-sm font-medium" style={{ color: colors.text.primary }}>Chart Screenshot</h4>
                         </div>
                         {renderChartContainer(entry)}
                       </div>
@@ -212,13 +251,19 @@ export default function StepReview() {
                       {/* Notes Area */}
                       <div className="order-1 lg:order-2">
                         <div className="mb-2">
-                          <h4 className="text-sm font-medium text-white">Notes</h4>
+                          <h4 className="text-sm font-medium" style={{ color: colors.text.primary }}>Notes</h4>
                         </div>
                         <Textarea
                           placeholder="Write your thoughts about this trade, lessons learned, or things to improve..."
                           value={entry.notes}
                           onChange={(e) => handleNotesChange(entry.id, e.target.value)}
-                          className="min-h-[200px] bg-black/20 border-white/10 text-white placeholder:text-white/40 resize-none"
+                          className="min-h-[200px] resize-none"
+                          style={{
+                            backgroundColor: colors.background.input,
+                            borderColor: colors.border.input,
+                            color: colors.text.primary,
+                            '--placeholder-color': colors.text.disabled
+                          }}
                         />
                       </div>
                     </div>
@@ -237,7 +282,13 @@ export default function StepReview() {
           type="button"
           onClick={handleAddChartEntry}
           variant="outline"
-          className="bg-black/20 border-white/20 text-white hover:bg-white/10 hover:border-white/40"
+          style={{
+            backgroundColor: colors.background.glass,
+            borderColor: colors.border.muted,
+            color: colors.text.primary,
+            '--hover-bg-color': colors.background.muted,
+            '--hover-border-color': colors.border.primary
+          }}
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Chart Analysis

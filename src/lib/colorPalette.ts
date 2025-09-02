@@ -53,10 +53,10 @@ export const colorPalette = {
 
     // Information indicators
     info: {
-      primary: '#3B82F6',         // Main info color (blue)
-      secondary: '#2563EB',       // Darker blue
-      background: 'rgba(59, 130, 246, 0.1)', // Info backgrounds
-      border: 'rgba(59, 130, 246, 0.3)',     // Info borders
+      primary: '#F59E0B',         // Main info color (amber)
+      secondary: '#D97706',       // Darker amber
+      background: 'rgba(245, 158, 11, 0.1)', // Info backgrounds
+      border: 'rgba(245, 158, 11, 0.3)',     // Info borders
     },
   },
 
@@ -80,9 +80,9 @@ export const colorPalette = {
   trading: {
     // Long/Buy direction
     long: {
-      primary: '#00a86b',         // Long trade color
-      background: 'rgba(0, 168, 107, 0.2)', // Long backgrounds
-      border: 'rgba(0, 168, 107, 0.3)',     // Long borders
+      primary: '#15b9a6',         // Long trade color (same as status.positive)
+      background: 'rgba(21, 185, 166, 0.2)', // Long backgrounds
+      border: 'rgba(21, 185, 166, 0.3)',     // Long borders
     },
     
     // Short/Sell direction  

@@ -30,7 +30,7 @@ const StrategiesIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 // Navigation data structure
-const createNavData = (accounts: any[], strategies: string[]) => ({
+const createNavData = (accounts: any[], strategies: string[], getStrategyStats: (strategyName: string) => any) => ({
   navMain: [
     {
       title: "Dashboard",
@@ -66,17 +66,22 @@ const createNavData = (accounts: any[], strategies: string[]) => ({
       url: `/accounts/${account.id}`,
       description: `Balance: $${account.balance?.toFixed(2) || '0.00'}`,
     })),
-    Strategies: strategies.map(strategy => ({
-      title: strategy,
-      url: `/strategies/${encodeURIComponent(strategy)}`,
-      description: "Trading strategy analytics",
-    })),
+    Strategies: strategies.map(strategy => {
+      const stats = getStrategyStats(strategy);
+      return {
+        title: strategy,
+        url: `/strategies/${encodeURIComponent(strategy)}`,
+        description: stats.totalTrades > 0 
+          ? `${stats.totalTrades} trades`
+          : "No trades yet",
+      };
+    }),
   }
 });
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { accounts } = useAccountsStore();
-  const { getUniqueStrategies } = useTradeStore();
+  const { getUniqueStrategies, trades } = useTradeStore();
   const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -87,7 +92,30 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     ...getUniqueStrategies('backtest')
   ])], [getUniqueStrategies]);
 
-  const data = React.useMemo(() => createNavData(accounts, strategies), [accounts, strategies]);
+  // Function to calculate strategy statistics
+  const getStrategyStats = React.useCallback((strategyName: string) => {
+    const strategyTrades = trades.filter(trade => trade.strategyId === strategyName);
+    const completedTrades = strategyTrades.filter(trade => trade.profit !== undefined && trade.profit !== null);
+    
+    if (completedTrades.length === 0) {
+      return { totalTrades: 0, winRate: 0, avgRR: 0 };
+    }
+
+    const winningTrades = completedTrades.filter(trade => (trade.profit || 0) > 0);
+    const winRate = Math.round((winningTrades.length / completedTrades.length) * 100);
+    
+    const avgRR = completedTrades.reduce((sum, trade) => {
+      return sum + (trade.riskRewardRatio || 0);
+    }, 0) / completedTrades.length;
+
+    return {
+      totalTrades: completedTrades.length,
+      winRate: winRate,
+      avgRR: avgRR.toFixed(1),
+    };
+  }, [trades]);
+
+  const data = React.useMemo(() => createNavData(accounts, strategies, getStrategyStats), [accounts, strategies, getStrategyStats]);
   
   // Helper function to determine active item based on current route
   const getActiveItemFromPath = React.useCallback((path: string) => {
@@ -173,7 +201,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   className="md:h-8 md:p-0 peer"
                 >
                   <Link to="/profile">
-                    <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                    <div className="text-white flex aspect-square size-8 items-center justify-center rounded-lg">
                       <User className="size-4" />
                     </div>
                   </Link>

@@ -5,6 +5,7 @@ import { useFormContext } from "react-hook-form";
 import { TradeFormValues } from "../../schemas/tradeFormSchema";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { useColors } from "@/hooks/useColors";
 import { entryTimeframes, timeZones } from "../../constants/formConstants";
 import { detectSession } from "../../utils/sessionDetector";
 import DateTimeInput from "../DateTimeInput";
@@ -13,6 +14,7 @@ import CustomInstrumentSelect from "../../CustomInstrumentSelect";
 
 export default function StepContext() {
   const form = useFormContext<TradeFormValues>();
+  const colors = useColors();
 
   // Auto-detect session when time or timezone changes
   const entryTime = form.watch('entryTime');
@@ -45,7 +47,7 @@ export default function StepContext() {
           name="instrument"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-white/80">Instrument</FormLabel>
+              <FormLabel style={{ color: colors.text.secondary }}>Instrument</FormLabel>
               <FormControl>
                 <CustomInstrumentSelect
                   value={field.value}
@@ -63,10 +65,15 @@ export default function StepContext() {
           name="entryTimezone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-white/80">Time Zone</FormLabel>
+              <FormLabel style={{ color: colors.text.secondary }}>Time Zone</FormLabel>
               <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
-                  <SelectTrigger className="bg-black/20 border-white/10">
+                  <SelectTrigger 
+                    style={{ 
+                      backgroundColor: colors.background.input, 
+                      borderColor: colors.border.input 
+                    }}
+                  >
                     <SelectValue placeholder="Select time zone" />
                   </SelectTrigger>
                 </FormControl>
@@ -90,28 +97,38 @@ export default function StepContext() {
         name="direction"
         render={({ field }) => (
           <FormItem className="space-y-2">
-            <FormLabel className="text-white/80">Direction</FormLabel>
+            <FormLabel style={{ color: colors.text.secondary }}>Direction</FormLabel>
             <div className="grid grid-cols-2 gap-3">
               <div 
-                className={`
-                  cursor-pointer rounded-md border p-2 transition-colors text-center
-                  ${field.value === "Long" 
-                    ? "border-green-500 bg-green-100/10 text-green-400" 
-                    : "border-white/10 hover:bg-white/5"
-                  }
-                `}
+                className="cursor-pointer rounded-md border p-2 transition-colors text-center"
+                style={field.value === "Long" 
+                  ? {
+                      borderColor: colors.trading.long.primary,
+                      backgroundColor: colors.trading.long.background,
+                      color: colors.trading.long.primary
+                    }
+                  : {
+                      borderColor: colors.border.muted,
+                      color: colors.text.primary
+                    }
+                }
                 onClick={() => field.onChange("Long")}
               >
                 <span className="text-sm font-medium">Long</span>
               </div>
               <div 
-                className={`
-                  cursor-pointer rounded-md border p-2 transition-colors text-center
-                  ${field.value === "Short" 
-                    ? "border-red-500 bg-red-100/10 text-red-400" 
-                    : "border-white/10 hover:bg-white/5"
-                  }
-                `}
+                className="cursor-pointer rounded-md border p-2 transition-colors text-center"
+                style={field.value === "Short" 
+                  ? {
+                      borderColor: colors.trading.short.primary,
+                      backgroundColor: colors.trading.short.background,
+                      color: colors.trading.short.primary
+                    }
+                  : {
+                      borderColor: colors.border.muted,
+                      color: colors.text.primary
+                    }
+                }
                 onClick={() => field.onChange("Short")}
               >
                 <span className="text-sm font-medium">Short</span>
@@ -143,10 +160,15 @@ export default function StepContext() {
         name="entryTimeframe"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-white/80">Entry Timeframe</FormLabel>
+            <FormLabel style={{ color: colors.text.secondary }}>Entry Timeframe</FormLabel>
             <Select onValueChange={field.onChange} value={field.value}>
               <FormControl>
-                <SelectTrigger className="bg-black/20 border-white/10">
+                <SelectTrigger 
+                  style={{ 
+                    backgroundColor: colors.background.input, 
+                    borderColor: colors.border.input 
+                  }}
+                >
                   <SelectValue placeholder="Select timeframe" />
                 </SelectTrigger>
               </FormControl>

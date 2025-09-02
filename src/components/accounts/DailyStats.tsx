@@ -64,7 +64,7 @@ const DailyStats: React.FC<DailyStatsProps> = ({ accountId, currency = 'USD', cl
       <CardContent className="p-6">
         <div className="bg-black/10 p-4 rounded-lg h-full flex flex-col">
           <div className="flex items-center mb-4">
-            <Calendar className="h-4 w-4 mr-2 text-positive opacity-80" />
+            <Calendar className="h-4 w-4 mr-2 opacity-80" />
             <p className="text-sm font-semibold">Today's Trading</p>
           </div>
           
