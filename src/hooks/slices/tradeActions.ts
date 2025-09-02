@@ -8,6 +8,54 @@ import { detectSession } from "@/components/trade/utils/sessionDetector";
 import firebaseService from "@/services/firebaseService";
 
 /**
+ * Calculate risk-reward ratio consistently across the application
+ */
+export const calculateRiskRewardRatio = (
+  entryPrice: number, 
+  slPrice: number, 
+  exitPrice: number
+): number => {
+  if (entryPrice <= 0 || slPrice <= 0 || exitPrice <= 0 || entryPrice === slPrice) {
+    return 0;
+  }
+  
+  // Use absolute differences for both risk and reward
+  const risk = Math.abs(entryPrice - slPrice);
+  const reward = Math.abs(exitPrice - entryPrice);
+  
+  return risk > 0 ? reward / risk : 0;
+};
+
+/**
+ * Calculate position size based on risk amount and price levels
+ */
+export const calculatePositionSize = (
+  riskAmount: number,
+  entryPrice: number,
+  slPrice: number
+): number => {
+  if (riskAmount <= 0 || entryPrice <= 0 || slPrice <= 0) {
+    return 0;
+  }
+  
+  const riskPerUnit = Math.abs(entryPrice - slPrice);
+  return riskPerUnit > 0 ? riskAmount / riskPerUnit : 0;
+};
+
+/**
+ * Convert pips to price based on entry price and direction
+ */
+export const convertPipsToPrice = (
+  pips: number, 
+  entryPrice: number, 
+  isLong: boolean
+): number => {
+  if (!entryPrice || pips <= 0) return 0;
+  const pipValue = pips * 0.0001; // Standard pip value for most forex pairs
+  return isLong ? entryPrice + pipValue : entryPrice - pipValue;
+};
+
+/**
  * Trade-related actions for the trade store
  */
 export const createTradeActions = (set: Function, get: () => GlobalState) => ({

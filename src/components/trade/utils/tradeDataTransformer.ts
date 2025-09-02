@@ -2,6 +2,7 @@
 import { TradeFormValues } from '../schemas/tradeFormSchema';
 import { Trade, TradeFormData } from '@/types/Trade';
 import { detectSession } from './sessionDetector';
+import { calculateRiskRewardRatio } from '@/hooks/slices/tradeActions';
 
 // Transform Trade object back to TradeFormValues for editing
 export const transformTradeToFormValues = (trade: Trade): TradeFormValues => {
@@ -76,30 +77,13 @@ export const transformFormToTradeData = (values: TradeFormValues): TradeFormData
   const detectedSession = detectSession(values.entryTime || "00:00", values.entryTimezone || 'UTC');
   const session = values.session || detectedSession;
   
-  // Calculate risk to reward ratio if we have valid entry, SL, and exit prices
+  // Calculate risk to reward ratio using centralized store method
   const calculateRiskReward = () => {
     const entryPrice = parseFloat(values.entryPrice || "0");
     const slPrice = parseFloat(values.slPrice || "0");
     const exitPrice = parseFloat(values.exitPrice || "0");
-    const direction = values.direction;
     
-    if (entryPrice && slPrice && exitPrice && entryPrice !== slPrice) {
-      // Calculate risk (in price units)
-      const risk = direction === "Long" 
-        ? Math.abs(entryPrice - slPrice) 
-        : Math.abs(slPrice - entryPrice);
-      
-      // Calculate reward (in price units)
-      const reward = direction === "Long" 
-        ? Math.abs(exitPrice - entryPrice) 
-        : Math.abs(entryPrice - exitPrice);
-      
-      // Return R:R as number (ratio value)
-      if (risk > 0) {
-        return reward / risk;
-      }
-    }
-    return 0;
+    return calculateRiskRewardRatio(entryPrice, slPrice, exitPrice);
   };
   
   // Convert form data to TradeFormData ensuring all required fields are present
@@ -175,30 +159,13 @@ export const transformFormToTradeData = (values: TradeFormValues): TradeFormData
 
 // Prepare trade data for API submission by converting types and formats
 export const prepareTradeSave = (tradeData: TradeFormData): Partial<Trade> => {
-  // Calculate risk to reward ratio
+  // Calculate risk to reward ratio using centralized store method
   const calculateRiskReward = () => {
     const entryPrice = parseFloat(tradeData.entryPrice || "0");
     const slPrice = parseFloat(tradeData.slPrice || "0");
     const exitPrice = parseFloat(tradeData.exitPrice || "0");
-    const direction = tradeData.direction;
     
-    if (entryPrice && slPrice && exitPrice && entryPrice !== slPrice) {
-      // Calculate risk (in price units)
-      const risk = direction === "Long" 
-        ? Math.abs(entryPrice - slPrice) 
-        : Math.abs(slPrice - entryPrice);
-      
-      // Calculate reward (in price units)
-      const reward = direction === "Long" 
-        ? Math.abs(exitPrice - entryPrice) 
-        : Math.abs(entryPrice - exitPrice);
-      
-      // Return R:R as number (ratio value)
-      if (risk > 0) {
-        return reward / risk;
-      }
-    }
-    return 0;
+    return calculateRiskRewardRatio(entryPrice, slPrice, exitPrice);
   };
   
   // Calculate profit using our centralized calculation system

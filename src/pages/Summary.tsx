@@ -63,7 +63,6 @@ const Summary: React.FC = () => {
                     <Card className="glass-effect bg-black/5 border-0">
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Total Trades</CardTitle>
-                        <BarChart3 className="h-4 w-4 text-blue-400" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-xl font-bold">{totalTrades}</div>
@@ -74,7 +73,6 @@ const Summary: React.FC = () => {
                     <Card className="glass-effect bg-black/5 border-0">
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Win Rate</CardTitle>
-                        <Target className="h-4 w-4 text-green-400" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-xl font-bold">{winRate}%</div>
@@ -87,11 +85,6 @@ const Summary: React.FC = () => {
                     <Card className="glass-effect bg-black/5 border-0">
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Total P&L</CardTitle>
-                        {totalProfit >= 0 ? (
-                          <TrendingUp className="h-4 w-4 text-green-400" />
-                        ) : (
-                          <TrendingDown className="h-4 w-4 text-red-400" />
-                        )}
                       </CardHeader>
                       <CardContent>
                         <div className={`text-xl font-bold ${totalProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>

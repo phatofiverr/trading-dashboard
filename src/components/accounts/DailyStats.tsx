@@ -65,7 +65,7 @@ const DailyStats: React.FC<DailyStatsProps> = ({ accountId, currency = 'USD', cl
         <div className="bg-black/10 p-4 rounded-lg h-full flex flex-col">
           <div className="flex items-center mb-4">
             <Calendar className="h-4 w-4 mr-2 text-positive opacity-80" />
-            <p className="text-sm font-semibold">Today's Trading ({formattedDate})</p>
+            <p className="text-sm font-semibold">Today's Trading</p>
           </div>
           
           <div className="grid grid-cols-2 gap-4 flex-grow">

@@ -91,28 +91,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   
   // Helper function to determine active item based on current route
   const getActiveItemFromPath = React.useCallback((path: string) => {
-    console.log('🔍 AppSidebar: Determining active item for path:', path);
-    
     // Safety check - ensure data.navMain exists and has items
     if (!data.navMain || data.navMain.length === 0) {
-      console.log('  🔍 No navMain items available, returning null');
       return null;
     }
-    
+
     if (path.startsWith('/accounts')) {
       const accountsItem = data.navMain.find(item => item.title === 'Accounts');
-      console.log('  🔍 Found Accounts section');
       return accountsItem || data.navMain[0];
     } else if (path.startsWith('/strategies')) {
       const strategiesItem = data.navMain.find(item => item.title === 'Strategies');
-      console.log('  🔍 Found Strategies section');
       return strategiesItem || data.navMain[0];
     } else if (path === '/summary' || path === '/demon-finder') {
       const dashboardItem = data.navMain.find(item => item.title === 'Dashboard');
-      console.log('  🔍 Found Dashboard section');
       return dashboardItem || data.navMain[0];
     } else {
-      console.log('  🔍 Defaulting to first item');
       return data.navMain[0];
     }
   }, [data.navMain]);
@@ -125,38 +118,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   })
   const { setOpen, open: sidebarOpen } = useSidebar()
 
-  // Track sidebar open/close state
-  React.useEffect(() => {
-    console.log('🎛️ AppSidebar: Sidebar state changed - open:', sidebarOpen);
-  }, [sidebarOpen]);
-
-  // Debug logging for sidebar state changes
-  React.useEffect(() => {
-    console.log('🔄 AppSidebar: activeItem changed to:', activeItem?.title);
-  }, [activeItem]);
-
-  React.useEffect(() => {
-    console.log('📄 AppSidebar: content updated with', content.length, 'items for section:', activeItem?.title);
-    content.forEach((item, index) => {
-      console.log(`  📄 Content[${index}]:`, item.title, '→', item.url);
-    });
-  }, [content, activeItem]);
-
   // Update sidebar state when route changes (but not when manually clicking sidebar)
   React.useEffect(() => {
-    console.log('🌐 AppSidebar: Route changed to:', location.pathname);
-    console.log('  🌐 Current activeItem:', activeItem?.title);
-    
     const newActiveItem = getActiveItemFromPath(location.pathname);
     if (newActiveItem && newActiveItem.title !== activeItem?.title) {
-      console.log('  🌐 Updating activeItem from', activeItem?.title, 'to', newActiveItem.title);
       setActiveItem(newActiveItem);
       const newContent = data.content[newActiveItem.title as keyof typeof data.content] || [];
-      console.log('  🌐 Updating content with', newContent.length, 'items');
       setContent(newContent);
     } else if (!newActiveItem && data.navMain.length > 0) {
       // Fallback to first item if no match found
-      console.log('  🌐 No matching section found, falling back to:', data.navMain[0]?.title);
       setActiveItem(data.navMain[0]);
       setContent(data.content[data.navMain[0]?.title as keyof typeof data.content] || []);
     }
@@ -224,14 +194,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <div className="relative w-fit">
                       <SidebarMenuButton
                         onClick={() => {
-                          console.log('🎯 AppSidebar: First sidebar clicked -', item.title);
-                          console.log('  🎯 Previous activeItem:', activeItem?.title);
-                          console.log('  🎯 Setting activeItem to:', item.title);
                           setActiveItem(item)
                           const newContent = data.content[item.title as keyof typeof data.content] || []
-                          console.log('  🎯 New content items:', newContent.length);
                           setContent(newContent)
-                          console.log('  🎯 Calling setOpen(true)...');
                           setOpen(true)
                         }}
                         isActive={activeItem?.title === item.title}
@@ -283,13 +248,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   to={item.url}
                   key={item.url}
                   className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight last:border-b-0"
-                  onClick={(e) => {
-                    console.log('🖱️ AppSidebar: Second sidebar link clicked -', item.title);
-                    console.log('  🖱️ Navigating to:', item.url);
-                    console.log('  🖱️ Current activeItem:', activeItem?.title);
-                  }}
                 >
                   <div className="flex w-full items-center gap-2">
+                    {activeItem?.title === 'Accounts' && <Wallet className="h-4 w-4" />}
+                    {activeItem?.title === 'Strategies' && <TrendingUp className="h-4 w-4" />}
                     <span className="font-medium">{item.title}</span>
                   </div>
                   <span className="line-clamp-2 w-[260px] text-xs text-sidebar-foreground/70">

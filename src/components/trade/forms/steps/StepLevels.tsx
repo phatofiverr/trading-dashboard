@@ -9,11 +9,14 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Switch } from "@/components/ui/switch";
 import { InfoIcon, Calculator, Plus } from "lucide-react";
 import { useTradeStore } from "@/hooks/useTradeStore";
+import { calculateRiskRewardRatio, calculatePositionSize, convertPipsToPrice } from "@/hooks/slices/tradeActions";
+import { useColors } from "@/hooks/useColors";
 import { useParams } from "react-router-dom";
 
 export default function StepLevels() {
   const form = useFormContext<TradeFormValues>();
   const watchedValues = form.watch();
+  const colors = useColors();
   
   // Watch current values for conversion
   const entryPrice = parseFloat(watchedValues.entryPrice || "0");
@@ -24,110 +27,64 @@ export default function StepLevels() {
   const stopLossInPips = form.watch('stopLossInPips') ?? true;
   const takeProfitInPips = form.watch('takeProfitInPips') ?? true;
 
-  // Calculate risk-reward ratio
+  // Calculate risk-reward ratio using centralized store method
   const calculateRiskReward = () => {
     const entryPrice = parseFloat(watchedValues.entryPrice || "0");
-    const exitPrice = parseFloat(watchedValues.exitPrice || "0");
     const slPrice = parseFloat(watchedValues.slPrice || "0");
+    const exitPrice = parseFloat(watchedValues.exitPrice || "0");
     const direction = watchedValues.direction || "Long";
+    
+    if (entryPrice <= 0 || exitPrice <= 0 || slPrice <= 0) {
+      return 0;
+    }
 
-
-    if (entryPrice > 0 && exitPrice > 0 && slPrice > 0) {
-      let reward = 0;
-      let risk = 0;
-      
-      if (direction === "Long") {
-        // For long trades: reward when TP > entry, risk when price hits SL < entry
-        reward = exitPrice - entryPrice;  // Should be positive for valid long TP
-        risk = entryPrice - slPrice;      // Should be positive for valid long SL
-        
-        console.log('Long trade calc:', { 
-          entryPrice, 
-          exitPrice, 
-          slPrice, 
-          rewardCalc: `${exitPrice} - ${entryPrice} = ${reward}`,
-          riskCalc: `${entryPrice} - ${slPrice} = ${risk}`
-        });
-        
-        // Valilong setup: SL should be below entry, TP should be above entry
-        if (slPrice >= entryPrice) {
-          console.log('Invalid long setup: SL should be below entry price');
-          return 0;
-        }
-        if (exitPrice <= entryPrice) {
-          console.log('Invalid long setup: TP should be above entry price');  
-          return 0;
-        }
-        
-      } else {
-        // For short trades: reward when TP < entry, risk when price hits SL > entry
-        reward = entryPrice - exitPrice;  // Should be positive for valid short TP
-        risk = slPrice - entryPrice;      // Should be positive for valid short SL
-        
-        console.log('Short trade calc:', { 
-          entryPrice, 
-          exitPrice, 
-          slPrice, 
-          rewardCalc: `${entryPrice} - ${exitPrice} = ${reward}`,
-          riskCalc: `${slPrice} - ${entryPrice} = ${risk}`
-        });
-        
-        // Validate short setup: SL should be above entry, TP should be below entry
-        if (slPrice <= entryPrice) {
-          console.log('❌ Invalid short setup: SL should be above entry price');
-          return 0;
-        }
-        if (exitPrice >= entryPrice) {
-          console.log('❌ Invalid short setup: TP should be below entry price');
-          return 0;
-        }
-      }
-      
-      console.log('✅ RR Components:', { 
-        direction, 
-        reward: reward.toFixed(5), 
-        risk: risk.toFixed(5), 
-        ratio: (reward / risk).toFixed(2),
-        ratioDisplay: `1:${(reward / risk).toFixed(2)}`
-      });
-      
-      // Calculate ratio if both reward and risk are positive
-      if (reward > 0 && risk > 0) {
-        return reward / risk;
-      } else {
-        console.log('❌ Invalid R:R - negative reward or risk:', { reward, risk });
-        return 0;
-      }
+    // Handle pip to price conversion if needed
+    let actualSlPrice = slPrice;
+    let actualExitPrice = exitPrice;
+    
+    if (stopLossInPips && entryPrice > 0) {
+      actualSlPrice = convertPipsToPrice(slPrice, entryPrice, direction === "Long");
     }
     
-    console.log('RR Calc failed - missing or invalid values');
-    return 0;
+    if (takeProfitInPips && entryPrice > 0) {
+      actualExitPrice = convertPipsToPrice(exitPrice, entryPrice, direction === "Long");
+    }
+
+    // Use centralized calculation from store
+    const ratio = calculateRiskRewardRatio(entryPrice, actualSlPrice, actualExitPrice);
+    
+    console.log('R:R Calculation (Store Method):', {
+      direction,
+      entryPrice,
+      actualSlPrice,
+      actualExitPrice,
+      ratio: ratio.toFixed(2)
+    });
+
+    return ratio;
   };
 
-  // Calculate position size based on risk amount
-  const calculatePositionSize = () => {
+  // Calculate position size using centralized store method
+  const calculatePositionSizeValue = () => {
     const riskAmount = parseFloat(watchedValues.riskAmount || "0");
     const entryPrice = parseFloat(watchedValues.entryPrice || "0");
     const slPrice = parseFloat(watchedValues.slPrice || "0");
+    const direction = watchedValues.direction || "Long";
 
-    if (riskAmount && entryPrice && slPrice) {
-      const riskPerUnit = Math.abs(entryPrice - slPrice);
-      if (riskPerUnit > 0) {
-        return riskAmount / riskPerUnit;
-      }
+    // Handle pip conversion if needed
+    let actualSlPrice = slPrice;
+    if (stopLossInPips && entryPrice > 0) {
+      actualSlPrice = convertPipsToPrice(slPrice, entryPrice, direction === "Long");
     }
-    return 0;
+
+    // Use centralized calculation from store
+    return calculatePositionSize(riskAmount, entryPrice, actualSlPrice);
   };
 
   const riskRewardRatio = calculateRiskReward();
-  const positionSize = calculatePositionSize();
+  const positionSize = calculatePositionSizeValue();
 
-  // Convert pips to price and vice versa
-  const convertPipsToPrice = (pips: number, isLong: boolean) => {
-    if (!entryPrice || pips <= 0) return 0;
-    const pipValue = pips * 0.0001; // Standard pip value for most forex pairs
-    return isLong ? entryPrice + pipValue : entryPrice - pipValue;
-  };
+  // Convert price to pips for display conversion
 
   const convertPriceToPips = (price: number, isLong: boolean) => {
     if (!entryPrice || price <= 0) return 0;
@@ -151,8 +108,8 @@ export default function StepLevels() {
           console.log('Converting SL price to pips:', { price: currentSlPrice, pips });
           form.setValue('slPrice', pips.toString());
         } else {
-          // Convert current pips to price
-          const price = convertPipsToPrice(parseFloat(currentSlPrice), isLong);
+          // Convert current pips to price using centralized method
+          const price = convertPipsToPrice(parseFloat(currentSlPrice), entryPrice, isLong);
           console.log('Converting SL pips to price:', { pips: currentSlPrice, price });
           form.setValue('slPrice', price.toFixed(5));
         }
@@ -178,8 +135,8 @@ export default function StepLevels() {
           console.log('Converting TP price to pips:', { price: currentExitPrice, pips });
           form.setValue('exitPrice', pips.toString());
         } else {
-          // Convert current pips to price
-          const price = convertPipsToPrice(parseFloat(currentExitPrice), isLong);
+          // Convert current pips to price using centralized method
+          const price = convertPipsToPrice(parseFloat(currentExitPrice), entryPrice, isLong);
           console.log('Converting TP pips to price:', { pips: currentExitPrice, price });
           form.setValue('exitPrice', price.toFixed(5));
         }
@@ -402,14 +359,9 @@ export default function StepLevels() {
           </div>
           <div className="w-40 h-8 bg-gray-600/20 rounded-full overflow-hidden">
             <div 
-              className={`h-full ${
-                riskRewardRatio >= 2 
-                  ? "bg-green-500" 
-                  : riskRewardRatio >= 1 
-                  ? "bg-amber-500" 
-                  : "bg-red-500"
-              }`}
+              className="h-full"
               style={{ 
+                backgroundColor: colors.utils.getRiskRewardColor(riskRewardRatio),
                 width: `${Math.min(riskRewardRatio * 30, 100)}%`,
                 transition: "width 0.3s ease-in-out" 
               }}
@@ -418,13 +370,21 @@ export default function StepLevels() {
         </div>
         <div className="mt-2 text-xs">
           {riskRewardRatio >= 2 ? (
-            <span className="text-green-400">Great risk-reward ratio! This trade has good potential.</span>
+            <span style={{ color: colors.trading.riskReward.excellent }}>
+              Great risk-reward ratio! This trade has good potential.
+            </span>
           ) : riskRewardRatio >= 1 ? (
-            <span className="text-amber-400">Acceptable risk-reward ratio. Consider if this matches your strategy.</span>
+            <span style={{ color: colors.trading.riskReward.good }}>
+              Acceptable risk-reward ratio. Consider if this matches your strategy.
+            </span>
           ) : riskRewardRatio > 0 ? (
-            <span className="text-red-400">Poor risk-reward ratio. You're risking more than you stand to gain.</span>
+            <span style={{ color: colors.trading.riskReward.poor }}>
+              Poor risk-reward ratio. You're risking more than you stand to gain.
+            </span>
           ) : (
-            <span className="text-white/60">Enter prices to calculate ratio</span>
+            <span style={{ color: colors.text.disabled }}>
+              Enter prices to calculate ratio
+            </span>
           )}
         </div>
       </div>
