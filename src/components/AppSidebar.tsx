@@ -22,14 +22,7 @@ import { toast } from "sonner";
 import AddAccountDialog from './AddAccountDialog';
 import AddStrategyDialog from './AddStrategyDialog';
 
-// Custom Strategies Icon
-const StrategiesIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-    <path d="M3 9h18"></path>
-    <path d="M9 21V9"></path>
-  </svg>
-);
+// Using Lucide Target icon for Strategies
 
 // Navigation data structure
 const createNavData = (accounts: any[], strategies: string[], getStrategyStats: (strategyName: string) => any) => ({
@@ -46,7 +39,7 @@ const createNavData = (accounts: any[], strategies: string[], getStrategyStats: 
     },
     {
       title: "Strategies",
-      icon: StrategiesIcon,
+      icon: TrendingUp,
       isActive: false,
     },
   ],
@@ -109,41 +102,90 @@ const createNavData = (accounts: any[], strategies: string[], getStrategyStats: 
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { accounts } = useAccountsStore();
-  const { getUniqueStrategies, trades } = useTradeStore();
+  const { getUniqueStrategies, trades, fetchTrades } = useTradeStore();
   const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
+  // Ensure trades are loaded when sidebar mounts
+  React.useEffect(() => {
+    console.log('🚀 AppSidebar mounted, fetching trades...');
+    fetchTrades();
+  }, [fetchTrades]);
+  
   // Get unique strategies from both live and backtest
-  const strategies = React.useMemo(() => [...new Set([
-    ...getUniqueStrategies('live'),
-    ...getUniqueStrategies('backtest')
-  ])], [getUniqueStrategies]);
+  const strategies = React.useMemo(() => {
+    const uniqueStrats = [...new Set([
+      ...getUniqueStrategies('live'),
+      ...getUniqueStrategies('backtest')
+    ])];
+    console.log('🎯 Unique strategies found:', uniqueStrats);
+    return uniqueStrats;
+  }, [getUniqueStrategies]);
+  
+  // Debug trades array
+  React.useEffect(() => {
+    console.log('📈 Trades array updated in AppSidebar:', {
+      totalTrades: trades.length,
+      sampleTrade: trades[0],
+      allStrategyIds: [...new Set(trades.map(t => t.strategyId).filter(Boolean))]
+    });
+  }, [trades]);
 
   // Function to calculate strategy statistics
   const getStrategyStats = React.useCallback((strategyName: string) => {
-    const strategyTrades = trades.filter(trade => trade.strategyId === strategyName);
-    const completedTrades = strategyTrades.filter(trade => trade.profit !== undefined && trade.profit !== null);
+    console.log('🔍 Getting stats for strategy:', strategyName);
+    console.log('🔍 Available trades:', trades.length);
+    console.log('🔍 Sample trade strategyIds:', trades.slice(0, 5).map(t => ({ id: t.id, strategyId: t.strategyId })));
     
-    if (completedTrades.length === 0) {
+    const strategyTrades = trades.filter(trade => {
+      const matches = trade.strategyId === strategyName;
+      if (matches) {
+        console.log('✅ Trade matches strategy:', { tradeId: trade.id, strategyId: trade.strategyId, searchFor: strategyName });
+      }
+      return matches;
+    });
+    
+    console.log('📊 Strategy trades found:', strategyTrades.length);
+    
+    // Count all trades, not just completed ones with profit
+    const totalTrades = strategyTrades.length;
+    
+    if (totalTrades === 0) {
       return { totalTrades: 0, winRate: 0, avgRR: 0 };
     }
 
-    const winningTrades = completedTrades.filter(trade => (trade.profit || 0) > 0);
-    const winRate = Math.round((winningTrades.length / completedTrades.length) * 100);
+    // For trades that have profit/loss information
+    const completedTrades = strategyTrades.filter(trade => 
+      trade.rMultiple !== undefined && trade.rMultiple !== null
+    );
     
-    const avgRR = completedTrades.reduce((sum, trade) => {
-      return sum + (trade.riskRewardRatio || 0);
-    }, 0) / completedTrades.length;
+    const winningTrades = completedTrades.filter(trade => (trade.rMultiple || 0) > 0);
+    const winRate = completedTrades.length > 0 
+      ? Math.round((winningTrades.length / completedTrades.length) * 100) 
+      : 0;
+    
+    const avgRR = completedTrades.length > 0
+      ? completedTrades.reduce((sum, trade) => {
+          return sum + (trade.riskRewardRatio || 0);
+        }, 0) / completedTrades.length
+      : 0;
 
     return {
-      totalTrades: completedTrades.length,
+      totalTrades: totalTrades, // Show all trades, not just completed ones
       winRate: winRate,
       avgRR: avgRR.toFixed(1),
     };
   }, [trades]);
 
-  const data = React.useMemo(() => createNavData(accounts, strategies, getStrategyStats), [accounts, strategies, getStrategyStats]);
+  const data = React.useMemo(() => {
+    console.log('🔄 Rebuilding nav data with:', { 
+      accountsCount: accounts.length, 
+      strategiesCount: strategies.length, 
+      tradesCount: trades.length 
+    });
+    return createNavData(accounts, strategies, getStrategyStats);
+  }, [accounts, strategies, getStrategyStats, trades]);
   
   // Helper function to determine active item based on current route
   const getActiveItemFromPath = React.useCallback((path: string) => {
@@ -264,20 +306,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {/* This will make the sidebar appear as icons. */}
       <Sidebar
         collapsible="none"
-        className="!w-[calc(var(--sidebar-width-icon)_+_1px)] !min-w-[calc(var(--sidebar-width-icon)_+_1px)] !max-w-[calc(var(--sidebar-width-icon)_+_1px)] border-r bg-[#0A0A0B]"
+        className="!w-[60px] !min-w-[60px] !max-w-[60px] border-r bg-[#0A0A0B]"
       >
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
               <div className="relative w-fit">
                 <SidebarMenuButton
-                  size="lg"
                   asChild
-                  className="md:h-8 md:p-0 peer"
+                  className="!h-12 !w-12 !p-0 peer"
                 >
                   <Link to="/profile">
-                    <div className="text-white flex aspect-square size-8 items-center justify-center rounded-lg">
-                      <User className="size-4" />
+                    <div className="text-white flex aspect-square w-full h-12 items-center justify-center rounded-lg">
+                      <User className="size-5" />
                     </div>
                   </Link>
                 </SidebarMenuButton>
@@ -310,9 +351,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                           setOpen(true)
                         }}
                         isActive={activeItem?.title === item.title}
-                        className="px-2.5 md:px-2 peer"
+                        className="!w-12 !h-12 !p-0 flex items-center justify-center peer"
                       >
-                        <item.icon />
+                        <item.icon className="size-6" />
                       </SidebarMenuButton>
                       <div className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-sm rounded opacity-0 peer-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[9999] top-1/2 -translate-y-1/2">
                         {item.title}
@@ -328,8 +369,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenu>
             <SidebarMenuItem>
               <div className="relative w-fit">
-                <SidebarMenuButton onClick={handleLogout} className="peer">
-                  <LogOut className="size-4" />
+                <SidebarMenuButton onClick={handleLogout} className="!w-12 !h-12 !p-0 flex items-center justify-center peer">
+                  <LogOut className="size-6" />
                 </SidebarMenuButton>
                 <div className="absolute left-full ml-2 px-2 py-1 bg-black text-white text-sm rounded opacity-0 peer-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-[9999] top-1/2 -translate-y-1/2">
                   Log Out
@@ -342,8 +383,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       {/* This is the second sidebar */}
       {/* We disable collapsible and set responsive fixed width */}
-      <Sidebar collapsible="none" className="hidden md:flex md:w-[280px] lg:w-[300px] md:min-w-[280px] lg:min-w-[300px] md:max-w-[280px] lg:max-w-[300px] bg-[#0A0A0B]">
-        <SidebarHeader className="flex shrink-0 items-center border-b p-4 min-h-[73px]">
+      <Sidebar collapsible="none" className="hidden md:flex md:w-[320px] lg:w-[340px] md:min-w-[320px] lg:min-w-[340px] md:max-w-[320px] lg:max-w-[340px] bg-[#0A0A0B]">
+        <SidebarHeader className="flex shrink-0 items-center border-b p-4 min-h-[63px]">
           <div className="flex w-full items-center justify-between">
             <div className="text-white font-medium text-sm">
               {activeItem?.title}
@@ -352,7 +393,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup className="px-0">
-            <SidebarGroupContent>
+            <SidebarGroupContent className="space-y-0">
               {content.map((item) => {
                 // Helper function to determine which sidebar section this link should activate
                 const getRequiredSection = (url: string) => {
@@ -368,14 +409,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       <AddAccountDialog
                         key={item.url}
                         trigger={
-                          <div className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight last:border-b-0 border-dashed border-sidebar-accent/50 hover:border-sidebar-accent cursor-pointer">
+                          <div className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 py-4 px-4 text-sm leading-tight border-b border-dashed border-sidebar-accent/50 hover:border-sidebar-accent cursor-pointer last:border-b-0 w-full -mx-px">
                             <div className="flex w-full items-center gap-2">
                               <Plus className="h-4 w-4 text-sidebar-accent" />
                               <span className="font-medium text-sidebar-accent">{item.title}</span>
                             </div>
-                            <span className="line-clamp-2 w-[260px] text-xs text-sidebar-foreground/70">
-                              {item.description}
-                            </span>
                           </div>
                         }
                         onAccountAdded={() => {
@@ -391,14 +429,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       <AddStrategyDialog
                         key={item.url}
                         trigger={
-                          <div className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight last:border-b-0 border-dashed border-sidebar-accent/50 hover:border-sidebar-accent cursor-pointer">
+                          <div className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 py-4 px-4 text-sm leading-tight border-b border-dashed border-sidebar-accent/50 hover:border-sidebar-accent cursor-pointer last:border-b-0 w-full -mx-px">
                             <div className="flex w-full items-center gap-2">
                               <Plus className="h-4 w-4 text-sidebar-accent" />
                               <span className="font-medium text-sidebar-accent">{item.title}</span>
                             </div>
-                            <span className="line-clamp-2 w-[260px] text-xs text-sidebar-foreground/70">
-                              {item.description}
-                            </span>
                           </div>
                         }
                         onStrategyAdded={() => {
@@ -417,7 +452,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <Link
                     to={item.url}
                     key={item.url}
-                    className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight last:border-b-0"
+                    className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b py-3 px-4 text-sm leading-tight last:border-b-0"
                     onClick={() => {
                       const requiredSection = getRequiredSection(item.url);
                       console.log('Content link clicked:', item.url, 'requires section:', requiredSection, 'current section:', activeItem?.title);

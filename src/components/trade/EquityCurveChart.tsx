@@ -34,6 +34,14 @@ const EquityCurveChart: React.FC = () => {
   const [curveType, setCurveType] = useState<'stepAfter' | 'monotone' | 'linear'>('stepAfter');
   const [showByPair, setShowByPair] = useState<boolean>(true); // New state to toggle pair lines
   const [showProjections, setShowProjections] = useState<boolean>(false); // New state for projections
+  
+  // Debug projections state changes
+  React.useEffect(() => {
+    console.log('🔮 Projections state changed:', showProjections);
+  }, [showProjections]);
+  
+  // Debug render to see current state
+  console.log('🔮 Rendering EquityCurveChart - showProjections:', showProjections);
 
   // Chart configuration using centralized color system
   const chartConfig = {
@@ -370,9 +378,10 @@ const EquityCurveChart: React.FC = () => {
     }
   };
   
-  // Toggle projections
-  const toggleProjections = () => {
-    setShowProjections(!showProjections);
+  // Toggle projections with debugging
+  const toggleProjections = (checked: boolean) => {
+    console.log('🔮 Projections toggle:', { current: showProjections, new: checked });
+    setShowProjections(checked);
   };
   
   if (!trades.length) {
@@ -478,11 +487,17 @@ const EquityCurveChart: React.FC = () => {
           {/* NEW: Projection toggle */}
           <div className="flex items-center gap-2 ml-2">
             <span className="text-xs text-muted-foreground whitespace-nowrap">Projections:</span>
-            <Switch
-              checked={showProjections}
-              onCheckedChange={toggleProjections}
-              className="data-[state=checked]:bg-muted/50"
-            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                console.log('🔮 Button clicked, current state:', showProjections);
+                setShowProjections(!showProjections);
+              }}
+              className={`h-8 px-2 text-xs ${showProjections ? 'bg-trading-accent1 text-white' : ''}`}
+            >
+              {showProjections ? 'ON' : 'OFF'}
+            </Button>
           </div>
           
           <Button variant="ghost" size="icon" onClick={exportChart} title="Export as PNG">

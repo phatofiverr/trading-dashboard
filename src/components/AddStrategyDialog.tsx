@@ -204,7 +204,7 @@ const AddStrategyDialog: React.FC<AddStrategyDialogProps> = ({
                     backgroundColor: colors.status.negative.background
                   }}
                 >
-                  ⚠️ Over 100%
+                 Over 100%
                 </div>
               )}
             </div>

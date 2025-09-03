@@ -117,7 +117,7 @@ export default function StepReview() {
 
     return (
       <div 
-        className="relative border-2 border-dashed rounded-lg min-h-[200px]"
+        className="relative border-2 border-dashed rounded-lg h-full"
         style={{
           backgroundColor: colors.background.glass,
           borderColor: colors.border.muted
@@ -213,10 +213,9 @@ export default function StepReview() {
                 {chartAnalysis.map((entry: ChartEntry) => (
                   <div 
                     key={entry.id} 
-                    className="relative rounded-lg border p-4"
+                    className="relative rounded-lg p-4"
                     style={{
-                      backgroundColor: colors.background.glass,
-                      borderColor: colors.border.muted
+                      backgroundColor: colors.background.glass
                     }}
                   >
                     {/* Cancel button on top-right */}
@@ -241,15 +240,17 @@ export default function StepReview() {
                     {/* Main Container Layout */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       {/* Chart Container */}
-                      <div className="order-2 lg:order-1">
+                      <div className="order-2 lg:order-1 flex flex-col">
                         <div className="mb-2">
                           <h4 className="text-sm font-medium" style={{ color: colors.text.primary }}>Chart Screenshot</h4>
                         </div>
-                        {renderChartContainer(entry)}
+                        <div className="flex-1">
+                          {renderChartContainer(entry)}
+                        </div>
                       </div>
 
                       {/* Notes Area */}
-                      <div className="order-1 lg:order-2">
+                      <div className="order-1 lg:order-2 flex flex-col">
                         <div className="mb-2">
                           <h4 className="text-sm font-medium" style={{ color: colors.text.primary }}>Notes</h4>
                         </div>
@@ -257,7 +258,7 @@ export default function StepReview() {
                           placeholder="Write your thoughts about this trade, lessons learned, or things to improve..."
                           value={entry.notes}
                           onChange={(e) => handleNotesChange(entry.id, e.target.value)}
-                          className="min-h-[200px] resize-none"
+                          className="flex-1 resize-none"
                           style={{
                             backgroundColor: colors.background.input,
                             borderColor: colors.border.input,

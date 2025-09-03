@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTradeStore } from '@/hooks/useTradeStore';
@@ -301,9 +302,9 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
 
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-2"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-0 sm:p-2"
       style={{ backgroundColor: colors.background.modal }}
     >
       <div 
@@ -392,6 +393,9 @@ const BeautifulTradeEntryForm: React.FC<BeautifulTradeEntryFormProps> = ({
       </div>
     </div>
   );
+
+  // Render the modal using createPortal to ensure it's at the document root
+  return createPortal(modalContent, document.body);
 };
 
 export default BeautifulTradeEntryForm;
