@@ -2,13 +2,14 @@ import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { useTradeStore } from '@/hooks/useTradeStore';
 import { useParams, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Download, Filter, PlusCircle, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Download, Filter, PlusCircle, ToggleLeft, ToggleRight, MoreHorizontal, Settings } from 'lucide-react';
 import { 
   Dialog, 
   DialogContent, 
   DialogHeader, 
   DialogTitle 
 } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import SingleSidebarLayout from '@/components/SingleSidebarLayout';
 import TradeEntryButton from '@/components/trade/TradeEntryButton';
 import FilterPanel from '@/components/trade/FilterPanel';
@@ -122,32 +123,7 @@ const StrategyPage: React.FC = () => {
               />
             )}
             
-            {/* Edit Confluences Button */}
-            <EditConfluencesDialog 
-              strategyId={strategyId || ''}
-              onConfluencesUpdated={() => {
-                // Optionally refresh data or show success message
-                console.log('Confluences updated for strategy:', strategyId);
-              }}
-            />
-            
-            {/* Export Trades Button */}
-            <Button 
-              variant="minimal" 
-              className="flex items-center gap-2 bg-black/20 hover:bg-black/30 text-foreground border-white/5"
-              onClick={handleExportCSV}
-              disabled={!hasActiveTrades}
-            >
-              <Download className="h-4 w-4" />
-              Export
-            </Button>
-            
-            {/* Theme Editor Button */}
-            <Suspense fallback={<div className="h-32 bg-black/10 rounded-lg animate-pulse" />}>
-              <ThemeEditor />
-            </Suspense>
-            
-            {/* Toggle Button for Live Data / Backtest Mode */}
+            {/* Toggle Button for Live Data / Backtest Mode - Keep separate */}
             <Button 
               variant="minimal" 
               className={`flex items-center gap-2 ${showLiveData ? 'bg-red-500/20 text-red-400' : 'bg-red-900/20 hover:bg-red-900/30 text-red-300'} border-red-500/30`}
@@ -156,15 +132,64 @@ const StrategyPage: React.FC = () => {
               {showLiveData ? <ToggleRight className="h-4 w-4 text-red-400" /> : <ToggleLeft className="h-4 w-4 text-red-300" />}
               {showLiveData ? 'Live Data' : 'Backtest'}
             </Button>
-            {/* Filter Button */}
-            <Button 
-              variant="minimal" 
-              className={`flex items-center gap-2 ${showFilterPanel ? 'bg-white/10 text-white' : 'bg-black/20 hover:bg-black/30 text-foreground'} border-white/5`}
-              onClick={() => setShowFilterPanel(!showFilterPanel)}
-            >
-              <Filter className="h-4 w-4" />
-              Filter
-            </Button>
+            
+            {/* More Actions Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="minimal" 
+                  className="flex items-center justify-center gap-2 bg-black/20 hover:bg-black/30 text-foreground border-white/5"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                  More
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent 
+                className="w-48 bg-black border-white/10 z-[9999]" 
+                side="bottom" 
+                align="end"
+                sideOffset={8}
+              >
+                <DropdownMenuItem
+                  onClick={handleExportCSV}
+                  disabled={!hasActiveTrades}
+                  className="flex items-center gap-2 text-white/80 hover:text-white focus:text-white disabled:text-white/40"
+                >
+                  <Download className="h-4 w-4" />
+                  Export CSV
+                </DropdownMenuItem>
+                
+                <DropdownMenuItem
+                  onClick={() => setShowFilterPanel(!showFilterPanel)}
+                  className="flex items-center gap-2 text-white/80 hover:text-white focus:text-white"
+                >
+                  <Filter className="h-4 w-4" />
+                  {showFilterPanel ? 'Hide Filters' : 'Show Filters'}
+                </DropdownMenuItem>
+                
+                <DropdownMenuSeparator className="bg-white/10" />
+                
+                <div className="p-2">
+                  <div className="text-xs text-white/60 mb-2">Edit Confluences</div>
+                  <EditConfluencesDialog 
+                    strategyId={strategyId || ''}
+                    onConfluencesUpdated={() => {
+                      // Optionally refresh data or show success message
+                      console.log('Confluences updated for strategy:', strategyId);
+                    }}
+                  />
+                </div>
+                
+                <DropdownMenuSeparator className="bg-white/10" />
+                
+                <div className="p-2">
+                  <div className="text-xs text-white/60 mb-2">Theme</div>
+                  <Suspense fallback={<div className="h-9 bg-black/10 rounded-md animate-pulse" />}>
+                    <ThemeEditor />
+                  </Suspense>
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
         

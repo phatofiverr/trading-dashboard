@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Home, Users, TrendingUp, LogOut, User, BarChart3, Search, Wallet } from "lucide-react"
+import { Home, Users, TrendingUp, LogOut, User, BarChart3, Search, Wallet, Plus } from "lucide-react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import {
   Sidebar,
@@ -19,6 +19,8 @@ import { useAccountsStore } from '@/hooks/useAccountsStore';
 import { useTradeStore } from '@/hooks/useTradeStore';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from "sonner";
+import AddAccountDialog from './AddAccountDialog';
+import AddStrategyDialog from './AddStrategyDialog';
 
 // Custom Strategies Icon
 const StrategiesIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -71,21 +73,37 @@ const createNavData = (accounts: any[], strategies: string[], getStrategyStats: 
         description: "Conquer your behavioural demons",
       },
     ],
-    Accounts: accounts.map(account => ({
-      title: account.name,
-      url: `/accounts/${account.id}`,
-      description: `Balance: $${account.balance?.toFixed(2) || '0.00'}`,
-    })),
-    Strategies: strategies.map(strategy => {
-      const stats = getStrategyStats(strategy);
-      return {
-        title: strategy,
-        url: `/strategies/${encodeURIComponent(strategy)}`,
-        description: stats.totalTrades > 0 
-          ? `${stats.totalTrades} trades`
-          : "No trades yet",
-      };
-    }),
+    Accounts: [
+      {
+        title: "Add new account",
+        url: "/accounts/new",
+        description: "Create a new trading account",
+        isAddNew: true,
+      },
+      ...accounts.map(account => ({
+        title: account.name,
+        url: `/accounts/${account.id}`,
+        description: `Balance: $${account.balance?.toFixed(2) || '0.00'}`,
+      }))
+    ],
+    Strategies: [
+      {
+        title: "Add new strategy",
+        url: "/strategies/new",
+        description: "Create a new trading strategy",
+        isAddNew: true,
+      },
+      ...strategies.map(strategy => {
+        const stats = getStrategyStats(strategy);
+        return {
+          title: strategy,
+          url: `/strategies/${encodeURIComponent(strategy)}`,
+          description: stats.totalTrades > 0 
+            ? `${stats.totalTrades} trades`
+            : "No trades yet",
+        };
+      })
+    ],
   }
 });
 
@@ -148,29 +166,76 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
   }, [data.navMain]);
   
-  // Initialize active item based on current route
-  const [activeItem, setActiveItem] = React.useState(() => getActiveItemFromPath(location.pathname) || data.navMain[0])
-  const [content, setContent] = React.useState(() => {
-    const initialActiveItem = getActiveItemFromPath(location.pathname) || data.navMain[0];
-    return data.content[initialActiveItem?.title as keyof typeof data.content] || data.content.Dashboard;
+  // Use sessionStorage to persist active section across component re-mounts
+  const getPersistedSection = () => {
+    try {
+      return sessionStorage.getItem('sidebar-active-section') || 'Dashboard';
+    } catch {
+      return 'Dashboard';
+    }
+  }
+  
+  const persistSection = (section: string) => {
+    try {
+      sessionStorage.setItem('sidebar-active-section', section);
+    } catch {
+      // Ignore if sessionStorage is not available
+    }
+  }
+  
+  // Initialize state with persisted value
+  const [activeItem, setActiveItem] = React.useState(() => {
+    const persistedSection = getPersistedSection();
+    console.log('🚀 Initializing sidebar with persisted section:', persistedSection);
+    return data.navMain.find(item => item.title === persistedSection) || data.navMain[0];
   })
+  const [content, setContent] = React.useState(() => {
+    const persistedSection = getPersistedSection();
+    return data.content[persistedSection as keyof typeof data.content] || data.content.Dashboard || [];
+  })
+  const [manuallySet, setManuallySet] = React.useState(false)
   const { setOpen, open: sidebarOpen } = useSidebar()
 
-  // Update sidebar state when route changes (but not when manually clicking sidebar)
+  // Debug: Track when activeItem changes
   React.useEffect(() => {
-    const newActiveItem = getActiveItemFromPath(location.pathname);
-    if (newActiveItem && newActiveItem.title !== activeItem?.title) {
-      setActiveItem(newActiveItem);
-      const newContent = data.content[newActiveItem.title as keyof typeof data.content] || [];
+    console.log('🔄 ActiveItem changed to:', activeItem?.title);
+    console.trace('Stack trace for activeItem change:');
+  }, [activeItem]);
+
+  // Debug: Track persisted section
+  React.useEffect(() => {
+    console.log('🎯 Persisted section is now:', getPersistedSection());
+  });
+
+  // Only update sidebar when data changes, not when route changes
+  React.useEffect(() => {
+    console.log('Data changed, updating sidebar if needed', {
+      activeItemTitle: activeItem?.title,
+      persistedSection: getPersistedSection(),
+      activeItemExists: activeItem ? data.navMain.some(item => item.title === activeItem.title) : false,
+      dataNavMainTitles: data.navMain.map(item => item.title)
+    });
+    
+    // If we have a valid activeItem, just update its content - don't change the active section
+    if (activeItem && data.navMain.some(item => item.title === activeItem.title)) {
+      console.log('Updating content for existing active item:', activeItem.title);
+      const newContent = data.content[activeItem.title as keyof typeof data.content] || [];
       setContent(newContent);
-    } else if (!newActiveItem && data.navMain.length > 0) {
-      // Fallback to first item if no match found
-      setActiveItem(data.navMain[0]);
-      setContent(data.content[data.navMain[0]?.title as keyof typeof data.content] || []);
+      return; // Exit early - don't do any other updates
     }
-  }, [location.pathname, getActiveItemFromPath, data.content, data.navMain]); // Removed activeItem from deps to prevent interference
+    
+    // Only reset if we have no active item at all
+    if (!activeItem && data.navMain.length > 0) {
+      const persistedSection = getPersistedSection();
+      console.log('No active item found, restoring from storage:', persistedSection);
+      const restoredItem = data.navMain.find(item => item.title === persistedSection) || data.navMain[0];
+      setActiveItem(restoredItem);
+      setContent(data.content[restoredItem.title as keyof typeof data.content] || []);
+    }
+  }, [data.navMain, data.content]);
 
   React.useEffect(() => {
+    console.log('🔥 Content update effect triggered by data/activeItem change');
     // Update content when data changes
     if (activeItem) {
       setContent(data.content[activeItem.title as keyof typeof data.content] || []);
@@ -232,9 +297,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <div className="relative w-fit">
                       <SidebarMenuButton
                         onClick={() => {
+                          console.log('Manually clicking sidebar item:', item.title);
+                          console.log('Before update - activeItem:', activeItem?.title);
+                          
+                          // Persist the selection
+                          persistSection(item.title);
                           setActiveItem(item)
                           const newContent = data.content[item.title as keyof typeof data.content] || []
                           setContent(newContent)
+                          setManuallySet(true)
+                          console.log('After setState calls - should be:', item.title);
                           setOpen(true)
                         }}
                         isActive={activeItem?.title === item.title}
@@ -271,9 +343,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {/* This is the second sidebar */}
       {/* We disable collapsible and set responsive fixed width */}
       <Sidebar collapsible="none" className="hidden md:flex md:w-[280px] lg:w-[300px] md:min-w-[280px] lg:min-w-[300px] md:max-w-[280px] lg:max-w-[300px] bg-[#0A0A0B]">
-        <SidebarHeader className="gap-3.5 border-b p-4">
+        <SidebarHeader className="flex shrink-0 items-center border-b p-4 min-h-[73px]">
           <div className="flex w-full items-center justify-between">
-            <div className="text-foreground text-base font-medium">
+            <div className="text-white font-medium text-sm">
               {activeItem?.title}
             </div>
           </div>
@@ -281,22 +353,108 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarContent>
           <SidebarGroup className="px-0">
             <SidebarGroupContent>
-              {content.map((item) => (
-                <Link
-                  to={item.url}
-                  key={item.url}
-                  className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight last:border-b-0"
-                >
-                  <div className="flex w-full items-center gap-2">
-                    {activeItem?.title === 'Accounts' && <Wallet className="h-4 w-4" />}
-                    {activeItem?.title === 'Strategies' && <TrendingUp className="h-4 w-4" />}
-                    <span className="font-medium">{item.title}</span>
-                  </div>
-                  <span className="line-clamp-2 w-[260px] text-xs text-sidebar-foreground/70">
-                    {item.description}
-                  </span>
-                </Link>
-              ))}
+              {content.map((item) => {
+                // Helper function to determine which sidebar section this link should activate
+                const getRequiredSection = (url: string) => {
+                  if (url.startsWith('/accounts')) return 'Accounts';
+                  if (url.startsWith('/strategies')) return 'Strategies';
+                  return null; // Stay in current section
+                };
+
+                // Handle "Add new" items differently - show dialogs instead of navigating
+                if (item.isAddNew) {
+                  if (item.title === 'Add new account') {
+                    return (
+                      <AddAccountDialog
+                        key={item.url}
+                        trigger={
+                          <div className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight last:border-b-0 border-dashed border-sidebar-accent/50 hover:border-sidebar-accent cursor-pointer">
+                            <div className="flex w-full items-center gap-2">
+                              <Plus className="h-4 w-4 text-sidebar-accent" />
+                              <span className="font-medium text-sidebar-accent">{item.title}</span>
+                            </div>
+                            <span className="line-clamp-2 w-[260px] text-xs text-sidebar-foreground/70">
+                              {item.description}
+                            </span>
+                          </div>
+                        }
+                        onAccountAdded={() => {
+                          // Force sidebar to refresh by staying in Accounts section
+                          if (activeItem?.title === 'Accounts') {
+                            setContent(data.content.Accounts || []);
+                          }
+                        }}
+                      />
+                    );
+                  } else if (item.title === 'Add new strategy') {
+                    return (
+                      <AddStrategyDialog
+                        key={item.url}
+                        trigger={
+                          <div className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight last:border-b-0 border-dashed border-sidebar-accent/50 hover:border-sidebar-accent cursor-pointer">
+                            <div className="flex w-full items-center gap-2">
+                              <Plus className="h-4 w-4 text-sidebar-accent" />
+                              <span className="font-medium text-sidebar-accent">{item.title}</span>
+                            </div>
+                            <span className="line-clamp-2 w-[260px] text-xs text-sidebar-foreground/70">
+                              {item.description}
+                            </span>
+                          </div>
+                        }
+                        onStrategyAdded={() => {
+                          // Force sidebar to refresh by staying in Strategies section
+                          if (activeItem?.title === 'Strategies') {
+                            setContent(data.content.Strategies || []);
+                          }
+                        }}
+                      />
+                    );
+                  }
+                }
+
+                // Regular navigation items
+                return (
+                  <Link
+                    to={item.url}
+                    key={item.url}
+                    className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight last:border-b-0"
+                    onClick={() => {
+                      const requiredSection = getRequiredSection(item.url);
+                      console.log('Content link clicked:', item.url, 'requires section:', requiredSection, 'current section:', activeItem?.title);
+                      
+                      // Only auto-switch sidebar sections when clicking from within the same type
+                      // Don't auto-switch when clicking from Dashboard to accounts/strategies
+                      const shouldAutoSwitch = requiredSection && 
+                        activeItem?.title !== requiredSection && 
+                        activeItem?.title !== 'Dashboard';
+                      
+                      if (shouldAutoSwitch) {
+                        const targetItem = data.navMain.find(navItem => navItem.title === requiredSection);
+                        if (targetItem) {
+                          console.log('Auto-switching sidebar to:', requiredSection);
+                          
+                          // Persist the selection
+                          persistSection(requiredSection);
+                          setActiveItem(targetItem);
+                          setContent(data.content[requiredSection as keyof typeof data.content] || []);
+                          setManuallySet(true);
+                        }
+                      } else if (requiredSection) {
+                        console.log('Not auto-switching because current section is Dashboard');
+                      }
+                    }}
+                  >
+                    <div className="flex w-full items-center gap-2">
+                      {activeItem?.title === 'Accounts' && <Wallet className="h-4 w-4" />}
+                      {activeItem?.title === 'Strategies' && <TrendingUp className="h-4 w-4" />}
+                      <span className="font-medium">{item.title}</span>
+                    </div>
+                    <span className="line-clamp-2 w-[260px] text-xs text-sidebar-foreground/70">
+                      {item.description}
+                    </span>
+                  </Link>
+                );
+              })}
               {content.length === 0 && (
                 <div className="p-4 text-sm text-sidebar-foreground/70">
                   No {activeItem?.title.toLowerCase()} found

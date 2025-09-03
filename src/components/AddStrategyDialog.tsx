@@ -22,6 +22,7 @@ import {
   hasDuplicateConfluenceNames, 
   validateConfluence 
 } from '@/utils/confluenceUtils';
+import { useColors } from '@/hooks/useColors';
 
 interface AddStrategyDialogProps {
   trigger?: React.ReactNode;
@@ -34,6 +35,7 @@ const AddStrategyDialog: React.FC<AddStrategyDialogProps> = ({
 }) => {
   const navigate = useNavigate();
   const { createStrategy } = useTradeStore();
+  const colors = useColors();
   const [showDialog, setShowDialog] = useState(false);
   const [newStrategy, setNewStrategy] = useState("");
   const [confluences, setConfluences] = useState<Confluence[]>([createDefaultConfluence()]);
@@ -174,9 +176,9 @@ const AddStrategyDialog: React.FC<AddStrategyDialogProps> = ({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label className="text-white font-medium">Setup Confluences</Label>
-              <div className={`text-sm ${
-                isWeightValid ? 'text-green-500' : 'text-red-500'
-              }`}>
+              <div className="text-sm" style={{
+                color: isWeightValid ? colors.status.positive.primary : colors.status.negative.primary
+              }}>
                 Total: {totalWeight}/100
               </div>
             </div>
@@ -195,7 +197,13 @@ const AddStrategyDialog: React.FC<AddStrategyDialogProps> = ({
                 </Button>
               </div>
               {isOverWeight && (
-                <div className="text-xs text-red-400 bg-red-500/10 px-2 py-1 rounded">
+                <div 
+                  className="text-xs px-2 py-1 rounded"
+                  style={{
+                    color: colors.status.negative.primary,
+                    backgroundColor: colors.status.negative.background
+                  }}
+                >
                   ⚠️ Over 100%
                 </div>
               )}
@@ -217,8 +225,11 @@ const AddStrategyDialog: React.FC<AddStrategyDialogProps> = ({
                       <div className="space-y-2">
                         <div className="relative w-full h-6 bg-black/20 rounded-full overflow-hidden border border-white/10">
                           <div 
-                            className="h-full bg-green-500 transition-all duration-200 relative flex items-center justify-center"
-                            style={{ width: `${Math.min(confluence.weight || 0, 100)}%` }}
+                            className="h-full transition-all duration-200 relative flex items-center justify-center"
+                            style={{ 
+                              width: `${Math.min(confluence.weight || 0, 100)}%`,
+                              backgroundColor: colors.status.positive.primary
+                            }}
                           >
                             <span className="text-xs font-medium text-black absolute inset-0 flex items-center justify-center">
                               {confluence.weight || 0}%
@@ -241,7 +252,16 @@ const AddStrategyDialog: React.FC<AddStrategyDialogProps> = ({
                         variant="outline"
                         size="sm"
                         onClick={() => removeConfluence(confluence.id)}
-                        className="p-2 h-8 w-8 text-red-400 hover:text-red-300"
+                        className="p-2 h-8 w-8"
+                        style={{
+                          color: colors.status.negative.primary,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = colors.utils.withOpacity(colors.status.negative.primary, 0.8);
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = colors.status.negative.primary;
+                        }}
                       >
                         <X className="h-3 w-3" />
                       </Button>

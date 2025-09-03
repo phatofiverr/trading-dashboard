@@ -105,7 +105,7 @@ const SidebarContent: React.FC<{ children: React.ReactNode }> = ({ children }) =
       <AppSidebar />
       <SidebarInset>
         {/* Header with Breadcrumb */}
-        <header className="bg-black/5 backdrop-blur-md sticky top-0 flex shrink-0 items-center gap-2 border-b border-white/5 p-4 z-10">
+        <header className="bg-black/5 backdrop-blur-md sticky top-0 flex shrink-0 items-center gap-2 border-b border-white/5 p-4 z-10 min-h-[73px]">
           <SidebarTrigger 
             className="-ml-1 text-white/60 hover:text-white" 
             onClick={() => {

@@ -3,6 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { colorPalette } from '@/lib/colorPalette';
 
 interface StrategyListItem {
   name: string;
@@ -30,7 +31,9 @@ const ProfileStrategies: React.FC<ProfileStrategiesProps> = ({ strategies, isCur
               >
                 <div className="flex justify-between items-start">
                   <h3 className="font-medium">{strategy.name}</h3>
-                  <span className={strategy.profit >= 0 ? "text-green-500" : "text-red-500"}>
+                  <span style={{ 
+                    color: strategy.profit >= 0 ? colorPalette.status.positive.primary : colorPalette.status.negative.primary 
+                  }}>
                     {strategy.profit >= 0 ? "+" : ""}{strategy.profit.toFixed(2)}R
                   </span>
                 </div>

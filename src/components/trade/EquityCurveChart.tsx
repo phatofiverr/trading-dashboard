@@ -13,6 +13,7 @@ import { useTradeStore } from '@/hooks/useTradeStore';
 import { Button } from '@/components/ui/button';
 import { Download, LineChart as LineChartIcon, TrendingUp } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { useColors } from '@/hooks/useColors';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { calculateSharpeRatio } from '@/lib/tradeCalculations';
@@ -28,28 +29,29 @@ import {
 const EquityCurveChart: React.FC = () => {
   const { strategyId } = useParams<{ strategyId: string }>();
   const { filteredTrades: trades } = useTradeStore();
+  const colors = useColors();
   const [fixedRValue, setFixedRValue] = useState<number>(1); // Default fixed R value
   const [curveType, setCurveType] = useState<'stepAfter' | 'monotone' | 'linear'>('stepAfter');
   const [showByPair, setShowByPair] = useState<boolean>(true); // New state to toggle pair lines
   const [showProjections, setShowProjections] = useState<boolean>(false); // New state for projections
 
-  // Chart configuration for shadcn theming
+  // Chart configuration using centralized color system
   const chartConfig = {
     cumulativeR: {
       label: "Cumulative R",
-      color: "hsl(var(--chart-2))",
+      color: colors.status.positive.primary,
     },
     fixedR: {
       label: "Fixed R",
-      color: "hsl(var(--chart-1))",
+      color: colors.chart.secondary,
     },
     bestCaseCumulativeR: {
       label: "Best Case",
-      color: "hsl(var(--chart-2))",
+      color: colors.status.positive.primary,
     },
     worstCaseCumulativeR: {
       label: "Worst Case",
-      color: "hsl(var(--chart-3))",
+      color: colors.status.negative.primary,
     },
   } satisfies ChartConfig;
   
@@ -310,23 +312,23 @@ const EquityCurveChart: React.FC = () => {
     return labels;
   }, [trades]);
   
-  // Generate colors for each pair
+  // Generate colors for each pair using centralized color system
   const getPairColor = (index: number) => {
-    // Updated with mysterious fintech palette - dark-muted high-contrast colors
-    const colors = [
-      '#1A1F2C', // Dark purple-blue
-      '#7E69AB', // Secondary purple
-      '#403E43', // Charcoal gray
-      '#6E59A5', // Tertiary purple
-      '#555555', // Mid gray
-      '#221F26', // Dark charcoal
-      '#8E9196', // Neutral gray
-      '#444444', // Dark gray
-      '#333333', // Darker gray
-      '#666666', // Light gray
+    // Use centralized color palette with better visibility
+    const pairColors = [
+      colors.chart.tertiary,        // Amber
+      colors.social.secondary,      // Blue
+      colors.social.accent,         // Purple
+      colors.chart.quinary,         // Cyan
+      colors.accent.secondary,      // Gray
+      colors.trading.short.primary, // Red
+      colors.chart.quaternary,      // Red variant
+      colors.accent.primary,        // Mid gray
+      colors.accent.tertiary,       // Dark gray
+      colors.text.secondary,        // Light gray
     ];
     
-    return colors[index % colors.length];
+    return pairColors[index % pairColors.length];
   };
   
   // Export chart as PNG
@@ -536,7 +538,7 @@ const EquityCurveChart: React.FC = () => {
               {/* Add persistent horizontal reference line at R=0 */}
               <ReferenceLine 
                 y={0} 
-                stroke="#333333"
+                stroke={colors.border.primary}
                 strokeWidth={1}
                 ifOverflow="extendDomain"
               />
@@ -545,12 +547,12 @@ const EquityCurveChart: React.FC = () => {
               {showProjections && projectionData.length > 0 && (
                 <ReferenceLine 
                   x={chartData.length - 1} 
-                  stroke="rgba(255, 255, 255, 0.3)" 
+                  stroke={colors.utils.withOpacity(colors.text.primary, 0.3)} 
                   strokeDasharray="3 3" 
                   label={{ 
                     value: "Projections →", 
                     position: "top", 
-                    fill: "rgba(255, 255, 255, 0.7)", 
+                    fill: colors.utils.withOpacity(colors.text.primary, 0.7), 
                     fontSize: 10 
                   }} 
                 />
@@ -562,9 +564,9 @@ const EquityCurveChart: React.FC = () => {
                 type={curveType}
                 dataKey="cumulativeR" 
                 name="Cumulative R" 
-                stroke="hsl(var(--chart-2))" 
+                stroke={colors.status.positive.primary}
                 dot={false}
-                activeDot={{ r: 4, stroke: "hsl(var(--chart-2))", strokeWidth: 1 }}
+                activeDot={{ r: 4, stroke: colors.status.positive.primary, strokeWidth: 1 }}
                 strokeWidth={1.5}
                 connectNulls={true}
               />
@@ -574,9 +576,9 @@ const EquityCurveChart: React.FC = () => {
                 type={curveType}
                 dataKey="fixedR" 
                 name="Fixed R" 
-                stroke="hsl(var(--chart-1))" 
+                stroke={colors.chart.secondary}
                 dot={false}
-                activeDot={{ r: 4, stroke: "hsl(var(--chart-1))", strokeWidth: 1 }}
+                activeDot={{ r: 4, stroke: colors.chart.secondary, strokeWidth: 1 }}
                 strokeWidth={1.5}
                 strokeDasharray="4 2"
                 connectNulls={true}
@@ -590,12 +592,12 @@ const EquityCurveChart: React.FC = () => {
                     type={curveType}
                     dataKey="bestCaseCumulativeR"
                     name="Best Case"
-                    stroke="hsl(var(--chart-2))"
+                    stroke={colors.status.positive.primary}
                     strokeWidth={1.5}
                     strokeDasharray="4 3"
                     strokeOpacity={0.5}
                     dot={false}
-                    activeDot={{ r: 4, stroke: "hsl(var(--chart-2))", strokeWidth: 1, opacity: 0.7 }}
+                    activeDot={{ r: 4, stroke: colors.status.positive.primary, strokeWidth: 1, opacity: 0.7 }}
                     connectNulls={true}
                   />
                   
@@ -604,12 +606,12 @@ const EquityCurveChart: React.FC = () => {
                     type={curveType}
                     dataKey="worstCaseCumulativeR"
                     name="Worst Case"
-                    stroke="hsl(var(--chart-3))"
+                    stroke={colors.status.negative.primary}
                     strokeWidth={1.5}
                     strokeDasharray="4 3"
                     strokeOpacity={0.5}
                     dot={false}
-                    activeDot={{ r: 4, stroke: "hsl(var(--chart-3))", strokeWidth: 1, opacity: 0.7 }}
+                    activeDot={{ r: 4, stroke: colors.status.negative.primary, strokeWidth: 1, opacity: 0.7 }}
                     connectNulls={true}
                   />
                 </>

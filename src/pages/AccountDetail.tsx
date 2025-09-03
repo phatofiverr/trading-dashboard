@@ -3,9 +3,10 @@ import { useAccountsStore } from '@/hooks/useAccountsStore';
 import { useTradeStore } from '@/hooks/useTradeStore';
 import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Download, Filter, PlusCircle, Settings } from 'lucide-react';
+import { ArrowLeft, Download, Filter, PlusCircle, Settings, MoreHorizontal } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -148,10 +149,10 @@ const AccountDetail: React.FC = () => {
                   </h1>
                 </div>
                 
-                {/* Mobile: Grid Layout */}
-                <div className="grid grid-cols-2 gap-2 lg:hidden w-full">
+                {/* Mobile: Simplified Layout */}
+                <div className="flex gap-2 lg:hidden w-full">
                   {/* Beautiful Trade Entry Form */}
-                  <div className="col-span-2">
+                  <div className="flex-1">
                     <TradeEntryButton 
                       initialAccountId={accountId} 
                       variant="default" 
@@ -160,81 +161,104 @@ const AccountDetail: React.FC = () => {
                     />
                   </div>
                   
-                  {/* Export Trades Button */}
-                  <Button 
-                    variant="minimal" 
-                    className="flex items-center justify-center gap-2 bg-black/20 hover:bg-black/30 text-foreground border-white/5 h-9"
-                    onClick={handleExportCSV}
-                  >
-                    <Download className="h-4 w-4" />
-                  </Button>
-                  
-                  {/* Component Visibility Toggle */}
-                  <Popover open={showComponentPopoverMobile} onOpenChange={setShowComponentPopoverMobile}>
-                    <PopoverTrigger asChild>
+                  {/* More Actions Dropdown */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
                       <Button 
                         variant="minimal" 
-                        className={`flex items-center justify-center gap-2 ${showComponentPopoverMobile ? 'bg-red-500' : 'bg-black/20'} hover:bg-black/30 text-foreground h-9 w-full`}
+                        className="flex items-center justify-center gap-2 bg-black/20 hover:bg-black/30 text-foreground border-white/5 h-9 px-3"
                       >
-                        <Settings className="h-4 w-4" />
-                        {showComponentPopoverMobile && <span className="text-xs">OPEN</span>}
+                        <MoreHorizontal className="h-4 w-4" />
                       </Button>
-                    </PopoverTrigger>
-                    <PopoverContent 
-                      className="w-80 p-4 bg-black border-2 z-[9999]" 
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent 
+                      className="w-48 bg-black border-white/10 z-[9999]" 
                       side="bottom" 
-                      align="start"
+                      align="end"
                       sideOffset={8}
                     >
-                        {/* <h4 className="text-sm font-medium mb-3 text-white/90">Component Visibility</h4> */}
-                        <div className="space-y-2">
-                          {COMPONENT_OPTIONS.map(component => (
-                            <div key={component.id} className="flex items-center justify-between p-2 rounded-md hover:bg-white/5">
-                              <Label htmlFor={`toggle-${component.id}`} className="cursor-pointer text-white/80">
-                                {component.label}
-                              </Label>
-                              <Switch
-                                id={`toggle-${component.id}`}
-                                checked={visibleComponents[component.id] || false}
-                                onChange={() => toggleComponentVisibility(component.id)}
-                                className="data-[state=checked]:bg-trading-accent1"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                        <div className="mt-4 pt-3 border-t border-white/10 flex justify-end">
-                          <Button
-                            variant="minimal"
-                            className="text-xs text-white/70"
-                            onClick={() => {
-                              // Reset to defaults
-                              const defaults = COMPONENT_OPTIONS.reduce((acc, option) => {
-                                acc[option.id] = option.defaultVisible;
-                                return acc;
-                              }, {} as Record<string, boolean>);
-                              setVisibleComponents(defaults);
-                              toast.success("Component visibility reset to defaults");
-                            }}
+                      <DropdownMenuItem
+                        onClick={handleExportCSV}
+                        className="flex items-center gap-2 text-white/80 hover:text-white focus:text-white"
+                      >
+                        <Download className="h-4 w-4" />
+                        Export CSV
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuItem
+                        onClick={() => setShowFilterPanel(!showFilterPanel)}
+                        className="flex items-center gap-2 text-white/80 hover:text-white focus:text-white"
+                      >
+                        <Filter className="h-4 w-4" />
+                        {showFilterPanel ? 'Hide Filters' : 'Show Filters'}
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuSeparator className="bg-white/10" />
+                      
+                      <Popover open={showComponentPopoverMobile} onOpenChange={setShowComponentPopoverMobile}>
+                        <PopoverTrigger asChild>
+                          <DropdownMenuItem
+                            onSelect={(e) => e.preventDefault()}
+                            className="flex items-center gap-2 text-white/80 hover:text-white focus:text-white"
                           >
-                            Reset to Defaults
-                          </Button>
-                        </div>
-                    </PopoverContent>
-                  </Popover>
-                   <div className="h-9 lg:hidden flex items-center justify-center w-full">
-                    <ThemeEditor />
-                </div>
-                  {/* Filter Button - Mobile */}
-                  <Button 
-                    variant="minimal" 
-                    className={`flex items-center justify-center gap-2 ${showFilterPanel ? 'bg-white/10 text-white' : 'bg-black/20 hover:bg-black/30 text-foreground'} border-white/5 h-9 lg:hidden`}
-                    onClick={() => setShowFilterPanel(!showFilterPanel)}
-                  >
-                    <Filter className="h-4 w-4" />
-                  </Button>
+                            <Settings className="h-4 w-4" />
+                            Component Settings
+                          </DropdownMenuItem>
+                        </PopoverTrigger>
+                        <PopoverContent 
+                          className="w-80 p-4 bg-black border-2 z-[9999]" 
+                          side="bottom" 
+                          align="start"
+                          sideOffset={8}
+                        >
+                            <div className="space-y-2">
+                              {COMPONENT_OPTIONS.map(component => (
+                                <div key={component.id} className="flex items-center justify-between p-2 rounded-md hover:bg-white/5">
+                                  <Label htmlFor={`toggle-${component.id}`} className="cursor-pointer text-white/80">
+                                    {component.label}
+                                  </Label>
+                                  <Switch
+                                    id={`toggle-${component.id}`}
+                                    checked={visibleComponents[component.id] || false}
+                                    onChange={() => toggleComponentVisibility(component.id)}
+                                    className="data-[state=checked]:bg-trading-accent1"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                            <div className="mt-4 pt-3 border-t border-white/10 flex justify-end">
+                              <Button
+                                variant="minimal"
+                                className="text-xs text-white/70"
+                                onClick={() => {
+                                  // Reset to defaults
+                                  const defaults = COMPONENT_OPTIONS.reduce((acc, option) => {
+                                    acc[option.id] = option.defaultVisible;
+                                    return acc;
+                                  }, {} as Record<string, boolean>);
+                                  setVisibleComponents(defaults);
+                                  toast.success("Component visibility reset to defaults");
+                                }}
+                              >
+                                Reset to Defaults
+                              </Button>
+                            </div>
+                        </PopoverContent>
+                      </Popover>
+                      
+                      <DropdownMenuSeparator className="bg-white/10" />
+                      
+                      <div className="p-2">
+                        <div className="text-xs text-white/60 mb-2">Theme</div>
+                        <Suspense fallback={<div className="h-9 bg-black/10 rounded-md animate-pulse" />}>
+                          <ThemeEditor />
+                        </Suspense>
+                      </div>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
                 
-                {/* Desktop: Original Horizontal Layout */}
+                {/* Desktop: Updated Layout */}
                 <div className="hidden lg:flex items-center gap-2">
                   {/* Beautiful Trade Entry Form */}
                   <TradeEntryButton 
@@ -243,85 +267,102 @@ const AccountDetail: React.FC = () => {
                     size="default"
                   />
                   
-                  {/* Export Trades Button */}
-                  <Button 
-                    variant="minimal" 
-                    className="flex items-center gap-2 bg-black/20 hover:bg-black/30 text-foreground border-white/5"
-                    onClick={handleExportCSV}
-                  >
-                    <Download className="h-4 w-4" />
-                    Export
-                  </Button>
-                  
-                  {/* Component Visibility Toggle */}
-                  <Popover open={showComponentPopoverDesktop} onOpenChange={setShowComponentPopoverDesktop}>
-                    <PopoverTrigger asChild>
+                  {/* More Actions Dropdown */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
                       <Button 
                         variant="minimal" 
-                        className="flex items-center gap-2 bg-black/20 hover:bg-black/30 text-foreground border-white/5"
+                        className="flex items-center justify-center gap-2 bg-black/20 hover:bg-black/30 text-foreground border-white/5"
                       >
-                        <Settings className="h-4 w-4" />
-                        Components
+                        <MoreHorizontal className="h-4 w-4" />
+                        More
                       </Button>
-                    </PopoverTrigger>
-                    <PopoverContent 
-                      className="w-80 p-4 bg-black border-2 z-[9999]" 
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent 
+                      className="w-48 bg-black border-white/10 z-[9999]" 
                       side="bottom" 
-                      align="start"
+                      align="end"
                       sideOffset={8}
                     >
-                        {/* <h4 className="text-sm font-medium mb-3 text-white/90">Component Visibility</h4> */}
-                        <div className="space-y-2">
-                          {COMPONENT_OPTIONS.map(component => (
-                            <div key={component.id} className="flex items-center justify-between p-2 rounded-md hover:bg-white/5">
-                              <Label htmlFor={`toggle-${component.id}`} className="cursor-pointer text-white/80">
-                                {component.label}
-                              </Label>
-                              <Switch
-                                id={`toggle-${component.id}`}
-                                checked={visibleComponents[component.id] || false}
-                                onChange={() => toggleComponentVisibility(component.id)}
-                                className="data-[state=checked]:bg-trading-accent1"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                        <div className="mt-4 pt-3 border-t border-white/10 flex justify-end">
-                          <Button
-                            variant="minimal"
-                            className="text-xs text-white/70"
-                            onClick={() => {
-                              // Reset to defaults
-                              const defaults = COMPONENT_OPTIONS.reduce((acc, option) => {
-                                acc[option.id] = option.defaultVisible;
-                                return acc;
-                              }, {} as Record<string, boolean>);
-                              setVisibleComponents(defaults);
-                              toast.success("Component visibility reset to defaults");
-                            }}
+                      <DropdownMenuItem
+                        onClick={handleExportCSV}
+                        className="flex items-center gap-2 text-white/80 hover:text-white focus:text-white"
+                      >
+                        <Download className="h-4 w-4" />
+                        Export CSV
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuItem
+                        onClick={() => setShowFilterPanel(!showFilterPanel)}
+                        className="flex items-center gap-2 text-white/80 hover:text-white focus:text-white"
+                      >
+                        <Filter className="h-4 w-4" />
+                        {showFilterPanel ? 'Hide Filters' : 'Show Filters'}
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuSeparator className="bg-white/10" />
+                      
+                      <Popover open={showComponentPopoverDesktop} onOpenChange={setShowComponentPopoverDesktop}>
+                        <PopoverTrigger asChild>
+                          <DropdownMenuItem
+                            onSelect={(e) => e.preventDefault()}
+                            className="flex items-center gap-2 text-white/80 hover:text-white focus:text-white"
                           >
-                            Reset to Defaults
-                          </Button>
-                        </div>
-                    </PopoverContent>
-                  </Popover>
-                  
-                  {/* Theme Editor Button - Desktop */}
-                  <Suspense fallback={<div className="h-9 bg-black/10 rounded-md animate-pulse" />}>
-                    <div className="hidden lg:block">
-                      <ThemeEditor />
-                    </div>
-                  </Suspense>
-                  
-                  {/* Filter Button - Desktop */}
-                  <Button 
-                    variant="minimal" 
-                    className={`hidden lg:flex items-center gap-2 ${showFilterPanel ? 'bg-white/10 text-white' : 'bg-black/20 hover:bg-black/30 text-foreground'} border-white/5`}
-                    onClick={() => setShowFilterPanel(!showFilterPanel)}
-                  >
-                    <Filter className="h-4 w-4" />
-                    Filter
-                  </Button>
+                            <Settings className="h-4 w-4" />
+                            Component Settings
+                          </DropdownMenuItem>
+                        </PopoverTrigger>
+                        <PopoverContent 
+                          className="w-80 p-4 bg-black border-2 z-[9999]" 
+                          side="bottom" 
+                          align="start"
+                          sideOffset={8}
+                        >
+                            <div className="space-y-2">
+                              {COMPONENT_OPTIONS.map(component => (
+                                <div key={component.id} className="flex items-center justify-between p-2 rounded-md hover:bg-white/5">
+                                  <Label htmlFor={`toggle-${component.id}`} className="cursor-pointer text-white/80">
+                                    {component.label}
+                                  </Label>
+                                  <Switch
+                                    id={`toggle-${component.id}`}
+                                    checked={visibleComponents[component.id] || false}
+                                    onChange={() => toggleComponentVisibility(component.id)}
+                                    className="data-[state=checked]:bg-trading-accent1"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                            <div className="mt-4 pt-3 border-t border-white/10 flex justify-end">
+                              <Button
+                                variant="minimal"
+                                className="text-xs text-white/70"
+                                onClick={() => {
+                                  // Reset to defaults
+                                  const defaults = COMPONENT_OPTIONS.reduce((acc, option) => {
+                                    acc[option.id] = option.defaultVisible;
+                                    return acc;
+                                  }, {} as Record<string, boolean>);
+                                  setVisibleComponents(defaults);
+                                  toast.success("Component visibility reset to defaults");
+                                }}
+                              >
+                                Reset to Defaults
+                              </Button>
+                            </div>
+                        </PopoverContent>
+                      </Popover>
+                      
+                      <DropdownMenuSeparator className="bg-white/10" />
+                      
+                      <div className="p-2">
+                        <div className="text-xs text-white/60 mb-2">Theme</div>
+                        <Suspense fallback={<div className="h-9 bg-black/10 rounded-md animate-pulse" />}>
+                          <ThemeEditor />
+                        </Suspense>
+                      </div>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
 
